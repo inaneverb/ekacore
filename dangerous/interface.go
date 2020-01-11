@@ -3,7 +3,7 @@
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package gotypes
+package dangerous
 
 import "unsafe"
 
@@ -11,4 +11,9 @@ import "unsafe"
 type Interface struct {
 	Type uintptr        // pointer to the type definition struct
 	Word unsafe.Pointer // pointer to the value
+}
+
+//
+func TypedInterface(i interface{}) Interface {
+	return *(*Interface)(unsafe.Pointer(&i))
 }

@@ -6,7 +6,6 @@
 package dangerous
 
 import "unsafe"
-import "github.com/qioalice/gext/internal/gotypes"
 
 // In Golang you can not just take an address of some func
 // only if it is not a func literal which is assigned to any var.
@@ -58,7 +57,7 @@ func TakeRealAddr(fn interface{}) unsafe.Pointer {
 	if fn == nil {
 		return nil
 	}
-	return (*gotypes.Interface)(unsafe.Pointer(&fn)).Word
+	return (*Interface)(unsafe.Pointer(&fn)).Word
 }
 
 // TakeCallableAddr takes and returns an "callable" address of function fn or nil if fn is nil.
