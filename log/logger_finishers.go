@@ -5,7 +5,9 @@
 
 package log
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // -----
 // This file contains only Logger's finishers:

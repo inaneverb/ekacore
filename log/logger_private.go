@@ -5,11 +5,13 @@
 
 package log
 
-import "fmt"
-import "time"
+import (
+	"fmt"
+	"time"
 
-import "github.com/qioalice/gext/death"
-import "github.com/qioalice/gext/errors"
+	"github.com/qioalice/gext/death"
+	"github.com/qioalice/gext/errors"
+)
 
 // canContinue reports whether l is valid (not nil and has valid core and entry).
 func (l *Logger) canContinue() bool {
