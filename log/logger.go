@@ -143,7 +143,7 @@ func (l *Logger) With(fields ...interface{}) (copy *Logger) {
 	return l.derive(false).entry.with(fields, nil).l
 }
 
-// WithStrict an explicit fields to the current Logger's copy.
+// WithStrict adds an explicit fields to the current Logger's copy.
 func (l *Logger) WithStrict(fields ...Field) (copy *Logger) {
 
 	if len(fields) == 0 || !l.canContinue() {
