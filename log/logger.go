@@ -24,13 +24,13 @@ package log
 // 		log.With("key", "value").Warn("It's dangerous!")
 //
 // But in that case, after finishing execution of second line,
-// 'log' variable won't contain add field "key" and group "group".
+// 'log' variable won't contain add field "key".
 // But package name "main" will contain.
 // Want a different behaviour and want to have Logger with these fields?
 // No problem, save generated Logger object:
 //
 // 		log := Package("main")
-// 		log = log.Group("group").With("key", "value")
+// 		log = log.With("key", "value")
 // 		log.Warn("It's dangerous!")
 //
 // Because of all finishers (methods that actually writes a log message, e.g:
@@ -39,7 +39,7 @@ package log
 // it's the same as in the example above:
 //
 // 		log := Package("main")
-// 		log = log.Group("group").With("key", "value").Warn("It's dangerous!")
+// 		log = log.With("key", "value").Warn("It's dangerous!")
 //
 // but it's strongly not recommended to do so, because it made code less clear.
 //
@@ -66,15 +66,24 @@ package log
 // option to Logger's constructor or using 'Apply' method.
 type Logger struct {
 
-	// Core copies much less times than Entry.
-	// Core contains log messages destinations, auxiliary functions, log format,
-	// and something like this.
-	core *core
+	// integrator is the log's entry writing destination and it's formatting way.
+	// integrator determines how entry will be written.
+	integrator Integrator
 
-	// Entry is what log message is.
-	// Entry is it's stacktrace, caller info, timestamp, level, message, group,
+	// entry is what log message is.
+	// entry is it's stacktrace, caller info, timestamp, level, message, group,
 	// flags, etc.
 	entry *Entry
+}
+
+// Sync forces to flush all l's integrator's buffer and makes sure all pending
+// log's entries are written.
+func (l *Logger) Sync() error {
+
+	if !l.canContinue() {
+		return errLoggerObjectInvalid
+	}
+	return l.integrator.Sync()
 }
 
 // Apply overwrites current Logger's copy behaviour by provided reasons.
@@ -95,7 +104,7 @@ func (l *Logger) Package(packageName string) (copy *Logger) {
 	if packageName == "" || !l.canContinue() {
 		return l
 	}
-	return l.derive(false).entry.setPackageName(packageName).l
+	return l.derive(nil).entry.setPackageName(packageName).l
 }
 
 // Func sets current Logger's copy function name.
@@ -105,7 +114,7 @@ func (l *Logger) Func(funcName string) (copy *Logger) {
 	if funcName == "" || !l.canContinue() {
 		return l
 	}
-	return l.derive(false).entry.setFuncName(funcName).l
+	return l.derive(nil).entry.setFuncName(funcName).l
 }
 
 // Class sets current Logger's copy class name.
@@ -115,7 +124,7 @@ func (l *Logger) Class(className string) (copy *Logger) {
 	if className == "" || !l.canContinue() {
 		return l
 	}
-	return l.derive(false).entry.setClassName(className).l
+	return l.derive(nil).entry.setClassName(className).l
 }
 
 // Method sets current Logger's copy method name.
@@ -127,7 +136,7 @@ func (l *Logger) Method(methodName string) (copy *Logger) {
 	if methodName == "" || !l.canContinue() {
 		return l
 	}
-	return l.derive(false).entry.setMethodName(methodName).l
+	return l.derive(nil).entry.setMethodName(methodName).l
 }
 
 // With adds fields to the current Logger's copy.
@@ -140,7 +149,7 @@ func (l *Logger) With(fields ...interface{}) (copy *Logger) {
 	if len(fields) == 0 || !l.canContinue() {
 		return l
 	}
-	return l.derive(false).entry.with(fields, nil).l
+	return l.derive(nil).entry.with(fields, nil).l
 }
 
 // WithStrict adds an explicit fields to the current Logger's copy.
@@ -149,5 +158,5 @@ func (l *Logger) WithStrict(fields ...Field) (copy *Logger) {
 	if len(fields) == 0 || !l.canContinue() {
 		return l
 	}
-	return l.derive(false).entry.with(nil, fields).l
+	return l.derive(nil).entry.with(nil, fields).l
 }

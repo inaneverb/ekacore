@@ -21,9 +21,15 @@ func (l *Logger) canContinue() bool {
 	// So 3 nil checks are enough here and of course check ptr equal.
 
 	return l != nil &&
-		l.core != nil &&
+		l.integrator != nil &&
 		l.entry != nil &&
 		l == l.entry.l
+}
+
+// levelEnabled reports whether log's entry with level 'lvl' should be handled.
+func (l *Logger) levelEnabled(lvl Level) bool {
+
+	return lvl >= l.integrator.MinLevelEnabled()
 }
 
 // checkErr returns l if err != nil, otherwise nil.
@@ -43,13 +49,8 @@ func (l *Logger) checkErr(err error) (this *Logger) {
 // apply changes l's behaviour according with new rules described by passed args.
 func (l *Logger) apply(args []interface{}) (copy *Logger) {
 
-	integrators, options := parseOptions(args)
-	needToCloneCore := len(integrators) > 0
-
-	copy = l.derive(needToCloneCore).entry.apply(options).l
-	copy.core.extend(integrators)
-
-	return
+	newIntegrator, options := parseOptions(args)
+	return l.derive(newIntegrator).entry.apply(options).l
 }
 
 // log starts and manages all processes that should be passed between
@@ -88,7 +89,7 @@ func (l *Logger) apply(args []interface{}) (copy *Logger) {
 // 4. Finally write a message and call then death.Die() if it's fatal level.
 func (l *Logger) log(lvl Level, format string, err error, args []interface{}, explicitFields []Field) *Logger {
 
-	if !(l.canContinue() && l.core.levelEnabled(lvl)) {
+	if !(l.canContinue() && l.levelEnabled(lvl)) {
 		return l
 	}
 
@@ -154,7 +155,7 @@ func (l *Logger) log(lvl Level, format string, err error, args []interface{}, ex
 		}
 	}
 
-	l.core.write(workTempEntry)
+	l.integrator.Write(workTempEntry)
 
 exit:
 	switch {
@@ -167,27 +168,26 @@ exit:
 }
 
 // derive returns a new Logger with at least clone Entry based on l's one
-// and probably with cloned core (also based on l's) depends on cloneCore arg.
-func (l *Logger) derive(cloneCore bool) (newLogger *Logger) {
+// and probably with a new integrator if 'newIntegrator' is not nil.
+func (l *Logger) derive(newIntegrator Integrator) (newLogger *Logger) {
 
 	// Entry clones any way because of that fact that entry stores ptr to parent.
 	// if we won't clone we'll have a two different loggers with the same entry's ptrs
 	// that are points to the only one (first or second) logger.
 
-	if cloneCore {
-		return new(Logger).setCore(l.core.clone()).setEntry(l.entry.clone())
-	} else {
-		return new(Logger).setCore(l.core).setEntry(l.entry.clone())
+	if newIntegrator == nil {
+		newIntegrator = l.integrator
 	}
+	return new(Logger).setIntegrator(newIntegrator).setEntry(l.entry.clone())
 }
 
-// setCore changes the l's core to the passed. It's just assignment no more.
+// setIntegrator changes the l's integrator to the passed. It's just assignment no more.
 // Useful in method chaining.
-func (l *Logger) setCore(newCore *core) (this *Logger) {
+func (l *Logger) setIntegrator(newIntegrator Integrator) (this *Logger) {
 
 	// It guarantees that newCore != nil
 
-	l.core = newCore
+	l.integrator = newIntegrator
 	return l
 }
 
