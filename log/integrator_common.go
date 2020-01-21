@@ -136,8 +136,8 @@ func (bi *CommonIntegrator) WithEncoder(enc CommonIntegratorEncoder) *CommonInte
 	switch {
 	case encAddr == nil && len(bi.output) == 0:
 		bi.output = append(bi.output, commonIntegratorOutput{
-			EncoderAddr: consoleEncoder.encodeAddr(),
-			Encoder:     consoleEncoder.Encode,
+			EncoderAddr: consoleEncoderAddr,
+			Encoder:     consoleEncoder,
 		})
 		// bi.outputRegisterIdx == 0 already (because len(bi.output) == 0)
 

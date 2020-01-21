@@ -9,7 +9,9 @@ import (
 	"fmt"
 	"math"
 	"time"
+	"unsafe"
 
+	"github.com/qioalice/gext/dangerous"
 	"github.com/qioalice/gext/sys"
 
 	"github.com/json-iterator/go"
@@ -17,10 +19,23 @@ import (
 
 //
 type JSONEncoder struct {
+	jsoniterConfig jsoniter.Config
+	jsoniterAPI    jsoniter.API
 }
 
-// Make sure we won't break API.
-var _ CommonIntegratorEncoder = (*JSONEncoder)(nil).encode
+var (
+	// Make sure we won't break API.
+	_ CommonIntegratorEncoder = (*JSONEncoder)(nil).encode
+
+	// Package's JSON encoder
+	jsonEncoder     CommonIntegratorEncoder
+	jsonEncoderAddr unsafe.Pointer
+)
+
+func init() {
+	jsonEncoder = (&JSONEncoder{}).FreezeAndGetEncoder()
+	jsonEncoderAddr = dangerous.TakeRealAddr(jsonEncoder)
+}
 
 //
 func (je *JSONEncoder) FreezeAndGetEncoder() CommonIntegratorEncoder {
@@ -29,6 +44,8 @@ func (je *JSONEncoder) FreezeAndGetEncoder() CommonIntegratorEncoder {
 
 //
 func (je *JSONEncoder) encode(e *Entry) []byte {
+
+	je.jsoniterAPI = je.jsoniterConfig.Froze()
 
 	cfg := jsoniter.Config{
 		IndentionStep:                 4,
