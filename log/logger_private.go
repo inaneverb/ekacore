@@ -81,7 +81,7 @@ func (l *Logger) apply(args []interface{}) (copy *Logger) {
 //    as printf-like string, or it was extracted from 'args[0]'.
 //
 // 3. Adds caller and stacktrace (if it necessary and if it wasn't provided
-//    by gext.errors.Error) (using Entry.addCallerAndStacktrace method);
+//    by gext.errors.Error) (using Entry.addStacktrace method);
 //
 //    Uses gext.errors.Error.Stacktrace as stacktrace avoiding another one
 //    stacktrace generation procedure.
@@ -146,7 +146,7 @@ func (l *Logger) log(lvl Level, format string, err error, args []interface{}, ex
 
 	workTempEntry.
 		parseLogArgs(format, args, explicitFields).
-		addCallerAndStacktrace()
+		addStacktrace()
 
 	if workTempEntry.beforeWrite != nil {
 		returned := workTempEntry.beforeWrite(workTempEntry)
