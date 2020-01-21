@@ -8,8 +8,9 @@ package log
 import (
 	"fmt"
 	"math"
-	"reflect"
 	"unsafe"
+
+	"github.com/modern-go/reflect2"
 )
 
 // Field is an explicit field's type.
@@ -68,15 +69,12 @@ const (
 	FieldKindFlagNil       = 0b_0100_0000
 	fieldKindFlagReserved1 = 0b_1000_0000 // private because reserved
 
+	/**/ // save this comment line to avoid gofmt
 	/* 00 */
 	FieldKindInvalid = iota // can't be handled in almost all cases
 	/* 01 */ FieldKindUnknown // almost all implicit fields have this kind
-
-	/* 02 */
-	FieldKindMapFields // for embedding maps
-
-	/* 03 */
-	FieldKindBool
+	/* 02 */ _ // reserved
+	/* 03 */ FieldKindBool
 	/* 04 */ FieldKindInt
 	/* 05 */ FieldKindInt8
 	/* 06 */ FieldKindInt16
@@ -93,9 +91,7 @@ const (
 	/* 17 */ FieldKindComplex64
 	/* 18 */ FieldKindComplex128
 	/* 19 */ FieldKindString
-
-	/* 20 */
-	FieldKindStringer
+	/* 20 */ _ // reserved
 	/* 21 */ FieldKindAddr
 
 	// -----
@@ -107,11 +103,9 @@ const (
 
 var (
 	// Used for internal type comparision.
-	//
-	// Lazy calculated Golang 'reflect' package 'Field' and '*Field' types
-	// representation.
-	reflectTypeField    = reflect.TypeOf(Field{})
-	reflectTypeFieldPtr = reflect.TypeOf((*Field)(nil))
+	reflectTypeField       = reflect2.TypeOf(Field{})
+	reflectTypeFieldPtr    = reflect2.TypeOf((*Field)(nil))
+	reflectTypeFmtStringer = reflect2.TypeOfPtr((*fmt.Stringer)(nil)).Elem()
 )
 
 // BaseType extracts only 5 lowest bits from fk and returns it (ignore flags).
@@ -387,7 +381,7 @@ func Float64p(key string, value *float64) Field {
 // The returned Field will safely and explicitly represent `nil` when appropriate.
 func Stringer(key string, value fmt.Stringer) Field {
 	if value == nil {
-		return fieldNilValue(key, FieldKindStringer)
+		return fieldNilValue(key, FieldKindString)
 	}
 	return Field{Key: key, SValue: value.String(), Kind: FieldKindString}
 }
@@ -421,11 +415,4 @@ func Addr(key string, value interface{}) Field {
 func fieldNilValue(key string, baseType FieldKind) Field {
 
 	return Field{Key: key, Kind: baseType | FieldKindFlagNil}
-}
-
-// transform reflect kind (trk)
-// trk is Transform Reflect Kind - transforms
-func trk(kind reflect.Kind) FieldKind {
-	// TODO: Implement
-	return FieldKindUnknown
 }
