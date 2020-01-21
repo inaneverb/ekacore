@@ -143,3 +143,7 @@ func (l Level) mustDie() bool {
 		return false
 	}
 }
+
+func (l Level) uint8() uint8 {
+	return uint8(l)
+}
