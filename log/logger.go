@@ -160,3 +160,13 @@ func (l *Logger) WithStrict(fields ...Field) (copy *Logger) {
 	}
 	return l.derive(nil).entry.with(nil, fields).l
 }
+
+// SkipStackFrames specified how much stack frames shall be skipped
+// at the stacktrace generation. Forces stacktrace generation if it's not so.
+func (l *Logger) SkipStackFrames(n int) (copy *Logger) {
+
+	if !l.canContinue() {
+		return l
+	}
+	return l.derive(nil).entry.forceStacktrace(n).l
+}

@@ -214,6 +214,23 @@ func WithStrictThis(fields ...Field) (defaultLogger *Logger) {
 	return
 }
 
+// SkipStackFrames specified how much stack frames shall be skipped
+// at the stacktrace generation. Forces stacktrace generation if it's not so.
+func SkipStackFrames(n int) (copy *Logger) {
+
+	return baseLogger.derive(nil).entry.forceStacktrace(n).l
+}
+
+// SkipStackFramesThis is the same as SkipStackFrames but doesn't create a copy
+// of default package logger. Modifies it in-place and returns then.
+func SkipStackFramesThis(n int) (defaultLogger *Logger) {
+
+	defaultLogger = baseLogger
+	defaultLogger.entry.forceStacktrace(n)
+
+	return
+}
+
 // allocLogger just allocates the memory to the new Logger object and then
 // corrects the all internal pointers.
 //func allocLogger() *Logger {

@@ -90,7 +90,8 @@ type Entry struct {
 
 	Fields []Field
 
-	StackTrace sys.StackTrace
+	StackTrace      sys.StackTrace
+	skipStackFrames int
 
 	beforeWrite BeforeWriteCallback
 	logArgs     []interface{}
@@ -243,13 +244,21 @@ func (e *Entry) setMethodName(methodName string) (this *Entry) {
 	return e
 }
 
+func (e *Entry) forceStacktrace(ignoreFrames int) (this *Entry) {
+
+	e.setFlag(bEntryFlagAutoGenerateCaller)
+	e.Package, e.Func, e.Class = "", "", ""
+	e.skipStackFrames = ignoreFrames
+	return e
+}
+
 // addStacktrace adds caller (if it's not added yet manually) and stacktrace
 // (if it's not added before from error or if forced overwrite is enabled).
 func (e *Entry) addStacktrace() (this *Entry) {
 
 	if !e.testFlag(bEntryFlagDisableStacktrace) &&
 		(e.StackTrace == nil || e.testFlag(bEntryFlagOverwriteStacktrace)) {
-		e.StackTrace = sys.GetStackTrace(3, -1)
+		e.StackTrace = sys.GetStackTrace(e.skipStackFrames+3, -1)
 	}
 
 	if !e.testFlag(bEntryFlagAutoGenerateCaller) {
@@ -258,7 +267,7 @@ func (e *Entry) addStacktrace() (this *Entry) {
 
 	stacktrace := e.StackTrace
 	if len(stacktrace) == 0 {
-		if stacktrace = sys.GetStackTrace(3, 1); len(stacktrace) == 0 {
+		if stacktrace = sys.GetStackTrace(e.skipStackFrames+3, 1); len(stacktrace) == 0 {
 			// TODO: Internal error, can't get a stacktrace => can't get a caller info
 			return e
 		}
