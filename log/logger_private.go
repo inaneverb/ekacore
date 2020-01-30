@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/qioalice/gext/death"
+	"github.com/qioalice/gext/ec"
 	"github.com/qioalice/gext/errors"
 )
 
@@ -165,6 +166,35 @@ exit:
 
 	reuseEntry(workTempEntry)
 	return l
+}
+
+// logec is the same as log but generates unique error's UUID,
+// adds it to the log's entry, calls log and returns ec.ECXT based on passed 'errorCode'
+// instead just returning Logger object.
+func (l *Logger) logec(lvl Level, err error, errorCode ec.EC, args []interface{}, explicitFields []Field) (ret ec.ECXT) {
+
+	if !l.canContinue() {
+		return ec.EOK.ECXT()
+	}
+
+	ret = errorCode.ECXTForce()
+	l.entry.ssfp++
+
+	switch lA, lEF := len(args), len(explicitFields); {
+
+	case lA == 0: // for both cases: 'lEF' ==/!= 0
+		l.log(lvl, "", err, nil,
+			append(explicitFields, String("error_id", ret.UUID.String())),
+		)
+
+	case lEF == 0:
+		l.log(lvl, "", err,
+			append(args, String("error_id", ret.UUID.String())),
+			nil)
+	}
+
+	l.entry.ssfp--
+	return
 }
 
 // derive returns a new Logger with at least clone Entry based on l's one
