@@ -7,6 +7,8 @@ package log
 
 import (
 	"fmt"
+
+	"github.com/qioalice/gext/ec"
 )
 
 // -----
@@ -126,6 +128,26 @@ func LogeStrict(level Level, err error, fields ...Field) *Logger {
 	return baseLogger.checkErr(err).log(level, "", err, nil, fields)
 }
 
+// Logec generates ECXT based on passed 'errorCode', adds ECXT's UUID as error's one
+// to the log's entry then writes log's message using err's message as log's one
+// with desired 'level' but does that all only if err != nil.
+// Do not pass 'ec.EOK' as 'errorCode'! It won't lead to UB but breaks logic.
+func Logec(level Level, err error, errorCode ec.EC, args ...interface{}) ec.ECXT {
+
+	return baseLogger.checkErr(err).logec(level, err, errorCode, args, nil)
+}
+
+// LogecStrict is the same as just Logec but
+//
+// no implicit fields supporting, no err's printf style supporting,
+// no group supporting, no options supporting, ...
+//
+// ... and, as a conclusion, no reflections (usage of Golang 'reflect' package).
+func LogecStrict(level Level, err error, errorCode ec.EC, fields ...Field) ec.ECXT {
+
+	return baseLogger.checkErr(err).logec(level, err, errorCode, nil, fields)
+}
+
 // Debug is the same as Log(Level.Debug, args...).
 // Read more: Entry.Log.
 func Debug(args ...interface{}) *Logger {
@@ -173,6 +195,20 @@ func Debuge(err error, args ...interface{}) *Logger {
 func DebugeStrict(err error, fields ...Field) *Logger {
 
 	return baseLogger.checkErr(err).log(lvlDebug, "", err, nil, fields)
+}
+
+// Debugec is the same as Logec(Level.Debug, err, errorCode, args...).
+// Read more: Entry.Logec.
+func Debugec(err error, errorCode ec.EC, args ...interface{}) ec.ECXT {
+
+	return baseLogger.checkErr(err).logec(lvlDebug, err, errorCode, args, nil)
+}
+
+// DebugecStrict is the same as LogecStrict(Level.Debug, err, errorCode, fields...).
+// Read more: Entry.LogecStrict.
+func DebugecStrict(err error, errorCode ec.EC, fields ...Field) ec.ECXT {
+
+	return baseLogger.checkErr(err).logec(lvlDebug, err, errorCode, nil, fields)
 }
 
 // Info is the same as Log(Level.Info, args...).
@@ -224,6 +260,20 @@ func InfoeStrict(err error, fields ...Field) *Logger {
 	return baseLogger.checkErr(err).log(lvlInfo, "", err, nil, fields)
 }
 
+// Infoec is the same as Logec(Level.Info, err, errorCode, args...).
+// Read more: Entry.Logec.
+func Infoec(err error, errorCode ec.EC, args ...interface{}) ec.ECXT {
+
+	return baseLogger.checkErr(err).logec(lvlInfo, err, errorCode, args, nil)
+}
+
+// InfoecStrict is the same as LogecStrict(Level.Debug, err, errorCode, fields...).
+// Read more: Entry.LogecStrict.
+func InfoecStrict(err error, errorCode ec.EC, fields ...Field) ec.ECXT {
+
+	return baseLogger.checkErr(err).logec(lvlInfo, err, errorCode, nil, fields)
+}
+
 // Warn is the same as Log(Level.Warn, args...).
 // Read more: Entry.Log.
 func Warn(args ...interface{}) *Logger {
@@ -273,6 +323,20 @@ func WarneStrict(err error, fields ...Field) *Logger {
 	return baseLogger.checkErr(err).log(lvlWarning, "", err, nil, fields)
 }
 
+// Warnec is the same as Logec(Level.Warn, err, errorCode, args...).
+// Read more: Entry.Logec.
+func Warnec(err error, errorCode ec.EC, args ...interface{}) ec.ECXT {
+
+	return baseLogger.checkErr(err).logec(lvlWarning, err, errorCode, args, nil)
+}
+
+// WarnecStrict is the same as LogecStrict(Level.Warn, err, errorCode, fields...).
+// Read more: Entry.LogecStrict.
+func WarnecStrict(err error, errorCode ec.EC, fields ...Field) ec.ECXT {
+
+	return baseLogger.checkErr(err).logec(lvlWarning, err, errorCode, nil, fields)
+}
+
 // Error is the same as Log(Level.Error, args...).
 // Read more: Entry.Log.
 func Error(args ...interface{}) *Logger {
@@ -320,6 +384,20 @@ func Errore(err error, args ...interface{}) *Logger {
 func ErroreStrict(err error, fields ...Field) *Logger {
 
 	return baseLogger.checkErr(err).log(lvlError, "", err, nil, fields)
+}
+
+// Errorec is the same as Logec(Level.Error, err, errorCode, args...).
+// Read more: Entry.Logec.
+func Errorec(err error, errorCode ec.EC, args ...interface{}) ec.ECXT {
+
+	return baseLogger.checkErr(err).logec(lvlError, err, errorCode, args, nil)
+}
+
+// ErrorecStrict is the same as LogecStrict(Level.Error, err, errorCode, fields...).
+// Read more: Entry.LogecStrict.
+func ErrorecStrict(err error, errorCode ec.EC, fields ...Field) ec.ECXT {
+
+	return baseLogger.checkErr(err).logec(lvlError, err, errorCode, nil, fields)
 }
 
 // Fatal is the same as Log(Level.Fatal, args...),
@@ -376,4 +454,18 @@ func Fatale(err error, args ...interface{}) *Logger {
 func FataleStrict(err error, fields ...Field) *Logger {
 
 	return baseLogger.checkErr(err).log(lvlFatal, "", err, nil, fields)
+}
+
+// Fatalec is the same as Logec(Level.Fatal, err, errorCode, args...).
+// Read more: Entry.Logec.
+func Fatalec(err error, errorCode ec.EC, args ...interface{}) ec.ECXT {
+
+	return baseLogger.checkErr(err).logec(lvlFatal, err, errorCode, args, nil)
+}
+
+// FatalecStrict is the same as LogecStrict(Level.Fatal, err, errorCode, fields...).
+// Read more: Entry.LogecStrict.
+func FatalecStrict(err error, errorCode ec.EC, fields ...Field) ec.ECXT {
+
+	return baseLogger.checkErr(err).logec(lvlFatal, err, errorCode, nil, fields)
 }
