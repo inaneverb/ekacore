@@ -90,8 +90,9 @@ type Entry struct {
 
 	Fields []Field
 
-	StackTrace      sys.StackTrace
-	skipStackFrames int
+	StackTrace sys.StackTrace
+	ssf        int // skip stack frames
+	ssfp       int // skip stack frames private ("3" by default)
 
 	beforeWrite BeforeWriteCallback
 	logArgs     []interface{}
@@ -181,6 +182,9 @@ func (e *Entry) reset() (this *Entry) {
 
 	e.StackTrace = nil
 
+	e.ssf = 0
+	e.ssfp = 3
+
 	for i, n := 0, len(e.logArgs); i < n; i++ {
 		e.logArgs[i] = nil
 	}
@@ -248,7 +252,7 @@ func (e *Entry) forceStacktrace(ignoreFrames int) (this *Entry) {
 
 	e.setFlag(bEntryFlagAutoGenerateCaller)
 	e.Package, e.Func, e.Class = "", "", ""
-	e.skipStackFrames = ignoreFrames
+	e.ssf = ignoreFrames
 	return e
 }
 
@@ -258,7 +262,7 @@ func (e *Entry) addStacktrace() (this *Entry) {
 
 	if !e.testFlag(bEntryFlagDisableStacktrace) &&
 		(e.StackTrace == nil || e.testFlag(bEntryFlagOverwriteStacktrace)) {
-		e.StackTrace = sys.GetStackTrace(e.skipStackFrames+3, -1)
+		e.StackTrace = sys.GetStackTrace(e.ssf+e.ssfp, -1)
 	}
 
 	if !e.testFlag(bEntryFlagAutoGenerateCaller) {
@@ -267,7 +271,7 @@ func (e *Entry) addStacktrace() (this *Entry) {
 
 	stacktrace := e.StackTrace
 	if len(stacktrace) == 0 {
-		if stacktrace = sys.GetStackTrace(e.skipStackFrames+3, 1); len(stacktrace) == 0 {
+		if stacktrace = sys.GetStackTrace(e.ssf+e.ssfp, 1); len(stacktrace) == 0 {
 			// TODO: Internal error, can't get a stacktrace => can't get a caller info
 			return e
 		}
