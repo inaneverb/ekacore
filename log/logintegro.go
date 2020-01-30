@@ -231,6 +231,17 @@ func SkipStackFramesThis(n int) (defaultLogger *Logger) {
 	return
 }
 
+// If returns package logger if 'cond' == 'true', otherwise nil. Thus it's useful
+// to chaining methods - next methods in chaining will be done only if 'cond' == true.
+func If(cond bool) (defaultLogger *Logger) {
+
+	if cond {
+		return baseLogger
+	} else {
+		return nil
+	}
+}
+
 // allocLogger just allocates the memory to the new Logger object and then
 // corrects the all internal pointers.
 //func allocLogger() *Logger {

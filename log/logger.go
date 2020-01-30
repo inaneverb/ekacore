@@ -170,3 +170,14 @@ func (l *Logger) SkipStackFrames(n int) (copy *Logger) {
 	}
 	return l.derive(nil).entry.forceStacktrace(n).l
 }
+
+// If returns current logger if 'cond' == 'true', otherwise nil. Thus it's useful
+// to chaining methods - next methods in chaining will be done only if 'cond' == true.
+func (l *Logger) If(cond bool) *Logger {
+
+	if cond {
+		return l
+	} else {
+		return nil
+	}
+}

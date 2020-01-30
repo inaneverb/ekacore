@@ -28,6 +28,7 @@ import (
 //
 // TODO: Supporting Group by finishers
 // TODO: Supporting Options by finishers
+// TODO: Logger.Logec, Logger.LogecStrict support printf string (not only error)
 // -----
 
 // Log writes log message with desired 'level',
