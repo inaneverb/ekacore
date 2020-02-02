@@ -12,6 +12,8 @@ import (
 	"github.com/qioalice/gext/death"
 	"github.com/qioalice/gext/ec"
 	"github.com/qioalice/gext/errors"
+
+	"github.com/modern-go/reflect2"
 )
 
 // canContinue reports whether l is valid (not nil and has valid core and entry).
@@ -41,7 +43,7 @@ func (l *Logger) levelEnabled(lvl Level) bool {
 // (w/o panicking) if Logger's receiver is nil.
 func (l *Logger) checkErr(err error) (this *Logger) {
 
-	if err == nil {
+	if reflect2.IsNil(err) {
 		return nil
 	}
 	return l
