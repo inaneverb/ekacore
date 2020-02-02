@@ -209,6 +209,9 @@ func (e *Entry) clone() *Entry {
 	clonedEntry.Func = e.Func
 	clonedEntry.Class = e.Class
 
+	clonedEntry.ssf = e.ssf
+	clonedEntry.ssfp = e.ssfp
+
 	clonedEntry.beforeWrite = e.beforeWrite
 
 	// There is no necessary to zero Time, Level, Message fields
