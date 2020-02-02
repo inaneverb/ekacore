@@ -64,7 +64,8 @@ func getStackFramePoints(skip, count int) (framePoints []uintptr) {
 		}
 	}
 
-	return framePoints[:framePointsLen]
+	framePoints = framePoints[:framePointsLen]
+	return framePoints[:len(framePoints)-4] // ignore Go internal functions
 }
 
 // GetStackTrace returns the stack trace as StackFrame object's slice,
