@@ -40,7 +40,7 @@ func (t Type) new(message string, args []interface{}) *Error {
 	}
 
 	if len(args) != 0 {
-		e.Message = fmt.Sprintf(e.Message, args...)
+		e.Message = fmt.Sprintf(message, args...)
 	} else {
 		e.Message = message
 	}
