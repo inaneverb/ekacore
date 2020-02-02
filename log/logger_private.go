@@ -129,7 +129,9 @@ func (l *Logger) log(lvl Level, format string, err error, args []interface{}, ex
 	case format == "" && err != nil:
 
 		if gextErr := errors.Unwrap(err); gextErr != nil {
-			workTempEntry.StackTrace = gextErr.StackTrace
+			if len(gextErr.StackTrace) != 0 {
+				workTempEntry.StackTrace = gextErr.StackTrace
+			}
 		}
 		format = err.Error()
 
