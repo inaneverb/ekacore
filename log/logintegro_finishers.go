@@ -250,7 +250,7 @@ func Infow(msg string, fields ...Field) *Logger {
 // Read more: Entry.Loge.
 func Infoe(err error, args ...interface{}) *Logger {
 
-	return baseLogger.log(lvlInfo, "", err, args, nil)
+	return baseLogger.checkErr(err).log(lvlInfo, "", err, args, nil)
 }
 
 // InfoeStrict is the same as LogeStrict(Level.Info, err, fields...).
@@ -313,7 +313,7 @@ func Warnw(msg string, fields ...Field) *Logger {
 // Read more: Entry.Loge.
 func Warne(err error, args ...interface{}) *Logger {
 
-	return baseLogger.log(lvlWarning, "", err, args, nil)
+	return baseLogger.checkErr(err).log(lvlWarning, "", err, args, nil)
 }
 
 // WarneStrict is the same as LogeStrict(Level.Warn, err, fields...).
@@ -376,7 +376,7 @@ func Errorw(msg string, fields ...Field) *Logger {
 // Read more: Entry.Loge.
 func Errore(err error, args ...interface{}) *Logger {
 
-	return baseLogger.log(lvlError, "", err, args, nil)
+	return baseLogger.checkErr(err).log(lvlError, "", err, args, nil)
 }
 
 // ErroreStrict is the same as LogeStrict(Level.Error, err, fields...).
@@ -445,7 +445,7 @@ func Fatalw(msg string, fields ...Field) *Logger {
 // Read more: Entry.Loge.
 func Fatale(err error, args ...interface{}) *Logger {
 
-	return baseLogger.log(lvlFatal, "", err, args, nil)
+	return baseLogger.checkErr(err).log(lvlFatal, "", err, args, nil)
 }
 
 // FataleStrict is the same as LogeStrict(Level.Fatal, err, fields...),

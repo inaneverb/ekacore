@@ -29,6 +29,7 @@ import (
 // TODO: Supporting Group by finishers
 // TODO: Supporting Options by finishers
 // TODO: Logger.Logec, Logger.LogecStrict support printf string (not only error)
+// TODO: IfErr func implement (the same as If but with err and attach it)
 // -----
 
 // Log writes log message with desired 'level',
@@ -241,7 +242,7 @@ func (l *Logger) Infow(msg string, fields ...Field) (this *Logger) {
 // Read more: Entry.Loge.
 func (l *Logger) Infoe(err error, args ...interface{}) (this *Logger) {
 
-	return l.log(lvlInfo, "", err, args, nil)
+	return l.checkErr(err).log(lvlInfo, "", err, args, nil)
 }
 
 // InfoeStrict is the same as LogeStrict(Level.Info, err, fields...).
@@ -304,7 +305,7 @@ func (l *Logger) Warnw(msg string, fields ...Field) (this *Logger) {
 // Read more: Entry.Loge.
 func (l *Logger) Warne(err error, args ...interface{}) (this *Logger) {
 
-	return l.log(lvlWarning, "", err, args, nil)
+	return l.checkErr(err).log(lvlWarning, "", err, args, nil)
 }
 
 // WarneStrict is the same as LogeStrict(Level.Warn, err, fields...).
@@ -367,7 +368,7 @@ func (l *Logger) Errorw(msg string, fields ...Field) (this *Logger) {
 // Read more: Entry.Loge.
 func (l *Logger) Errore(err error, args ...interface{}) (this *Logger) {
 
-	return l.log(lvlError, "", err, args, nil)
+	return l.checkErr(err).log(lvlError, "", err, args, nil)
 }
 
 // ErroreStrict is the same as LogeStrict(Level.Error, err, fields...).
@@ -436,7 +437,7 @@ func (l *Logger) Fatalw(msg string, fields ...Field) (this *Logger) {
 // Read more: Entry.Loge.
 func (l *Logger) Fatale(err error, args ...interface{}) (this *Logger) {
 
-	return l.log(lvlFatal, "", err, args, nil)
+	return l.checkErr(err).log(lvlFatal, "", err, args, nil)
 }
 
 // FataleStrict is the same as LogeStrict(Level.Fatal, err, fields...),
