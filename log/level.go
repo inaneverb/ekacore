@@ -61,7 +61,7 @@ func init() {
 	RegisterLevelName(lvlDebug, "Debug")
 	RegisterLevelName(lvlInfo, "Info")
 	RegisterLevelName(lvlWarning, "Warning")
-	RegisterLevelName(lvlInfo, "Error")
+	RegisterLevelName(lvlError, "Error")
 	RegisterLevelName(lvlFatal, "Fatal")
 }
 
