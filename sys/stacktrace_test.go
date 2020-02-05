@@ -5,8 +5,11 @@
 
 package sys
 
-import "testing"
-import "github.com/stretchr/testify/assert"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 // benchGetStackTraceCommonDepth aux bench func that starts
 // getStackTrace bench with specified 'depth' arg.

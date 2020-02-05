@@ -5,7 +5,10 @@
 
 package sys
 
-import "runtime"
+import (
+	"runtime"
+	"strings"
+)
 
 // StackTrace is the slice of StackFrames, nothing more.
 // Each stack level described separately.
@@ -102,4 +105,22 @@ func GetStackTrace(skip, depth int) (stacktrace StackTrace) {
 	// but frameIterator can provide less 'runtime.Frame' objects
 	// than we requested -> should fix 'frames' len w/o reallocate
 	return stacktrace[:i]
+}
+
+// ExcludeInternal returns stacktrace based on current but with excluded all
+// Golang internal functions such as runtime.doInit, runtime.main, etc.
+func (s StackTrace) ExcludeInternal() StackTrace {
+
+	// because some internal golang functions (such as runtime.gopanic)
+	// could be embedded to user's function stacktrace's part,
+	// we can't just cut and drop last part of stacktrace when we found
+	// a function with a "runtime." prefix from the beginning to end.
+	// instead, we starting from the end and generating "ignore list" -
+	// a special list of stack frames that won't be included to the result set.
+
+	idx := len(s) - 1
+	for idx > 0 && strings.HasPrefix(s[idx].Function, "runtime.") {
+		idx--
+	}
+	return s[:idx+1]
 }
