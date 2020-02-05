@@ -265,7 +265,7 @@ func (e *Entry) addStacktrace() (this *Entry) {
 
 	if !e.testFlag(bEntryFlagDisableStacktrace) &&
 		(e.StackTrace == nil || e.testFlag(bEntryFlagOverwriteStacktrace)) {
-		e.StackTrace = sys.GetStackTrace(e.ssf+e.ssfp, -1)
+		e.StackTrace = sys.GetStackTrace(e.ssf+e.ssfp, -1).ExcludeInternal()
 	}
 
 	if !e.testFlag(bEntryFlagAutoGenerateCaller) {
@@ -274,7 +274,8 @@ func (e *Entry) addStacktrace() (this *Entry) {
 
 	stacktrace := e.StackTrace
 	if len(stacktrace) == 0 {
-		if stacktrace = sys.GetStackTrace(e.ssf+e.ssfp, 1); len(stacktrace) == 0 {
+		stacktrace = sys.GetStackTrace(e.ssf+e.ssfp, 1)
+		if len(stacktrace) == 0 {
 			// TODO: Internal error, can't get a stacktrace => can't get a caller info
 			return e
 		}
