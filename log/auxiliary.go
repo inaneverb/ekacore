@@ -6,6 +6,7 @@
 package log
 
 import (
+	"path/filepath"
 	"strconv"
 
 	"github.com/qioalice/gext/sys"
@@ -143,33 +144,11 @@ func implicitUnnamedFieldName(idx int) string {
 	}
 }
 
-// formCaller forms one string that will contain passed args with following
-// format (if arg is not empty).
-func formCaller(packageName, funcName, className string) string {
-
-	if funcName != "" || className != "" {
-		// there is no need 'methodName != ""' check, because
-		// setMethodName does not allow to set package name if class name is empty.
-		packageName += "."
-	}
-
-	switch {
-
-	case className != "" && funcName != "":
-		return packageName + className + "." + funcName
-
-	case funcName != "":
-		return packageName + funcName
-
-	case className != "":
-		return packageName + className + ".<?>"
-
-	default:
-		return packageName
-	}
-}
-
 // formCaller2 forms and returns a string by stack frame that contains caller's info.
 func formCaller2(frame sys.StackFrame) string {
-	return frame.Function
+
+	_, fn := filepath.Split(frame.Function)
+	_, file := filepath.Split(frame.File)
+
+	return fn + " (" + file + ":" + strconv.Itoa(frame.Line) + ")"
 }

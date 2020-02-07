@@ -77,10 +77,7 @@ type Entry struct {
 	// todo: remove flag mask
 	flagMask entryFlags
 
-	Package string
-	Func    string
-	Class   string
-	Method  string
+	Caller string
 
 	Time time.Time
 
@@ -167,12 +164,11 @@ func (e *Entry) reset() (this *Entry) {
 
 	e.l = nil
 
-	e.flagMask = 0
+	e.flagMask = 0 |
+		bEntryFlagAutoGenerateCaller |
+		bEntryFlagAllowUnnamedNil
 
-	e.Package = ""
-	e.Func = ""
-	e.Class = ""
-	e.Func = ""
+	e.Caller = ""
 
 	for _, field := range e.Fields {
 		field.reset()
@@ -205,10 +201,6 @@ func (e *Entry) clone() *Entry {
 
 	clonedEntry.flagMask = e.flagMask
 
-	clonedEntry.Package = e.Package
-	clonedEntry.Func = e.Func
-	clonedEntry.Class = e.Class
-
 	clonedEntry.ssf = e.ssf
 	clonedEntry.ssfp = e.ssfp
 
@@ -220,41 +212,9 @@ func (e *Entry) clone() *Entry {
 	return clonedEntry
 }
 
-func (e *Entry) setPackageName(packageName string) (this *Entry) {
-
-	e.resetFlag(bEntryFlagAutoGenerateCaller)
-	e.Func, e.Class = "", ""
-	e.Package = packageName
-	return e
-}
-
-func (e *Entry) setFuncName(funcName string) (this *Entry) {
-
-	e.resetFlag(bEntryFlagAutoGenerateCaller)
-	e.Class = ""
-	e.Func = funcName
-	return e
-}
-
-func (e *Entry) setClassName(className string) (this *Entry) {
-
-	e.resetFlag(bEntryFlagAutoGenerateCaller)
-	e.Func = ""
-	e.Class = className
-	return e
-}
-
-func (e *Entry) setMethodName(methodName string) (this *Entry) {
-
-	e.resetFlag(bEntryFlagAutoGenerateCaller)
-	e.Method = methodName
-	return e
-}
-
 func (e *Entry) forceStacktrace(ignoreFrames int) (this *Entry) {
 
 	e.setFlag(bEntryFlagAutoGenerateCaller)
-	e.Package, e.Func, e.Class = "", "", ""
 	e.ssf = ignoreFrames
 	return e
 }
@@ -281,7 +241,7 @@ func (e *Entry) addStacktrace() (this *Entry) {
 		}
 	}
 
-	e.Func = formCaller2(stacktrace[0])
+	e.Caller = formCaller2(stacktrace[0])
 	return e
 }
 

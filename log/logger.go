@@ -96,49 +96,6 @@ func (l *Logger) Apply(options ...interface{}) (copy *Logger) {
 	return l.apply(options)
 }
 
-// Package sets current Logger's copy package name.
-// Zeroes Logger's function name or Logger's class and method names.
-// Disables caller auto-generation.
-func (l *Logger) Package(packageName string) (copy *Logger) {
-
-	if packageName == "" || !l.canContinue() {
-		return l
-	}
-	return l.derive(nil).entry.setPackageName(packageName).l
-}
-
-// Func sets current Logger's copy function name.
-// Zeroes Logger's class and method names. Disables auto generating caller.
-func (l *Logger) Func(funcName string) (copy *Logger) {
-
-	if funcName == "" || !l.canContinue() {
-		return l
-	}
-	return l.derive(nil).entry.setFuncName(funcName).l
-}
-
-// Class sets current Logger's copy class name.
-// Zeroes logger's function and method names. Disables auto generating caller.
-func (l *Logger) Class(className string) (copy *Logger) {
-
-	if className == "" || !l.canContinue() {
-		return l
-	}
-	return l.derive(nil).entry.setClassName(className).l
-}
-
-// Method sets current Logger's copy method name.
-// Zeroes logger's function name. Disables auto generating caller.
-//
-// If class name isn't set, there is the same behaviour as Func.
-func (l *Logger) Method(methodName string) (copy *Logger) {
-
-	if methodName == "" || !l.canContinue() {
-		return l
-	}
-	return l.derive(nil).entry.setMethodName(methodName).l
-}
-
 // With adds fields to the current Logger's copy.
 //
 // You can pass both of explicit or implicit fields. Even both of named/unnamed
