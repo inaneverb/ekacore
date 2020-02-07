@@ -167,7 +167,9 @@ func (e *Entry) reset() (this *Entry) {
 
 	e.l = nil
 
-	e.flagMask = 0
+	e.flagMask = 0 |
+		bEntryFlagAutoGenerateCaller |
+		bEntryFlagAllowUnnamedNil
 
 	e.Package = ""
 	e.Func = ""

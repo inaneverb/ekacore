@@ -101,10 +101,10 @@ func (je *JSONEncoder) encodeBase(e *Entry, s *jsoniter.Stream) {
 	s.WriteObjectField("message")
 	s.WriteString(e.Message)
 
-	if caller := formCaller(e.Package, e.Func, e.Class); caller != "" {
+	if len(e.StackTrace) > 0 {
 		s.WriteMore()
 		s.WriteObjectField("caller")
-		s.WriteString(caller)
+		s.WriteString(formCaller2(e.StackTrace[0]))
 	}
 }
 
