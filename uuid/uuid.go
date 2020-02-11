@@ -128,6 +128,27 @@ func (u UUID) String() string {
 	return string(buf)
 }
 
+// Returns canonical string representation of UUID with double quotes:
+// "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx".
+func (u UUID) jsonMarshal() []byte {
+
+	buf := make([]byte, 38)
+	buf[0] = '"'
+
+	hex.Encode(buf[1:9], u[0:4])
+	buf[9] = '-'
+	hex.Encode(buf[10:14], u[4:6])
+	buf[14] = '-'
+	hex.Encode(buf[15:19], u[6:8])
+	buf[19] = '-'
+	hex.Encode(buf[20:24], u[8:10])
+	buf[24] = '-'
+	hex.Encode(buf[25:37], u[10:])
+	buf[37] = '"'
+
+	return buf
+}
+
 // SetVersion sets version bits.
 func (u *UUID) SetVersion(v byte) {
 	u[6] = (u[6] & 0x0f) | (v << 4)

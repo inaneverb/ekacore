@@ -27,6 +27,8 @@ import (
 	"fmt"
 )
 
+var jsonNull = []byte{'n', 'u', 'l', 'l'}
+
 // FromBytes returns UUID converted from raw byte slice input.
 // It will return error if the slice isn't 16 bytes long.
 func FromBytes(input []byte) (u UUID, err error) {
@@ -106,6 +108,23 @@ func (u *UUID) UnmarshalText(text []byte) (err error) {
 	default:
 		return fmt.Errorf("uuid: incorrect UUID length: %s", text)
 	}
+}
+
+//
+func (u UUID) MarshalJSON() ([]byte, error) {
+
+	if u == Nil {
+		return jsonNull, nil
+	}
+	return u.jsonMarshal(), nil
+}
+
+func (u *UUID) UnmarshalJSON(b []byte) error {
+
+	if len(b) == 0 || bytes.Compare(b, jsonNull) == 0 {
+		return nil
+	}
+	return u.UnmarshalText(b)
 }
 
 // decodeCanonical decodes UUID string in format
