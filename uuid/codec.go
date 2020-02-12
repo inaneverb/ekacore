@@ -124,7 +124,12 @@ func (u *UUID) UnmarshalJSON(b []byte) error {
 	if len(b) == 0 || bytes.Compare(b, jsonNull) == 0 {
 		return nil
 	}
-	return u.UnmarshalText(b)
+	// JSON contains quotes (") because it's raw JSON data and JSON strings
+	// has quotes
+	if len(b) < 2 {
+		return fmt.Errorf("uuid: incorrect UUID length: %s", string(b))
+	}
+	return u.UnmarshalText(b[1 : len(b)-1])
 }
 
 // decodeCanonical decodes UUID string in format
