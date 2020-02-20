@@ -66,7 +66,7 @@ func ECStr(ec EC) (ecs string) {
 func (ec EC) ECXT() (ret ECXT) {
 
 	if ret.EC = ec; ret.EC != EOK {
-		ret.UUID = uuid.Must(uuid.NewV4())
+		ret.UUID = uuid.NewV4()
 	}
 	return
 }
@@ -78,7 +78,7 @@ func (ec EC) ECXTNil() ECXT {
 
 //
 func (ec EC) ECXTForce() ECXT {
-	return ECXT{EC: ec, UUID: uuid.Must(uuid.NewV4())}
+	return ECXT{EC: ec, UUID: uuid.NewV4()}
 }
 
 //
