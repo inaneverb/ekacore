@@ -177,11 +177,15 @@ exit:
 // instead just returning Logger object.
 func (l *Logger) logec(lvl Level, err error, errorCode ec.EC, args []interface{}, explicitFields []Field) (ret ec.ECXT) {
 
-	if !(l.canContinue() && l.levelEnabled(lvl)) {
+	if !l.canContinue() {
 		return ec.EOK.ECXT()
 	}
 
 	ret = errorCode.ECXTForce()
+	if !l.levelEnabled(lvl) {
+		return
+	}
+
 	l.entry.ssfp++
 
 	switch lA, lEF := len(args), len(explicitFields); {

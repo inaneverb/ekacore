@@ -526,11 +526,11 @@ func (e *Entry) addExplicitField(field interface{}, fieldType reflect2.Type) {
 	var explicitFieldPtr *Field
 
 	if fieldType == reflectTypeFieldPtr {
-		fieldType.Set(&explicitFieldPtr, &field)
+		explicitFieldPtr = field.(*Field)
 
 	} else {
 		explicitFieldPtr = new(Field)
-		fieldType.Set(explicitFieldPtr, &field)
+		*explicitFieldPtr = field.(Field)
 	}
 
 	if explicitFieldPtr != nil {
