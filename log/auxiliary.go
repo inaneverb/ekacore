@@ -144,15 +144,6 @@ func implicitUnnamedFieldName(idx int) string {
 	}
 }
 
-// formCaller2 forms and returns a string by stack frame that contains caller's info.
-func formCaller2(frame sys.StackFrame) string {
-
-	_, fn := filepath.Split(frame.Function)
-	_, file := filepath.Split(frame.File)
-
-	return fn + " (" + file + ":" + strconv.Itoa(frame.Line) + ")"
-}
-
 // bufgr is buffer grow - a function that takes some buffer 'buf',
 // and checks whether it has at least 'required' free bytes. Returns 'buf' if it so.
 // Otherwise creates a new buffer, with X as a new capacity, where:
