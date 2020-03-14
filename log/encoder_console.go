@@ -6,7 +6,6 @@
 package log
 
 import (
-	"github.com/qioalice/gext/sys"
 	"image/color"
 	"math"
 	"path/filepath"
@@ -17,6 +16,7 @@ import (
 
 	"github.com/qioalice/gext/dangerous"
 	"github.com/qioalice/gext/internal/xtermcolor"
+	"github.com/qioalice/gext/sys"
 )
 
 // TODO: Update doc, comments
@@ -704,6 +704,40 @@ func (ce *ConsoleEncoder) rvJustText(text string) (predictedLen int) {
 //
 func (ce *ConsoleEncoder) encode(e *Entry) []byte {
 
+	// TODO: Reuse allocated buffers
+
+	buf := make([]byte, 0, ce.minimumBufferLen)
+
+	for _, part := range ce.formatParts {
+		switch part.typ.Type() {
+
+		case cefptVerbJustText:
+			buf = ce.encJustText(part, buf)
+
+		case cefptVerbColor:
+			buf = ce.encColor(part, buf)
+
+		case cefptVerbBody:
+			buf = ce.encBody(e, buf)
+
+		case cefptVerbTime:
+			buf = ce.encTime(e, part, buf)
+
+		case cefptVerbLevelD, cefptVerbLevelS, cefptVerbLevelSS:
+			buf = ce.encLevel(e, part, buf)
+
+		case cefptVerbStack:
+			buf = ce.encStacktrace(e, part, buf)
+
+		case cefptVerbFields:
+			buf = ce.encFields(e, part, buf)
+
+		case cefptVerbCaller:
+			buf = ce.encCaller(e, part, buf)
+		}
+	}
+
+	return buf
 }
 
 //
