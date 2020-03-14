@@ -8,6 +8,8 @@ package log
 import (
 	"fmt"
 	"math"
+	"path/filepath"
+	"strconv"
 	"time"
 	"unsafe"
 
@@ -101,10 +103,16 @@ func (je *JSONEncoder) encodeBase(e *Entry, s *jsoniter.Stream) {
 	s.WriteObjectField("message")
 	s.WriteString(e.Message)
 
-	if e.Caller != "" {
+	if e.Caller.PC != 0 {
 		s.WriteMore()
 		s.WriteObjectField("caller")
-		s.WriteString(e.Caller)
+
+		_, fn := filepath.Split(e.Caller.Function)
+		_, file := filepath.Split(e.Caller.File)
+
+		caller := fn + " (" + file + ":" + strconv.Itoa(e.Caller.Line) + ")"
+
+		s.WriteString(caller)
 	}
 }
 

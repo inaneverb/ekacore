@@ -143,12 +143,3 @@ func implicitUnnamedFieldName(idx int) string {
 		return ""
 	}
 }
-
-// formCaller2 forms and returns a string by stack frame that contains caller's info.
-func formCaller2(frame sys.StackFrame) string {
-
-	_, fn := filepath.Split(frame.Function)
-	_, file := filepath.Split(frame.File)
-
-	return fn + " (" + file + ":" + strconv.Itoa(frame.Line) + ")"
-}

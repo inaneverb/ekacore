@@ -77,7 +77,7 @@ type Entry struct {
 	// todo: remove flag mask
 	flagMask entryFlags
 
-	Caller string
+	Caller sys.StackFrame
 
 	Time time.Time
 
@@ -168,7 +168,7 @@ func (e *Entry) reset() (this *Entry) {
 		bEntryFlagAutoGenerateCaller |
 		bEntryFlagAllowUnnamedNil
 
-	e.Caller = ""
+	e.Caller = sys.StackFrame{}
 
 	for _, field := range e.Fields {
 		field.reset()
@@ -241,7 +241,7 @@ func (e *Entry) addStacktrace() (this *Entry) {
 		}
 	}
 
-	e.Caller = formCaller2(stacktrace[0])
+	e.Caller = stacktrace[0]
 	return e
 }
 
