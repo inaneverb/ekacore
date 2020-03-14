@@ -6,13 +6,17 @@
 package log
 
 import (
+	"image/color"
 	"strconv"
 	"strings"
 	"time"
 	"unsafe"
 
 	"github.com/qioalice/gext/dangerous"
+	"github.com/qioalice/gext/internal/xtermcolor"
 )
+
+// TODO: Update doc, comments
 
 //
 type ConsoleEncoder struct {
@@ -59,6 +63,25 @@ type formatPart struct {
 //
 type formatPartType uint16
 
+//
+type colorBuilder struct {
+
+	// https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_parameters
+
+	// [0..255] - xterm256 ANSI SGR color code
+	// -1 if 'do reset color to terminal default' ( "\033[39m" or "\033[49m" )
+	// -2 if 'not set, use those one that was used' (not included to SGR)
+	bg, fg int16
+
+	// 0 - 'not set, use those one that was used' (not included to SGR)
+	// 1 - enable (included to SGR (01/03/04))
+	// -1 - disable (included to SGR (22/23/24))
+	bold, italic, underline uint8
+
+	// Yes, there is no support blanking text.
+	// I think it's disgusting. It will never be added.
+}
+
 // [c]onsole [e]ncoder [f]ormat [p]art [t]ype (cefpt) predefined constants.
 const (
 	cefptMaskType formatPartType = 0x00FF
@@ -80,7 +103,7 @@ const (
 const (
 	ceVerbStartIndicator rune = '{'
 	ceVerbEndIndicator   rune = '}'
-	ceVerbSeparator      byte = '|'
+	ceVerbSeparator      byte = '/'
 )
 
 // [c]onsole [e]ncoder [v]erb [t]ype values, that are used in format string
@@ -147,7 +170,46 @@ func (ce *ConsoleEncoder) doBuild() *ConsoleEncoder {
 	for rest := ce.format; rest != ""; rest = ce.parseFirstVerb(rest) {
 	}
 
-	// TODO: Optimization: Unite paired "just text" verbs
+	return ce.uniteJustTextVerbs()
+}
+
+// uniteJustTextVerbs just unites "just text" verbs in 'ce.formatParts'
+// that follows each other. It could be occur when something with bad verbs
+// were included in 'ce.format'.
+func (ce *ConsoleEncoder) uniteJustTextVerbs() *ConsoleEncoder {
+
+	var (
+		// idx of "just text" verb next "just text" verbs will be united with
+		justTextVerbIdx = -1
+		// new out slice of verbs
+		newFormatParts = make([]formatPart, 0, len(ce.formatParts))
+	)
+
+	for idx, verb := range ce.formatParts {
+		switch verbTyp := verb.typ.Type(); {
+
+		case justTextVerbIdx == -1 && verbTyp == cefptVerbJustText:
+			justTextVerbIdx = idx
+
+		case justTextVerbIdx != -1 && verbTyp == cefptVerbJustText:
+			ce.formatParts[justTextVerbIdx].value += verb.value
+
+		case justTextVerbIdx != -1 && verbTyp != cefptVerbJustText:
+			newFormatParts = append(newFormatParts, ce.formatParts[justTextVerbIdx])
+			justTextVerbIdx = -1
+			fallthrough
+
+		case justTextVerbIdx == -1 && verbTyp != cefptVerbJustText:
+			newFormatParts = append(newFormatParts, verb)
+		}
+	}
+
+	// it was definitely the last "just text" verb we should add
+	if justTextVerbIdx != -1 {
+		newFormatParts = append(newFormatParts, ce.formatParts[justTextVerbIdx])
+	}
+
+	ce.formatParts = newFormatParts[:]
 	return ce
 }
 
@@ -205,7 +267,7 @@ func (ce *ConsoleEncoder) parseFirstVerb(format string) (rest string) {
 }
 
 // rv (resolve verb) tries to determine what kind of complex verb 'verb' is,
-// creates related 'formatPart', fills it and adds to ce.formatParts.
+// creates related 'formatPart', fills it and adds to 'ce.formatParts'.
 // Returned predicted minimum length of bytes that required in buffer to store
 // formatted verb.
 func (ce *ConsoleEncoder) rv(verb string) (predictedLen int) {
@@ -221,7 +283,8 @@ func (ce *ConsoleEncoder) rv(verb string) (predictedLen int) {
 		return false
 	}
 
-	// it guarantees that "verb" starts from "{{"
+	// it guarantees that "verb" starts from "{{",
+	// so we can remove leading "{{" and trailing "}}"
 	switch verb = verb[2 : len(verb)-2]; {
 
 	case hpm(verb, cevtCaller):
@@ -259,14 +322,17 @@ func (ce *ConsoleEncoder) rvLevel(verb string) (predictedLen int) {
 
 	if idx := strings.IndexByte(verb, ceVerbSeparator); idx != -1 {
 		switch verb[idx+1:] {
+
 		case "d":
 			typ = cefptVerbLevelD
 			predictedLen = 3
+
 		case "s":
 			typ = cefptVerbLevelS
 			predictedLen = 3
+
 		case "ss":
-			typ = cefptVerbLevelS
+			typ = cefptVerbLevelSS
 			// guess it's enough to store any logger.Level full string
 			// representation
 			predictedLen = 16
@@ -304,9 +370,266 @@ func (ce *ConsoleEncoder) rvTime(verb string) (predictedLen int) {
 }
 
 //
+func (cb *colorBuilder) init() {
+
+	cb.bg, cb.fg = -2, -2
+	cb.bold, cb.italic, cb.underline = 0, 0, 0
+}
+
+//
+func (cb *colorBuilder) parseEntity(verbPart string) (parsed bool) {
+
+	switch verbPart = strings.ToUpper(strings.TrimSpace(verbPart)); verbPart {
+	// --- REMINDER! 1ST ARGUMENT IS ALWAYS UPPER CASED! ---
+
+	case "":
+		return true
+
+	case "BOLD", "B":
+		cb.bold = 1
+		return true
+
+	case "NOBOLD", "NOB":
+		cb.bold = -1
+		return true
+
+	case "ITALIC", "I":
+		cb.italic = 1
+		return true
+
+	case "NOITALIC", "NOI":
+		cb.italic = -1
+		return true
+
+	case "UNDERLINE", "U":
+		cb.underline = 1
+		return true
+
+	case "NOUNDERLINE", "NOU":
+		cb.underline = -1
+		return true
+	}
+
+	// okay, it's color, but which one? what format? RGB? HEX? RGBA? (lol, wtf?)
+	// TODO: Add supporting of color's literals like "red", "pink", "blue", etc.
+
+	// what's kind of color? default is fg
+	var colorDestination *int16
+	switch {
+
+	case strings.HasPrefix(verbPart, "BG"):
+		colorDestination = &cb.bg
+		verbPart = strings.TrimSpace(verbPart[2:])
+
+	case strings.HasPrefix(verbPart, "FG"): // already defaulted
+		colorDestination = &cb.fg
+		verbPart = strings.TrimSpace(verbPart[2:])
+
+	default:
+		colorDestination = &cb.fg
+	}
+
+	// handle special easy cases cases
+	switch {
+	case len(verbPart) == 0:
+		// rare case, wasn't more chars after "bg" or "fg"
+		return false
+
+	case verbPart == "-1":
+		// color reset (to default in term)
+		*colorDestination = -1
+		return
+
+	case verbPart[0] == '#':
+		// easy case if it's explicit hex
+		return cb.parseHexTo(verbPart[1:], colorDestination)
+	}
+
+	// okay, maybe easy rgb/rgba?
+	switch {
+	case strings.HasPrefix(verbPart, "RGB"):
+		return cb.parseRgbTo(verbPart[3:], colorDestination)
+
+	case strings.HasPrefix(verbPart, "RGBA"):
+		return cb.parseRgbTo(verbPart[4:], colorDestination)
+
+	case strings.HasPrefix(verbPart, "RGB(") && verbPart[len(verbPart)-1] == ')':
+		return cb.parseRgbTo(verbPart[4:len(verbPart)-1], colorDestination)
+
+	case strings.HasPrefix(verbPart, "RGBA(") && verbPart[len(verbPart)-1] == ')':
+		return cb.parseRgbTo(verbPart[4:len(verbPart)-1], colorDestination)
+	}
+
+	// okay maybe rgb by comma?
+	if commas := strings.Count(verbPart, ","); commas >= 3 && commas <= 4 {
+		return cb.parseRgbTo(verbPart, colorDestination)
+	}
+
+	// believe it's hex
+	return cb.parseHexTo(verbPart, colorDestination)
+}
+
+//
+func (cb *colorBuilder) parseHexTo(verbPart string, destination *int16) (parsed bool) {
+	// --- REMINDER! 1ST ARGUMENT IS ALWAYS UPPER CASED! ---
+
+	switch verbPart = strings.TrimSpace(verbPart); len(verbPart) {
+	case 4:
+		// short case with alpha, ignore alpha, extend to 6
+		verbPart = verbPart[:3]
+		fallthrough
+	case 3:
+		// short case, extend to 6
+		var hexParts [6]uint8
+		hexParts[0], hexParts[1] = verbPart[0], verbPart[0]
+		hexParts[2], hexParts[3] = verbPart[1], verbPart[1]
+		hexParts[4], hexParts[5] = verbPart[2], verbPart[2]
+		verbPart = string(hexParts[:])
+	case 8:
+		// with alpha, ignore it
+		verbPart = verbPart[:6]
+	case 6:
+		// default HEX case, handle later
+	default:
+		return false
+	}
+
+	termColor, err := xtermcolor.FromHexStr(verbPart)
+	*destination = int16(termColor)
+
+	return err == nil
+}
+
+//
+func (cb *colorBuilder) parseRgbTo(verbPart string, destination *int16) (parsed bool) {
+	// --- REMINDER! 1ST ARGUMENT IS ALWAYS UPPER CASED! ---
+
+	rgbParts := strings.Split(strings.TrimSpace(verbPart), ",")
+	if l := len(rgbParts); l < 3 && l > 4 {
+		return false
+	}
+
+	var (
+		r, g, b          int
+		err1, err2, err3 error
+	)
+
+	r, err1 = strconv.Atoi(strings.TrimSpace(rgbParts[0]))
+	g, err2 = strconv.Atoi(strings.TrimSpace(rgbParts[1]))
+	b, err3 = strconv.Atoi(strings.TrimSpace(rgbParts[2]))
+
+	if err1 != nil || err2 != nil || err3 != nil ||
+		r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255 {
+		return false
+	}
+
+	rgb := color.RGBA{R: uint8(r), G: uint8(g), B: uint8(b), A: 255}
+	*destination = int16(xtermcolor.FromColor(rgb))
+
+	return true
+}
+
+//
+func (cb *colorBuilder) encode() string {
+
+	// TODO: Here is too much Golang string mem reallocations
+	//  maybe use []byte instead of string with only one allocation ?
+
+	// https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_parameters
+	out := "\033["
+
+	switch cb.bold {
+	case 1:
+		out += "01;" // enable bold
+	case -1:
+		out += "22;" // disable bold
+	}
+
+	switch cb.italic {
+	case 1:
+		out += "03;" // enable italic
+	case -1:
+		out += "23;" // disable italic
+	}
+
+	switch cb.underline {
+	case 1:
+		out += "04;" // enable underline
+	case -1:
+		out += "24;" // disable underline
+	}
+
+	switch cb.fg {
+	case -2:
+		// do nothing, use those one that was used
+	case -1:
+		// set foreground to term default
+		out += "39;"
+	default:
+		out += "38;5;" + strconv.Itoa(int(cb.fg)) + ";"
+	}
+
+	switch cb.fg {
+	case -2:
+		// do nothing, use those one that was used
+	case -1:
+		// set background to term default
+		out += "49;"
+	default:
+		out += "48;5;" + strconv.Itoa(int(cb.bg)) + ";"
+	}
+
+	if out[len(out)-1] != ';' {
+		return "" // all values are default and ignored
+	}
+
+	out = out[:len(out)-1] + "m"
+	return out
+}
+
+//
+// ""
 func (ce *ConsoleEncoder) rvColor(verb string) (predictedLen int) {
 
+	var (
+		cb           colorBuilder
+		encodedColor string
+		verbBak      = verb
+	)
+
+	// skip verb identifier (this is color verb)
+	if idx := strings.IndexByte(verb, ceVerbSeparator); idx != -1 {
+		verb = verb[idx+1:]
+
+		for idx = strings.IndexByte(verb, ceVerbSeparator); idx != -1; {
+			if parsingFailed := !cb.parseEntity(verb[:idx]); parsingFailed {
+				goto UNSUPPORTED_COLOR_ENTITY
+			}
+			verb = verb[idx+1:]
+		}
+
+		// parse last entity
+		if parsingFailed := !cb.parseEntity(verb); parsingFailed {
+			goto UNSUPPORTED_COLOR_ENTITY
+		}
+	}
+
+	if encodedColor = cb.encode(); encodedColor == "" {
+		goto UNSUPPORTED_COLOR_ENTITY
+	}
+
+	ce.formatParts = append(ce.formatParts, formatPart{
+		typ:   cefptVerbColor,
+		value: encodedColor,
+	})
+
+	return len(encodedColor)
+
+UNSUPPORTED_COLOR_ENTITY: // label and goto only for make code more clean and clear
+	return ce.rvJustText(verbBak)
 }
+
+//
 
 //
 func (ce *ConsoleEncoder) rvCaller(verb string) (predictedLen int) {
@@ -378,7 +701,6 @@ func (ce *ConsoleEncoder) encTime(e *Entry, fp formatPart, to []byte) []byte {
 	if formattedTime == "" {
 		formattedTime = e.Time.Format(time.RFC1123)
 	}
-
 	return append(bufgr(to, len(formattedTime)), formattedTime...)
 }
 
