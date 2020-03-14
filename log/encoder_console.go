@@ -597,6 +597,8 @@ func (ce *ConsoleEncoder) rvColor(verb string) (predictedLen int) {
 		verbBak      = verb
 	)
 
+	cb.init()
+
 	// skip verb identifier (this is color verb)
 	if idx := strings.IndexByte(verb, ceVerbSeparator); idx != -1 {
 		verb = verb[idx+1:]
