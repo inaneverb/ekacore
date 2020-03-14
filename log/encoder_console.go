@@ -79,7 +79,7 @@ type colorBuilder struct {
 	// 0 - 'not set, use those one that was used' (not included to SGR)
 	// 1 - enable (included to SGR (01/03/04))
 	// -1 - disable (included to SGR (22/23/24))
-	bold, italic, underline uint8
+	bold, italic, underline int8
 
 	// Yes, there is no support blanking text.
 	// I think it's disgusting. It will never be added.
