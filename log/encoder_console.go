@@ -6,7 +6,10 @@
 package log
 
 import (
+	"github.com/qioalice/gext/sys"
 	"image/color"
+	"math"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -92,11 +95,16 @@ const (
 
 	cefptVerbJustText formatPartType = 0x01
 	cefptVerbColor    formatPartType = 0x02
-	cefptVerbBody     formatPartType = 0x0A
-	cefptVerbTime     formatPartType = 0x0B
-	cefptVerbLevelD   formatPartType = 0x0C
-	cefptVerbLevelS   formatPartType = 0x0D
-	cefptVerbLevelSS  formatPartType = 0x0E
+
+	cefptVerbBody    formatPartType = 0x0A
+	cefptVerbTime    formatPartType = 0x0B
+	cefptVerbLevelD  formatPartType = 0x0C
+	cefptVerbLevelS  formatPartType = 0x0D
+	cefptVerbLevelSS formatPartType = 0x0E
+
+	cefptVerbStack  formatPartType = 0x1A
+	cefptVerbFields formatPartType = 0x2A
+	cefptVerbCaller formatPartType = 0x3A
 )
 
 //
@@ -633,11 +641,6 @@ UNSUPPORTED_COLOR_ENTITY: // label and goto only for make code more clean and cl
 
 //
 
-//
-func (ce *ConsoleEncoder) rvCaller(verb string) (predictedLen int) {
-
-}
-
 // rvBody is a part of "resolve verb" functions.
 //
 func (ce *ConsoleEncoder) rvBody(verb string) (predictedLen int) {
@@ -649,13 +652,39 @@ func (ce *ConsoleEncoder) rvBody(verb string) (predictedLen int) {
 }
 
 //
+func (ce *ConsoleEncoder) rvCaller(verb string) (predictedLen int) {
+
+	// TODO: Implement fields format
+
+	ce.formatParts = append(ce.formatParts, formatPart{
+		typ: cefptVerbCaller,
+	})
+
+	return 256
+}
+
+//
 func (ce *ConsoleEncoder) rvFields(verb string) (predictedLen int) {
 
+	// TODO: Implement fields format
+
+	ce.formatParts = append(ce.formatParts, formatPart{
+		typ: cefptVerbFields,
+	})
+
+	return 512
 }
 
 //
 func (ce *ConsoleEncoder) rvStacktrace(verb string) (predictedLen int) {
 
+	// TODO: Implement stacktrace format
+
+	ce.formatParts = append(ce.formatParts, formatPart{
+		typ: cefptVerbStack,
+	})
+
+	return 2048
 }
 
 // rvJustText is a part of "resolve verb" functions.
@@ -709,16 +738,105 @@ func (ce *ConsoleEncoder) encTime(e *Entry, fp formatPart, to []byte) []byte {
 //
 func (ce *ConsoleEncoder) encCaller(e *Entry, fp formatPart, to []byte) []byte {
 
-}
+	// TODO: Implement caller format
 
-//
-func (ce *ConsoleEncoder) encFields(e *Entry, fp formatPart, to []byte) []byte {
+	if e.Caller.PC == 0 {
+		return to
+	}
 
+	_, file := filepath.Split(e.Caller.File)
+	caller := e.Caller.Function + " (" + file + ":" + strconv.Itoa(e.Caller.Line) + ")"
+
+	return bufw(to, caller)
 }
 
 //
 func (ce *ConsoleEncoder) encStacktrace(e *Entry, fp formatPart, to []byte) []byte {
 
+	// TODO: Implement stacktrace format
+	// Reminder: e.StackTrace.ExcludeInternal already called
+
+	if l := len(e.StackTrace); l > 0 {
+		for _, stackFrame := range e.StackTrace[:l-1] {
+			to = ce.encStackFrame(stackFrame, fp, to)
+			to = bufw(to, "\n")
+		}
+		to = ce.encStackFrame(e.StackTrace[l-1], fp, to)
+	}
+
+	return to
+}
+
+//
+func (ce *ConsoleEncoder) encStackFrame(frame sys.StackFrame, fp formatPart, to []byte) []byte {
+
+	_, file := filepath.Split(frame.Function)
+	s := frame.Function + " (" + file + ":" + strconv.Itoa(frame.Line) + ")"
+
+	return bufw(to, s)
+}
+
+//
+func (ce *ConsoleEncoder) encFields(e *Entry, fp formatPart, to []byte) []byte {
+
+	// TODO: Implement fields format
+
+	if len(e.Fields) == 0 {
+		return to
+	}
+
+	unnamedFieldIdx := 1
+
+	if l := len(e.Fields); l > 0 {
+		for _, field := range e.Fields[:l-1] {
+			to = ce.encField(field, to, &unnamedFieldIdx)
+			to = bufw(to, ", ")
+		}
+		to = ce.encField(e.Fields[l-1], to, &unnamedFieldIdx)
+	}
+
+	return to
+}
+
+//
+func (ce *ConsoleEncoder) encField(f Field, to []byte, unnamedFieldIdx *int) []byte {
+
+	field := f.Key
+	if field == "" {
+		field = implicitUnnamedFieldName(*unnamedFieldIdx)
+		*unnamedFieldIdx++
+	}
+
+	field += " = "
+
+	switch f.Kind {
+	case FieldKindBool:
+		if f.IValue != 0 {
+			field += "true"
+		} else {
+			field += "false"
+		}
+
+	case FieldKindInt, FieldKindInt8, FieldKindInt16, FieldKindInt32, FieldKindInt64:
+		field += strconv.FormatInt(f.IValue, 10)
+
+	case FieldKindUint, FieldKindUint8, FieldKindUint16, FieldKindUint32, FieldKindUint64:
+		field += strconv.FormatUint(uint64(f.IValue), 10)
+
+	case FieldKindFloat32:
+		field += strconv.FormatFloat(float64(math.Float32frombits(uint32(f.IValue))), 'f', 2, 32)
+
+	case FieldKindFloat64:
+		field += strconv.FormatFloat(float64(math.Float32frombits(uint32(f.IValue))), 'f', 2, 64)
+
+	case FieldKindString:
+		field += f.SValue
+
+	default:
+		return to
+	}
+
+	return bufw(to, field)
 }
 
 // easy case because ASCII sequence already generated at the rvColor method.
