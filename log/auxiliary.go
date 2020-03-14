@@ -6,10 +6,7 @@
 package log
 
 import (
-	"path/filepath"
 	"strconv"
-
-	"github.com/qioalice/gext/sys"
 )
 
 // printfHowMuchVerbs reports how much printf verbs 'format' has.
