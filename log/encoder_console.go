@@ -21,6 +21,8 @@ import (
 
 // TODO: Update doc, comments
 
+// "complex verb" - is any other verb than "just text" verb.
+
 //
 type ConsoleEncoder struct {
 
@@ -150,7 +152,6 @@ func (fpt formatPartType) Data() formatPartType {
 
 //
 func (ce *ConsoleEncoder) FreezeAndGetEncoder() CommonIntegratorEncoder {
-
 	return ce.doBuild().encode
 }
 
@@ -159,7 +160,8 @@ func (ce *ConsoleEncoder) SetFormat() {
 	// TODO: ce.minimumBufferLen = 0
 }
 
-//
+// doBuild builds the current console encoder only if it has not built yet.
+// There is no-op if format string is empty.
 func (ce *ConsoleEncoder) doBuild() *ConsoleEncoder {
 
 	switch {
@@ -225,12 +227,11 @@ func (ce *ConsoleEncoder) uniteJustTextVerbs() *ConsoleEncoder {
 // verb), saves it to ce.formatParts and then returns the rest of 'format' string.
 func (ce *ConsoleEncoder) parseFirstVerb(format string) (rest string) {
 
-	// "complex verb" - is any other verb than "just text" verb.
-
 	var (
-		i  = 0
-		pc rune // prev char
-		wv bool // true if currently parsing complex verb
+		i   = 0
+		pc  rune // prev char
+		wv  bool // true if current parsing verb is complex verb (not "just text")
+		wve bool // true if complex verb has been closed correctly
 	)
 
 	// loop is for-range based (because there is UTF-8 support)
@@ -244,28 +245,34 @@ func (ce *ConsoleEncoder) parseFirstVerb(format string) (rest string) {
 			wv = false
 			i--
 
-		case c == ceVerbStartIndicator && pc == ceVerbStartIndicator && i > 0:
+		case c == ceVerbStartIndicator && pc == ceVerbStartIndicator && i > 1:
+			// > 1 (not > 0) because if string started with "{{", after first "{"
+			// i already == 1.
+			//
 			// was "just text", found complex verb start
 			i--
 
 		case c == ceVerbEndIndicator && pc == ceVerbEndIndicator && wv:
 			// ending of complex verb
+			wve = true
 			i++
 
 		case c == ceVerbStartIndicator && pc == ceVerbStartIndicator:
 			// this is the beginning of 'format' and of complex verb
 			wv = true
+			i++
 			continue
 
 		default:
 			pc = c
+			i++
 			continue
 		}
 		break
 	}
 
-	// what kind of verb we have?
-	if wv {
+	// what kind of verb we did parse and did verb has been closed correctly?
+	if wv && wve {
 		ce.minimumBufferLen += ce.rv(format[:i])
 	} else {
 		ce.minimumBufferLen += ce.rvJustText(format[:i])
@@ -778,10 +785,7 @@ func (ce *ConsoleEncoder) encCaller(e *Entry, fp formatPart, to []byte) []byte {
 		return to
 	}
 
-	_, file := filepath.Split(e.Caller.File)
-	caller := e.Caller.Function + " (" + file + ":" + strconv.Itoa(e.Caller.Line) + ")"
-
-	return bufw(to, caller)
+	return bufw(to, e.Caller.DoFormat())
 }
 
 //
