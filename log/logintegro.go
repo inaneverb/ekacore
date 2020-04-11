@@ -55,7 +55,9 @@ var baseLogger *Logger
 // init performs a baseLogger initialization.
 func init() {
 
-	encoder := JSONEncoder{}
+	var encoder commonIntegratorEncoderGenerator = &ConsoleEncoder{
+		format: "{{l}} {{t}}\n{{w}}\n{{m}}\n{{f}}\n{{s}}\n\n",
+	}
 
 	integrator := new(CommonIntegrator).
 		WithEncoder(encoder.FreezeAndGetEncoder()).
