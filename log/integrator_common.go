@@ -63,6 +63,10 @@ type CommonIntegrator struct {
 // data as RAW bytes.
 type CommonIntegratorEncoder func(e *Entry) []byte
 
+type commonIntegratorEncoderGenerator interface {
+	FreezeAndGetEncoder() CommonIntegratorEncoder
+}
+
 // commonIntegratorOutput is a CommonIntegrator part that contains encoder
 // and destination 'io.Writer's, log entry will be written to.
 type commonIntegratorOutput struct {
