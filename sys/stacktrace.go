@@ -6,7 +6,11 @@
 package sys
 
 import (
+	"io"
+	"os"
+	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -18,6 +22,39 @@ type StackTrace []StackFrame
 // It general purpose is runtime.Frame type extending.
 type StackFrame struct {
 	runtime.Frame
+	Format               string
+	FormatFileOffset     int
+	FormatFullPathOffset int
+}
+
+// DoFormat represents stack frame in the following string format:
+// "<package>/<func> (<short_file>:<file_line>) <full_package_path>".
+// Also saves it to the Format field. And does not regenerate it if it's not empty.
+func (f *StackFrame) DoFormat() string {
+
+	if f.Format == "" {
+
+		fullPackage, fn := filepath.Split(f.Function)
+		_, file := filepath.Split(f.File)
+
+		// we need last package from the fullPackage
+		lastPackage := filepath.Base(fullPackage)
+
+		// need remove last package from fullPackage
+		if len(lastPackage)+2 <= len(fullPackage) && lastPackage != "." {
+			fullPackage = fullPackage[:len(fullPackage)-len(lastPackage)-2]
+		}
+
+		f.Format += lastPackage + "/" + fn
+
+		f.FormatFileOffset = len(f.Format)
+		f.Format += " (" + file + ":" + strconv.Itoa(f.Line) + ")"
+
+		f.FormatFullPathOffset = len(f.Format)
+		f.Format += " " + fullPackage
+	}
+
+	return f.Format
 }
 
 // getStackFramePoints returns the stack trace point's slice
@@ -123,4 +160,35 @@ func (s StackTrace) ExcludeInternal() StackTrace {
 		idx--
 	}
 	return s[:idx+1]
+}
+
+// Write writes generated stacktrace to the w or to the stdout if w == nil.
+func (s StackTrace) Write(w io.Writer) (n int, err error) {
+
+	if w == nil {
+		w = os.Stdout
+	}
+
+	for _, frame := range s {
+
+		nn, err_ := w.Write([]byte(frame.DoFormat()))
+		if err_ != nil {
+			return n, err_
+		}
+		n += nn
+
+		// write \n
+		if _, err_ := w.Write([]byte{'\n'}); err_ != nil {
+			return n, err_
+		}
+		n += 1
+	}
+
+	return n, nil
+}
+
+// Print prints generated stacktrace to the w or to the stdout if w == nil.
+// Ignores all errors. To write with error tracking use Write method.
+func (s StackTrace) Print(w io.Writer) {
+	_, _ = s.Write(w)
 }
