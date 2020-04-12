@@ -3,59 +3,18 @@
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package sys
+package gext
 
 import (
 	"io"
 	"os"
-	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 )
 
 // StackTrace is the slice of StackFrames, nothing more.
 // Each stack level described separately.
 type StackTrace []StackFrame
-
-// StackFrame represents one stack level (frame/item).
-// It general purpose is runtime.Frame type extending.
-type StackFrame struct {
-	runtime.Frame
-	Format               string
-	FormatFileOffset     int
-	FormatFullPathOffset int
-}
-
-// DoFormat represents stack frame in the following string format:
-// "<package>/<func> (<short_file>:<file_line>) <full_package_path>".
-// Also saves it to the Format field. And does not regenerate it if it's not empty.
-func (f *StackFrame) DoFormat() string {
-
-	if f.Format == "" {
-
-		fullPackage, fn := filepath.Split(f.Function)
-		_, file := filepath.Split(f.File)
-
-		// we need last package from the fullPackage
-		lastPackage := filepath.Base(fullPackage)
-
-		// need remove last package from fullPackage
-		if len(lastPackage)+2 <= len(fullPackage) && lastPackage != "." {
-			fullPackage = fullPackage[:len(fullPackage)-len(lastPackage)-2]
-		}
-
-		f.Format += lastPackage + "/" + fn
-
-		f.FormatFileOffset = len(f.Format)
-		f.Format += " (" + file + ":" + strconv.Itoa(f.Line) + ")"
-
-		f.FormatFullPathOffset = len(f.Format)
-		f.Format += " " + fullPackage
-	}
-
-	return f.Format
-}
 
 // getStackFramePoints returns the stack trace point's slice
 // that contains 'count' points and starts from 'skip' depth level.
