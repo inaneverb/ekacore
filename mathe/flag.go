@@ -1,4 +1,4 @@
-package gext
+package mathe
 
 type (
 	// Flag8 is a type that allows you to represent a 8 bit set named "flagset".
@@ -39,6 +39,7 @@ type (
 )
 
 // --------------------------------- EXTENDERS -------------------------------- //
+// ---------------------------------------------------------------------------- //
 
 // To16 extends and returns current f (8 bit flagset) to 16 bit flagset.
 func (f Flag8) To16() Flag16 {
@@ -71,6 +72,7 @@ func (f Flag32) To64() Flag64 {
 }
 
 // ---------------------------- 8 BIT FLAG METHODS ---------------------------- //
+// ---------------------------------------------------------------------------- //
 
 // IsZero reports whether f is the empty flagset. Returns true if f == 0.
 func (f Flag8) IsZero() bool {
@@ -116,6 +118,7 @@ func (f *Flag8) Zero() *Flag8 {
 }
 
 // --------------------------- 16 BIT FLAG METHODS ---------------------------- //
+// ---------------------------------------------------------------------------- //
 
 // IsZero reports whether f is the empty flagset. Returns true if f == 0.
 func (f Flag16) IsZero() bool {
@@ -161,6 +164,7 @@ func (f *Flag16) Zero() *Flag16 {
 }
 
 // --------------------------- 32 BIT FLAG METHODS ---------------------------- //
+// ---------------------------------------------------------------------------- //
 
 // IsZero reports whether f is the empty flagset. Returns true if f == 0.
 func (f Flag32) IsZero() bool {
@@ -206,6 +210,7 @@ func (f *Flag32) Zero() *Flag32 {
 }
 
 // --------------------------- 64 BIT FLAG METHODS ---------------------------- //
+// ---------------------------------------------------------------------------- //
 
 // IsZero reports whether f is the empty flagset. Returns true if f == 0.
 func (f Flag64) IsZero() bool {
