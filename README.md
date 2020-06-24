@@ -18,3 +18,13 @@ I strongly recommend to start your tour with the
 - [`ekalog`: _an intelligence  logging package for everything and especially for_ `ekaerr`](ekalog/)
 
 It doesn't take a lot of time. See you!
+
+-----
+
+And if you need a quick description about all other packages, see:
+
+- [`ekadeath`: _When_ `os.Exit(1)` _is not enough and you love destructors (and their calls)_](/ekadeath)
+- [`ekadanger`: _Wanna see what_ `interface{}` _is? Maybe compare functions? Divide by zero?_](/ekadanger)
+- [`ekamath`: _Bored about_ `math.Min(upperBound, math.Max(lowerBound, x))`_?_](/ekamath)
+- [`ekatime`: _Adore unixtime? Want to extract daystart, dayend? What's about_ `time.Now()` _with rough precision?_](/ekatime)
+- [`ekatype`: _Oh, you need UUID? Predefined interfaces? SQL type that if_ `NULL` _then JSON is_ `null`_?_](/ekatype)
