@@ -1,7 +1,15 @@
-package dangerous
+// Copyright © 2020. All rights reserved.
+// Author: Ilya Stroy.
+// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// License: https://opensource.org/licenses/MIT
 
-import "testing"
-import "github.com/stretchr/testify/assert"
+package ekadanger
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestTypedInterface(t *testing.T) {
 

@@ -1,11 +1,13 @@
-// Copyright © 2019. All rights reserved.
-// Author: Alice Qio.
-// Contacts: <qioalice@gmail.com>.
+// Copyright © 2020. All rights reserved.
+// Author: Ilya Stroy.
+// Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package dangerous
+package ekadanger
 
-import "unsafe"
+import (
+	"unsafe"
+)
 
 // In Golang you can not just take an address of some func
 // only if it is not a func literal which is assigned to any var.
@@ -53,11 +55,11 @@ import "unsafe"
 // YOU CAN NOT USE RETURNED POINTER TO CALLING PASSED FUNCTION!
 // For that purpose use TakeCallableAddr to take callable pointer directly
 // or convert returned pointer to callable pointer using AddrConvert2Callable func.
-func TakeRealAddr(fn interface{}) unsafe.Pointer {
-	if fn == nil {
+func TakeRealAddr(i interface{}) unsafe.Pointer {
+	if i == nil {
 		return nil
 	}
-	return (*Interface)(unsafe.Pointer(&fn)).Word
+	return TypedInterface(i).Word
 }
 
 // TakeCallableAddr takes and returns an "callable" address of function fn or nil if fn is nil.

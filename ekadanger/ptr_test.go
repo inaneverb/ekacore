@@ -3,7 +3,7 @@
 // Contacts: <qioalice@gmail.com>.
 // License: https://opensource.org/licenses/MIT
 
-package dangerous
+package ekadanger
 
 import "unsafe"
 import "runtime"
