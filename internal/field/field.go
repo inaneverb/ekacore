@@ -3,12 +3,13 @@
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package gext
+package field
 
 import (
 	"fmt"
 	"math"
-	"unsafe"
+
+	"github.com/qioalice/ekago/ekadanger"
 
 	"github.com/modern-go/reflect2"
 )
@@ -45,10 +46,10 @@ type (
 		// Kind represents what kind of field it is.
 		//
 		// WARNING!
-		// If you want to compare FieldKind with any of FieldKind... constants, use
+		// If you want to compare Kind with any of Kind... constants, use
 		// Field.Kind.BaseType() or Field.BaseType() method before!
 		// For more info see these methods docs.
-		Kind FieldKind
+		Kind Kind
 
 		IValue int64  // for all ints, uints, floats, bool, complex64, pointers
 		SValue string // for string, []byte, fmt.Stringer
@@ -56,71 +57,86 @@ type (
 		Value interface{} // for all not easy cases
 	}
 
-	// FieldKind is an alias to uint8. Generally it's a way to store field's base type
+	// Kind is an alias to uint8. Generally it's a way to store field's base type
 	// predefined const and flags. As described in 'Field.Kind' comments:
 	//
 	// It's uint8 in the following format: XXXYYYYY, where:
 	//   XXX - 3 highest bits - kind flags: nil, array, something else
 	//   YYYYY - 5 lowest bits - used to store const of base type field's value.
-	FieldKind uint8
+	Kind uint8
 )
 
+//noinspection GoSnakeCaseUsage
 const (
-	FieldKindMaskBaseType  = 0b_0001_1111
-	FieldKindFlagArray     = 0b_0010_0000
-	FieldKindFlagNil       = 0b_0100_0000
-	fieldKindFlagReserved1 = 0b_1000_0000 // private because reserved
+	KIND_MASK_BASE_TYPE = 0b_0001_1111
+	KIND_FLAG_ARRAY     = 0b_0010_0000
+	KIND_FLAG_NULL      = 0b_0100_0000
+	KIND_FLAG_SYSTEM    = 0b_1000_0000
 
-	FieldKindInvalid    = 0  // can't be handled in almost all cases
-	_                   = 1  // reserved
-	_                   = 2  // reserved
-	FieldKindBool       = 3  // uses IValue to store bool
-	FieldKindInt        = 4  // uses IValue to store int
-	FieldKindInt8       = 5  // uses IValue to store int8
-	FieldKindInt16      = 6  // uses IValue to store int16
-	FieldKindInt32      = 7  // uses IValue to store int32
-	FieldKindInt64      = 8  // uses IValue to store int64
-	FieldKindUint       = 9  // uses IValue to store uint
-	FieldKindUint8      = 10 // uses IValue to store uint8
-	FieldKindUint16     = 11 // uses IValue to store uint16
-	FieldKindUint32     = 12 // uses IValue to store uint32
-	FieldKindUint64     = 13 // uses IValue to store uint64
-	FieldKindUintptr    = 14 // uses IValue to store uintptr
-	FieldKindFloat32    = 15 // uses IValue to store float32 (bits)
-	FieldKindFloat64    = 16 // uses IValue to store float64 (bits)
-	FieldKindComplex64  = 17 // uses IValue to store complex64
-	FieldKindComplex128 = 18 // uses Value (interface{}) to store complex128
-	FieldKindString     = 19 // uses SValue to store string
-	_                   = 20 // reserved
-	FieldKindAddr       = 21 // uses IValue to store some addr (like uintptr)
+	KIND_TYPE_INVALID = 0 // can't be handled in almost all cases
+
+	// field.Kind & KIND_MASK_BASE_TYPE could be any of listed below,
+	// only if field.Kind KIND_FLAG_INTERNAL_SYS != 0 (system letter's field)
+
+	KIND_SYS_TYPE_EKAERR_UUID           = 1
+	KIND_SYS_TYPE_EKAERR_CLASS_ID       = 2
+	KIND_SYS_TYPE_EKAERR_CLASS_NAME     = 3
+	KIND_SYS_TYPE_EKAERR_NAMESPACE_ID   = 4
+	KIND_SYS_TYPE_EKAERR_NAMESPACE_NAME = 5
+
+	// field.Kind & KIND_MASK_BASE_TYPE could be any of listed below,
+	// only if field.Kind & KIND_FLAG_INTERNAL_SYS == 0 (user's field)
+
+	_                     = 1  // reserved
+	_                     = 2  // reserved
+	KIND_TYPE_BOOL        = 3  // uses IValue to store bool
+	KIND_TYPE_INT         = 4  // uses IValue to store int
+	KIND_TYPE_INT_8       = 5  // uses IValue to store int8
+	KIND_TYPE_INT_16      = 6  // uses IValue to store int16
+	KIND_TYPE_INT_32      = 7  // uses IValue to store int32
+	KIND_TYPE_INT_64      = 8  // uses IValue to store int64
+	KIND_TYPE_UINT        = 9  // uses IValue to store uint
+	KIND_TYPE_UINT_8      = 10 // uses IValue to store uint8
+	KIND_TYPE_UINT_16     = 11 // uses IValue to store uint16
+	KIND_TYPE_UINT_32     = 12 // uses IValue to store uint32
+	KIND_TYPE_UINT_64     = 13 // uses IValue to store uint64
+	KIND_TYPE_UINTPTR     = 14 // uses IValue to store uintptr
+	KIND_TYPE_FLOAT_32    = 15 // uses IValue to store float32 (bits)
+	KIND_TYPE_FLOAT64     = 16 // uses IValue to store float64 (bits)
+	KIND_TYPE_COMPLEX_64  = 17 // uses IValue to store complex64
+	KIND_TYPE_COMPLEX_128 = 18 // uses Value (interface{}) to store complex128
+	KIND_TYPE_STRING      = 19 // uses SValue to store string
+	_                     = 20 // reserved
+	KIND_TYPE_ADDR        = 21 // uses IValue to store some addr (like uintptr)
+	_                     = 31 // reserved, max, range [21..31] is free now
 
 	// --------------------------------------------------------------------- //
 	//                                WARNING                                //
-	// Keep in mind that max value of FieldKind base type is 31              //
-	// (because of FieldKindMaskBaseType == 0b00011111 == 0x1F == 31).       //
+	// Keep in mind that max value of Kind base type is 31              //
+	// (because of KIND_MASK_BASE_TYPE == 0b00011111 == 0x1F == 31).       //
 	// DO NOT OVERFLOW THIS VALUE WHEN YOU WILL ADD A NEW CONSTANTS          //
 	// --------------------------------------------------------------------- //
 )
 
 var (
-	// Used for internal type comparision.
-	reflectTypeField       = reflect2.TypeOf(Field{})
-	reflectTypeFieldPtr    = reflect2.TypeOf((*Field)(nil))
-	reflectTypeFmtStringer = reflect2.TypeOfPtr((*fmt.Stringer)(nil)).Elem()
+	// Used for type comparision.
+	ReflectedType            = reflect2.TypeOf(Field{})
+	ReflectedTypePtr         = reflect2.TypeOf((*Field)(nil))
+	ReflectedTypeFmtStringer = reflect2.TypeOfPtr((*fmt.Stringer)(nil)).Elem()
 )
 
 // BaseType extracts only 5 lowest bits from fk and returns it (ignore flags).
 //
 // Call fk.BaseType() and then you can compare returned value with predefined
-// FieldKind... constants. DO NOT COMPARE DIRECTLY, because fk can contain flags
+// Kind... constants. DO NOT COMPARE DIRECTLY, because fk can contain flags
 // and then regular equal check (==) will fail.
-func (fk FieldKind) BaseType() FieldKind {
-	return fk & FieldKindMaskBaseType
+func (fk Kind) BaseType() Kind {
+	return fk & KIND_MASK_BASE_TYPE
 }
 
 // IsArray reports whether fk represents an array with some base type.
-func (fk FieldKind) IsArray() bool {
-	return fk&FieldKindFlagArray != 0
+func (fk Kind) IsArray() bool {
+	return fk&KIND_FLAG_ARRAY != 0
 }
 
 // IsNil reports whether fk represents a nil value.
@@ -128,13 +144,19 @@ func (fk FieldKind) IsArray() bool {
 // Returns true for both cases:
 //   - fk is nil with some base type,
 //   - fk is absolutely untyped nil.
-func (fk FieldKind) IsNil() bool {
-	return fk&FieldKindFlagNil != 0
+func (fk Kind) IsNil() bool {
+	return fk&KIND_FLAG_NULL != 0
+}
+
+// IsSystem reports whether fk represents a *Letter system field.
+// See https://github.com/qioalice/ekago/internal/letter/letter.go .
+func (fk Kind) IsSystem() bool {
+	return fk&KIND_FLAG_SYSTEM != 0
 }
 
 // BaseType returns f's kind base type. You can use direct comparision operators
-// (==, !=, etc) with returned value and FieldKind... constants.
-func (f Field) BaseType() FieldKind {
+// (==, !=, etc) with returned value and Kind... constants.
+func (f Field) BaseType() Kind {
 	return f.Kind.BaseType()
 }
 
@@ -152,6 +174,12 @@ func (f Field) IsNil() bool {
 	return f.Kind.IsNil()
 }
 
+// IsSystem reports whether f represents a *Letter system field.
+// See https://github.com/qioalice/ekago/internal/letter/letter.go .
+func (f Field) IsSystem() bool {
+	return f.Kind.IsSystem()
+}
+
 // reset frees all allocated resources (RAM in 99% cases) by Field f, preparing
 // it for being reused in the future.
 func (f *Field) reset() {
@@ -166,90 +194,90 @@ func (f *Field) reset() {
 // Bool constructs a field with the given key and value.
 func Bool(key string, value bool) Field {
 	if value {
-		return Field{Key: key, IValue: 1, Kind: FieldKindBool}
+		return Field{Key: key, IValue: 1, Kind: KIND_TYPE_BOOL}
 	} else {
-		return Field{Key: key, IValue: 0, Kind: FieldKindBool}
+		return Field{Key: key, IValue: 0, Kind: KIND_TYPE_BOOL}
 	}
 }
 
 // Int constructs a field with the given key and value.
 func Int(key string, value int) Field {
-	return Field{Key: key, IValue: int64(value), Kind: FieldKindInt}
+	return Field{Key: key, IValue: int64(value), Kind: KIND_TYPE_INT}
 }
 
 // Int8 constructs a field with the given key and value.
 func Int8(key string, value int8) Field {
-	return Field{Key: key, IValue: int64(value), Kind: FieldKindInt8}
+	return Field{Key: key, IValue: int64(value), Kind: KIND_TYPE_INT_8}
 }
 
 // Int16 constructs a field with the given key and value.
 func Int16(key string, value int16) Field {
-	return Field{Key: key, IValue: int64(value), Kind: FieldKindInt16}
+	return Field{Key: key, IValue: int64(value), Kind: KIND_TYPE_INT_16}
 }
 
 // Int32 constructs a field with the given key and value.
 func Int32(key string, value int32) Field {
-	return Field{Key: key, IValue: int64(value), Kind: FieldKindInt32}
+	return Field{Key: key, IValue: int64(value), Kind: KIND_TYPE_INT_32}
 }
 
 // Int64 constructs a field with the given key and value.
 func Int64(key string, value int64) Field {
-	return Field{Key: key, IValue: value, Kind: FieldKindInt64}
+	return Field{Key: key, IValue: value, Kind: KIND_TYPE_INT_64}
 }
 
 // Uint constructs a field with the given key and value.
 func Uint(key string, value uint) Field {
-	return Field{Key: key, IValue: int64(value), Kind: FieldKindUint}
+	return Field{Key: key, IValue: int64(value), Kind: KIND_TYPE_UINT}
 }
 
 // Uint8 constructs a field with the given key and value.
 func Uint8(key string, value uint8) Field {
-	return Field{Key: key, IValue: int64(value), Kind: FieldKindUint8}
+	return Field{Key: key, IValue: int64(value), Kind: KIND_TYPE_UINT_8}
 }
 
 // Uint16 constructs a field with the given key and value.
 func Uint16(key string, value uint16) Field {
-	return Field{Key: key, IValue: int64(value), Kind: FieldKindUint16}
+	return Field{Key: key, IValue: int64(value), Kind: KIND_TYPE_UINT_16}
 }
 
 // Uint32 constructs a field with the given key and value.
 func Uint32(key string, value uint32) Field {
-	return Field{Key: key, IValue: int64(value), Kind: FieldKindUint32}
+	return Field{Key: key, IValue: int64(value), Kind: KIND_TYPE_UINT_32}
 }
 
 // Uint64 constructs a field with the given key and value.
 func Uint64(key string, value uint64) Field {
-	return Field{Key: key, IValue: int64(value), Kind: FieldKindUint64}
+	return Field{Key: key, IValue: int64(value), Kind: KIND_TYPE_UINT_64}
 }
 
 // Uintptr constructs a field with the given key and value.
 func Uintptr(key string, value uintptr) Field {
-	return Field{Key: key, IValue: int64(value), Kind: FieldKindUintptr}
+	return Field{Key: key, IValue: int64(value), Kind: KIND_TYPE_UINTPTR}
 }
 
 // Float32 constructs a field with the given key and value.
 func Float32(key string, value float32) Field {
-	return Field{Key: key, IValue: int64(math.Float32bits(value)), Kind: FieldKindFloat32}
+	return Field{Key: key, IValue: int64(math.Float32bits(value)), Kind: KIND_TYPE_FLOAT_32}
 }
 
 // Float64 constructs a field with the given key and value.
 func Float64(key string, value float64) Field {
-	return Field{Key: key, IValue: int64(math.Float64bits(value)), Kind: FieldKindFloat64}
+	return Field{Key: key, IValue: int64(math.Float64bits(value)), Kind: KIND_TYPE_FLOAT64}
 }
 
 // Complex64 constructs a field with the given key and value.
 func Complex64(key string, value complex64) Field {
-	return Field{Key: key, Value: value, Kind: FieldKindComplex64}
+	return Field{Key: key, Value: value, Kind: KIND_TYPE_COMPLEX_64}
 }
 
 // Complex128 constructs a field with the given key and value.
 func Complex128(key string, value complex128) Field {
-	return Field{Key: key, Value: value, Kind: FieldKindComplex128}
+	return Field{Key: key, Value: value, Kind: KIND_TYPE_COMPLEX_128}
 }
 
 // String constructs a field with the given key and value.
 func String(key string, value string) Field {
-	return Field{Key: key, SValue: value, Kind: FieldKindString}
+	return Field{Key: key, SValue: value, Kind: KIND_TYPE_STRING}
 }
 
 // ------------------------- POINTER CASES GENERATORS ------------------------- //
@@ -259,7 +287,7 @@ func String(key string, value string) Field {
 // and explicitly represent `nil` when appropriate.
 func Boolp(key string, value *bool) Field {
 	if value == nil {
-		return fieldNilValue(key, FieldKindBool)
+		return NilValue(key, KIND_TYPE_BOOL)
 	}
 	return Bool(key, *value)
 }
@@ -268,7 +296,7 @@ func Boolp(key string, value *bool) Field {
 // and explicitly represent `nil` when appropriate.
 func Intp(key string, value *int) Field {
 	if value == nil {
-		return fieldNilValue(key, FieldKindInt)
+		return NilValue(key, KIND_TYPE_INT)
 	}
 	return Int(key, *value)
 }
@@ -277,7 +305,7 @@ func Intp(key string, value *int) Field {
 // and explicitly represent `nil` when appropriate.
 func Int8p(key string, value *int8) Field {
 	if value == nil {
-		return fieldNilValue(key, FieldKindInt8)
+		return NilValue(key, KIND_TYPE_INT_8)
 	}
 	return Int8(key, *value)
 }
@@ -286,7 +314,7 @@ func Int8p(key string, value *int8) Field {
 // and explicitly represent `nil` when appropriate.
 func Int16p(key string, value *int16) Field {
 	if value == nil {
-		return fieldNilValue(key, FieldKindInt16)
+		return NilValue(key, KIND_TYPE_INT_16)
 	}
 	return Int16(key, *value)
 }
@@ -295,7 +323,7 @@ func Int16p(key string, value *int16) Field {
 // and explicitly represent `nil` when appropriate.
 func Int32p(key string, value *int32) Field {
 	if value == nil {
-		return fieldNilValue(key, FieldKindInt32)
+		return NilValue(key, KIND_TYPE_INT_32)
 	}
 	return Int32(key, *value)
 }
@@ -304,7 +332,7 @@ func Int32p(key string, value *int32) Field {
 // and explicitly represent `nil` when appropriate.
 func Int64p(key string, value *int64) Field {
 	if value == nil {
-		return fieldNilValue(key, FieldKindInt64)
+		return NilValue(key, KIND_TYPE_INT_64)
 	}
 	return Int64(key, *value)
 }
@@ -313,7 +341,7 @@ func Int64p(key string, value *int64) Field {
 // and explicitly represent `nil` when appropriate.
 func Uintp(key string, value *uint) Field {
 	if value == nil {
-		return fieldNilValue(key, FieldKindUint)
+		return NilValue(key, KIND_TYPE_UINT)
 	}
 	return Uint(key, *value)
 }
@@ -322,7 +350,7 @@ func Uintp(key string, value *uint) Field {
 // and explicitly represent `nil` when appropriate.
 func Uint8p(key string, value *uint8) Field {
 	if value == nil {
-		return fieldNilValue(key, FieldKindUint8)
+		return NilValue(key, KIND_TYPE_UINT_8)
 	}
 	return Uint8(key, *value)
 }
@@ -331,7 +359,7 @@ func Uint8p(key string, value *uint8) Field {
 // and explicitly represent `nil` when appropriate.
 func Uint16p(key string, value *uint16) Field {
 	if value == nil {
-		return fieldNilValue(key, FieldKindUint16)
+		return NilValue(key, KIND_TYPE_UINT_16)
 	}
 	return Uint16(key, *value)
 }
@@ -340,7 +368,7 @@ func Uint16p(key string, value *uint16) Field {
 // and explicitly represent `nil` when appropriate.
 func Uint32p(key string, value *uint32) Field {
 	if value == nil {
-		return fieldNilValue(key, FieldKindUint32)
+		return NilValue(key, KIND_TYPE_UINT_32)
 	}
 	return Uint32(key, *value)
 }
@@ -349,7 +377,7 @@ func Uint32p(key string, value *uint32) Field {
 // and explicitly represent `nil` when appropriate.
 func Uint64p(key string, value *uint64) Field {
 	if value == nil {
-		return fieldNilValue(key, FieldKindUint64)
+		return NilValue(key, KIND_TYPE_UINT_64)
 	}
 	return Uint64(key, *value)
 }
@@ -358,7 +386,7 @@ func Uint64p(key string, value *uint64) Field {
 // and explicitly represent `nil` when appropriate.
 func Float32p(key string, value *float32) Field {
 	if value == nil {
-		return fieldNilValue(key, FieldKindFloat32)
+		return NilValue(key, KIND_TYPE_FLOAT_32)
 	}
 	return Float32(key, *value)
 }
@@ -367,7 +395,7 @@ func Float32p(key string, value *float32) Field {
 // and explicitly represent `nil` when appropriate.
 func Float64p(key string, value *float64) Field {
 	if value == nil {
-		return fieldNilValue(key, FieldKindFloat64)
+		return NilValue(key, KIND_TYPE_FLOAT64)
 	}
 	return Float64(key, *value)
 }
@@ -387,9 +415,9 @@ func Type(key string, value interface{}) Field {
 // The returned Field will safely and explicitly represent `nil` when appropriate.
 func Stringer(key string, value fmt.Stringer) Field {
 	if value == nil {
-		return fieldNilValue(key, FieldKindString)
+		return NilValue(key, KIND_TYPE_STRING)
 	}
-	return Field{Key: key, SValue: value.String(), Kind: FieldKindString}
+	return Field{Key: key, SValue: value.String(), Kind: KIND_TYPE_STRING}
 }
 
 // Addr constructs a field that carries an any addr as is. E.g. If you want to print
@@ -400,24 +428,19 @@ func Stringer(key string, value fmt.Stringer) Field {
 func Addr(key string, value interface{}) Field {
 	if value != nil {
 
-		type golangInterface struct {
-			typ  uintptr
-			word unsafe.Pointer
-		}
-
-		v := (*golangInterface)(unsafe.Pointer(&value))
-		return Field{Key: key, IValue: int64(uintptr(v.word)), Kind: FieldKindAddr}
+		addr := ekadanger.TakeRealAddr(value)
+		return Field{Key: key, IValue: int64(uintptr(addr)), Kind: KIND_TYPE_ADDR}
 
 	} else {
-		return Field{Key: key, Kind: FieldKindAddr}
+		return Field{Key: key, Kind: KIND_TYPE_ADDR}
 	}
 }
 
 // ---------------------- INTERNAL AUXILIARY FUNCTIONS ------------------------ //
 // ---------------------------------------------------------------------------- //
 
-// fieldNilValue creates a special field that indicates its store a nil value
+// NilValue creates a special field that indicates its store a nil value
 // (nil pointer) to some baseType.
-func fieldNilValue(key string, baseType FieldKind) Field {
-	return Field{Key: key, Kind: baseType | FieldKindFlagNil}
+func NilValue(key string, baseType Kind) Field {
+	return Field{Key: key, Kind: baseType | KIND_FLAG_NULL}
 }
