@@ -1,4 +1,4 @@
-package haikunator
+package ekagen
 
 // Ruby original: https://github.com/usmanbashir/haikunator
 // Go ver of Ruby original: https://github.com/yelinaung/go-haikunator

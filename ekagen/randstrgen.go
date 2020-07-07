@@ -1,4 +1,4 @@
-package randstrgen
+package ekagen
 
 import (
 	"math/rand"

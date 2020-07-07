@@ -1,4 +1,4 @@
-package haikunator
+package ekagen
 
 import (
 	"fmt"
