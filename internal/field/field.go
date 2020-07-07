@@ -81,8 +81,7 @@ const (
 	KIND_SYS_TYPE_EKAERR_UUID           = 1
 	KIND_SYS_TYPE_EKAERR_CLASS_ID       = 2
 	KIND_SYS_TYPE_EKAERR_CLASS_NAME     = 3
-	KIND_SYS_TYPE_EKAERR_NAMESPACE_ID   = 4
-	KIND_SYS_TYPE_EKAERR_NAMESPACE_NAME = 5
+	KIND_SYS_TYPE_EKAERR_PUBLIC_MESSAGE = 4
 
 	// field.Kind & KIND_MASK_BASE_TYPE could be any of listed below,
 	// only if field.Kind & KIND_FLAG_INTERNAL_SYS == 0 (user's field)
@@ -180,9 +179,9 @@ func (f Field) IsSystem() bool {
 	return f.Kind.IsSystem()
 }
 
-// reset frees all allocated resources (RAM in 99% cases) by Field f, preparing
+// Reset frees all allocated resources (RAM in 99% cases) by Field f, preparing
 // it for being reused in the future.
-func (f *Field) reset() {
+func Reset(f *Field) {
 	f.Key = ""
 	f.Kind = 0
 	f.IValue, f.SValue, f.Value = 0, "", nil
