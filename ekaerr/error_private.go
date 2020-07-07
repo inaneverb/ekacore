@@ -126,6 +126,22 @@ func (e *Error) is(cls []Class, deep bool) bool {
 	return false
 }
 
+// of reports whether e belongs to at least one of passed 'nss' Namespaces.
+func (e *Error) of(nss []Namespace) bool {
+
+	if !e.IsValid() || len(nss) == 0 {
+		return false
+	}
+
+	for i, n := 0, len(nss); i < n; i++ {
+		if isValidNamespaceID(nss[i].id) && e.namespaceID == nss[i].id {
+			return true
+		}
+	}
+
+	return false
+}
+
 // getCurrentLetterItem returns a *LetterItem from e's *Letter for e's.stackIdx.
 func (e *Error) getCurrentLetterItem() *letter.LetterItem {
 

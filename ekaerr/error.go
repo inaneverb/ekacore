@@ -213,6 +213,21 @@ func (e *Error) IsAny(cls ...Class) bool {
 	return e.is(cls, false)
 }
 
+// Of reports whether e has been instantiated by some Class that belongs to
+// 'ns' Namespace. Returns false if either e is not valid or 'ns' is invalid.
+// Nil safe.
+func (e *Error) Of(ns Namespace) bool {
+	return e.IsValid() && isValidNamespaceID(ns.id) && e.namespaceID == ns.id
+}
+
+// OfAny reports whether e belongs to at least one of passed 'nss' Namespaces
+// (has been instantiated by the Class that belongs to one of 'nss' Namespace).
+// Returns false if either e is not valid Error or no one namespace has been passed.
+// Nil safe.
+func (e *Error) OfAny(nss ...Namespace) bool {
+	return e.of(nss)
+}
+
 // IsAnuDeep reports whether e belongs to at least one of passed 'cls' Classes
 // or to any of their parent (base) Classes (has been instantiated using one of them).
 // Returns false if e is not valid Error or no one class has been passed.
