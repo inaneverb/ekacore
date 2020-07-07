@@ -3,7 +3,7 @@
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package syse
+package ekasys
 
 import (
 	"testing"
@@ -116,4 +116,6 @@ func TestGetStackTraceCommonDepthAbsolutelyFull(t *testing.T) {
 		assert.Contains(t, frames[i].Function, funcNames[i],
 			"wrong function name")
 	}
+
+	frames.Print(nil)
 }

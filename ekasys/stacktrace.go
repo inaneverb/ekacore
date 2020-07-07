@@ -3,7 +3,7 @@
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package syse
+package ekasys
 
 import (
 	"io"

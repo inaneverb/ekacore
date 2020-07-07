@@ -3,7 +3,7 @@
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package syse
+package ekasys
 
 import (
 	"path/filepath"
@@ -54,10 +54,10 @@ func (f *StackFrame) DoFormat() string {
 
 		f.Format += lastPackage + "/" + fn
 
-		f.FormatFileOffset = len(f.Format)
+		f.FormatFileOffset = len(f.Format) + 1
 		f.Format += " (" + file + ":" + strconv.Itoa(f.Line) + ")"
 
-		f.FormatFullPathOffset = len(f.Format)
+		f.FormatFullPathOffset = len(f.Format) + 1
 		f.Format += " " + fullPackage
 	}
 
