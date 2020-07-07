@@ -1,5 +1,5 @@
 // Copyright © 2020. All rights reserved.
-// Refactorer, modifier: Ilya Yuryevich.
+// Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
@@ -24,7 +24,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package typee
+package ekatyp
 
 import (
 	"bytes"
@@ -40,7 +40,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/qioalice/gext/syse"
+	"github.com/qioalice/ekago/ekasys"
 )
 
 //noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
@@ -235,9 +235,9 @@ func (g *_T_UUID_RFC4122_Generator) NewV2(domain byte) (UUID, error) {
 
 	switch domain {
 	case UUID_DOMAIN_PERSON:
-		binary.BigEndian.PutUint32(u[:], syse.PosixCachedUid())
+		binary.BigEndian.PutUint32(u[:], ekasys.PosixCachedUid())
 	case UUID_DOMAIN_GROUP:
-		binary.BigEndian.PutUint32(u[:], syse.PosixCachedGid())
+		binary.BigEndian.PutUint32(u[:], ekasys.PosixCachedGid())
 	}
 
 	u[9] = domain
