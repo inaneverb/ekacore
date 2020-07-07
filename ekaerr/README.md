@@ -57,8 +57,6 @@ And now imagine how it would be great if:
 - Support can find all related error's info by it's ID and send it to your tech specialists
 - Tech specialists (of course it's you) do fixes
 
-Imagine, 
-Send it to a client and imagine how easy it will be to find an associated error object later, especially when you will have only one error object
 
 ## How?
 
