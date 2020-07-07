@@ -29,7 +29,11 @@ func (li *LetterItem) addImplicitField(name string, value interface{}, typ refle
 	var f field.Field
 
 	switch {
-	case value == nil && !varyField:
+	case value == nil && varyField:
+		// do nothing
+		return
+
+	case value == nil:
 		li.Fields = append(li.Fields, field.NilValue(name, field.KIND_TYPE_INVALID))
 		return
 
