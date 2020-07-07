@@ -1,4 +1,4 @@
-package mathe
+package ekamath
 
 type (
 	// Flag8 is a type that allows you to represent a 8 bit set named "flagset".
