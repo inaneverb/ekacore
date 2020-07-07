@@ -296,7 +296,7 @@ func (je *JSONEncoder) encodeField(s *jsoniter.Stream, f field.Field, unnamedFie
 	case field.KIND_TYPE_FLOAT_32:
 		s.WriteFloat32(math.Float32frombits(uint32(f.IValue)))
 
-	case field.KIND_TYPE_FLOAT64:
+	case field.KIND_TYPE_FLOAT_64:
 		s.WriteFloat64(math.Float64frombits(uint64(f.IValue)))
 
 	case field.KIND_TYPE_STRING:

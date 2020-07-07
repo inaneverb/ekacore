@@ -864,7 +864,7 @@ func (ce *ConsoleEncoder) encField(f field.Field, to []byte, unnamedFieldIdx *in
 	case field.KIND_TYPE_FLOAT_32:
 		field_ += strconv.FormatFloat(float64(math.Float32frombits(uint32(f.IValue))), 'f', 2, 32)
 
-	case field.KIND_TYPE_FLOAT64:
+	case field.KIND_TYPE_FLOAT_64:
 		field_ += strconv.FormatFloat(float64(math.Float32frombits(uint32(f.IValue))), 'f', 2, 64)
 
 	case field.KIND_TYPE_STRING:

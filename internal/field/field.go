@@ -101,7 +101,7 @@ const (
 	KIND_TYPE_UINT_64     = 13 // uses IValue to store uint64
 	KIND_TYPE_UINTPTR     = 14 // uses IValue to store uintptr
 	KIND_TYPE_FLOAT_32    = 15 // uses IValue to store float32 (bits)
-	KIND_TYPE_FLOAT64     = 16 // uses IValue to store float64 (bits)
+	KIND_TYPE_FLOAT_64    = 16 // uses IValue to store float64 (bits)
 	KIND_TYPE_COMPLEX_64  = 17 // uses IValue to store complex64
 	KIND_TYPE_COMPLEX_128 = 18 // uses Value (interface{}) to store complex128
 	KIND_TYPE_STRING      = 19 // uses SValue to store string
@@ -261,7 +261,7 @@ func Float32(key string, value float32) Field {
 
 // Float64 constructs a field with the given key and value.
 func Float64(key string, value float64) Field {
-	return Field{Key: key, IValue: int64(math.Float64bits(value)), Kind: KIND_TYPE_FLOAT64}
+	return Field{Key: key, IValue: int64(math.Float64bits(value)), Kind: KIND_TYPE_FLOAT_64}
 }
 
 // Complex64 constructs a field with the given key and value.
@@ -394,7 +394,7 @@ func Float32p(key string, value *float32) Field {
 // and explicitly represent `nil` when appropriate.
 func Float64p(key string, value *float64) Field {
 	if value == nil {
-		return NilValue(key, KIND_TYPE_FLOAT64)
+		return NilValue(key, KIND_TYPE_FLOAT_64)
 	}
 	return Float64(key, *value)
 }
