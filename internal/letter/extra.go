@@ -1,19 +1,19 @@
-// Copyright © 2019. All rights reserved.
-// Author: Ilya Yuryevich.
+// Copyright © 2020. All rights reserved.
+// Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package log
+package letter
 
 import (
 	"strconv"
 )
 
-// printfHowMuchVerbs reports how much printf verbs 'format' has.
+// PrintfVerbsCount reports how much printf verbs 'format' has.
 //
 // Also fixes 'format' if it's has some incorrect things like e.g.
 // no-escaped last percent, etc.
-func printfHowMuchVerbs(format *string) (verbsCount int) {
+func PrintfVerbsCount(format *string) (verbsCount int) {
 
 	if format == nil || *format == "" {
 		return
@@ -59,15 +59,13 @@ func printfHowMuchVerbs(format *string) (verbsCount int) {
 	return
 }
 
-// implicitUnnamedFieldName returns string "unnamed_xx" where xx is idx.
+// UnnamedAsStr returns string "unnamed_xx" where xx is idx.
 // There is generated code to avoid 'strconv.Itoa' call for [0..32] 'idx' values.
-func implicitUnnamedFieldName(idx int) string {
+func UnnamedAsStr(idx int) string {
 
 	if idx < 0 || idx > 32 {
 		return "unnamed_" + strconv.Itoa(idx)
 	}
-
-	// TODO: Rewrite with binary search? Need more micro optimizations!
 
 	switch idx {
 	case 0:
@@ -139,30 +137,4 @@ func implicitUnnamedFieldName(idx int) string {
 	default:
 		return ""
 	}
-}
-
-// bufgr is buffer grow - a function that takes some buffer 'buf',
-// and checks whether it has at least 'required' free bytes. Returns 'buf' if it so.
-// Otherwise creates a new buffer, with X as a new capacity, where:
-//
-// 		X ~= 'cap(buf) * 1.5 + required', but can be more,
-//
-// and copies all data from 'buf' to a new buffer, then returns it.
-func bufgr(buf []byte, required int) []byte {
-
-	if cap(buf)-len(buf) >= required {
-		return buf
-	}
-	// https://github.com/golang/go/wiki/SliceTricks#extend
-	return append(buf, make([]byte, required+cap(buf)/2)...)[:len(buf)]
-
-	// TODO: Maybe strict and guarantee that new cap === required + cap(buf) * 1.5?
-	//  ATM Golang may reserve a few bytes for internal prediction purpose I guess.
-}
-
-// bufw writes 'text' to 'buf', growing 'buf' if it's need to write 'text'.
-// Returns grown 'buf' (if it has been grown) or originally 'buf'.
-// So, it's recommend to use it func like Golang's one 'append'.
-func bufw(buf []byte, text string) []byte {
-	return append(bufgr(buf, len(text)), text...)
 }
