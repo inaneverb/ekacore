@@ -1,6 +1,6 @@
-// Copyright © 2019. All rights reserved.
-// Author: Alice Qio.
-// Contacts: <qioalice@gmail.com>.
+// Copyright © 2020. All rights reserved.
+// Author: Ilya Stroy.
+// Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekadanger
@@ -15,7 +15,7 @@ type t1 struct {
 	i int
 }
 
-func (v t1) Foo() int          { return v.i }
+func (v *t1) Foo() int         { return v.i }
 func (v *t1) Bar(newI int) int { v.i = newI; return v.i }
 
 func newT(i int) t1 { return t1{i: i} }
@@ -31,6 +31,26 @@ func TestTakeCallableAddr(t *testing.T) {
 	var ptrFoo, ptrBar unsafe.Pointer
 	{
 		o := newT(10)
+
+		var (
+			typedFoo *typeFoo
+			typedBar *typeBar
+		)
+		{
+			addrFoo := o.Foo
+			typedFoo = &addrFoo
+			addrBar := o.Bar
+			typedBar = &addrBar
+		}
+
+		runtime.GC()
+
+		assert.Equal(t, 10, (*(*typeFoo)(typedFoo))())
+		assert.Equal(t, 20, (*(*typeBar)(typedBar))(20))
+		assert.Equal(t, 20, (*(*typeFoo)(typedFoo))())
+
+		o.Bar(10)
+
 		ptrFoo = TakeCallableAddr(o.Foo)
 		ptrBar = TakeCallableAddr(o.Bar)
 	}
