@@ -1,22 +1,22 @@
-// Copyright © 2019. All rights reserved.
-// Author: Ilya Yuryevich.
+// Copyright © 2020. All rights reserved.
+// Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package log
+package ekalog
 
 import (
 	"image/color"
 	"math"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 	"unsafe"
 
-	"github.com/qioalice/gext/dangerous"
-	"github.com/qioalice/gext/internal/xtermcolor"
-	"github.com/qioalice/gext/sys"
+	"github.com/qioalice/ekago/ekadanger"
+	"github.com/qioalice/ekago/internal/field"
+	"github.com/qioalice/ekago/internal/letter"
+	"github.com/qioalice/ekago/internal/xtermcolor"
 )
 
 // TODO: Update doc, comments
@@ -74,7 +74,7 @@ type colorBuilder struct {
 	// https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_parameters
 
 	// [0..255] - xterm256 ANSI SGR color code
-	// -1 if 'do reset color to terminal default' ( "\033[39m" or "\033[49m" )
+	// -1 if 'do cleanup color to terminal default' ( "\033[39m" or "\033[49m" )
 	// -2 if 'not set, use those one that was used' (not included to SGR)
 	bg, fg int16
 
@@ -139,7 +139,7 @@ var (
 
 func init() {
 	consoleEncoder = (&ConsoleEncoder{}).FreezeAndGetEncoder()
-	consoleEncoderAddr = dangerous.TakeRealAddr(consoleEncoder)
+	consoleEncoderAddr = ekadanger.TakeRealAddr(consoleEncoder)
 }
 
 func (fpt formatPartType) Type() formatPartType {
@@ -451,7 +451,7 @@ func (cb *colorBuilder) parseEntity(verbPart string) (parsed bool) {
 		return false
 
 	case verbPart == "-1":
-		// color reset (to default in term)
+		// color cleanup (to default in term)
 		*colorDestination = -1
 		return
 
@@ -734,13 +734,13 @@ func (ce *ConsoleEncoder) encode(e *Entry) []byte {
 			buf = ce.encLevel(e, part, buf)
 
 		case cefptVerbStack:
-			buf = ce.encStacktrace(e, part, buf)
+			//buf = ce.encStacktrace(e, part, buf)
 
 		case cefptVerbFields:
-			buf = ce.encFields(e, part, buf)
+			buf = ce.encFields(e.LogLetter.Items.Fields, part, buf)
 
 		case cefptVerbCaller:
-			buf = ce.encCaller(e, part, buf)
+			//buf = ce.encCaller(e, part, buf)
 		}
 	}
 
@@ -777,104 +777,104 @@ func (ce *ConsoleEncoder) encTime(e *Entry, fp formatPart, to []byte) []byte {
 }
 
 //
-func (ce *ConsoleEncoder) encCaller(e *Entry, fp formatPart, to []byte) []byte {
-
-	// TODO: Implement caller format
-
-	if e.Caller.PC == 0 {
-		return to
-	}
-
-	return bufw(to, e.Caller.DoFormat())
-}
+//func (ce *ConsoleEncoder) encCaller(e *Entry, fp formatPart, to []byte) []byte {
+//
+//	// TODO: Implement caller format
+//
+//	if e.Caller.PC == 0 {
+//		return to
+//	}
+//
+//	return bufw(to, e.Caller.DoFormat())
+//}
 
 //
-func (ce *ConsoleEncoder) encStacktrace(e *Entry, fp formatPart, to []byte) []byte {
-
-	// TODO: Implement stacktrace format
-	// Reminder: e.StackTrace.ExcludeInternal already called
-
-	if l := len(e.StackTrace); l > 0 {
-		for _, stackFrame := range e.StackTrace[:l-1] {
-			to = ce.encStackFrame(stackFrame, fp, to)
-			to = bufw(to, "\n")
-		}
-		to = ce.encStackFrame(e.StackTrace[l-1], fp, to)
-	}
-
-	return to
-}
+//func (ce *ConsoleEncoder) encStacktrace(e *Entry, fp formatPart, to []byte) []byte {
+//
+//	// TODO: Implement stacktrace format
+//	// Reminder: e.StackTrace.ExcludeInternal already called
+//
+//	if l := len(e.StackTrace); l > 0 {
+//		for _, stackFrame := range e.StackTrace[:l-1] {
+//			to = ce.encStackFrame(stackFrame, fp, to)
+//			to = bufw(to, "\n")
+//		}
+//		to = ce.encStackFrame(e.StackTrace[l-1], fp, to)
+//	}
+//
+//	return to
+//}
 
 //
-func (ce *ConsoleEncoder) encStackFrame(frame sys.StackFrame, fp formatPart, to []byte) []byte {
-
-	_, file := filepath.Split(frame.Function)
-	s := frame.Function + " (" + file + ":" + strconv.Itoa(frame.Line) + ")"
-
-	return bufw(to, s)
-}
+//func (ce *ConsoleEncoder) encStackFrame(frame syse.StackFrame, fp formatPart, to []byte) []byte {
+//
+//	_, file := filepath.Split(frame.Function)
+//	s := frame.Function + " (" + file + ":" + strconv.Itoa(frame.Line) + ")"
+//
+//	return bufw(to, s)
+//}
 
 //
-func (ce *ConsoleEncoder) encFields(e *Entry, fp formatPart, to []byte) []byte {
+func (ce *ConsoleEncoder) encFields(fields []field.Field, fp formatPart, to []byte) []byte {
 
 	// TODO: Implement fields format
 
-	if len(e.Fields) == 0 {
+	lFields := len(fields)
+
+	if lFields == 0 {
 		return to
 	}
 
 	unnamedFieldIdx := 1
 
-	if l := len(e.Fields); l > 0 {
-		for _, field := range e.Fields[:l-1] {
-			to = ce.encField(field, to, &unnamedFieldIdx)
-			to = bufw(to, ", ")
-		}
-		to = ce.encField(e.Fields[l-1], to, &unnamedFieldIdx)
+	for _, field_ := range fields[:lFields-1] {
+		to = ce.encField(field_, to, &unnamedFieldIdx)
+		to = bufw(to, ", ")
 	}
+	to = ce.encField(fields[lFields-1], to, &unnamedFieldIdx)
 
 	return to
 }
 
 //
-func (ce *ConsoleEncoder) encField(f Field, to []byte, unnamedFieldIdx *int) []byte {
+func (ce *ConsoleEncoder) encField(f field.Field, to []byte, unnamedFieldIdx *int) []byte {
 
-	field := f.Key
-	if field == "" {
-		field = implicitUnnamedFieldName(*unnamedFieldIdx)
+	field_ := f.Key
+	if field_ == "" {
+		field_ = letter.UnnamedAsStr(*unnamedFieldIdx)
 		*unnamedFieldIdx++
 	}
 
-	field += " = "
+	field_ += " = "
 
 	switch f.Kind {
-	case FieldKindBool:
+	case field.KIND_TYPE_BOOL:
 		if f.IValue != 0 {
-			field += "true"
+			field_ += "true"
 		} else {
-			field += "false"
+			field_ += "false"
 		}
 
-	case FieldKindInt, FieldKindInt8, FieldKindInt16, FieldKindInt32, FieldKindInt64:
-		field += strconv.FormatInt(f.IValue, 10)
+	case field.KIND_TYPE_INT, field.KIND_TYPE_INT_8, field.KIND_TYPE_INT_16, field.KIND_TYPE_INT_32, field.KIND_TYPE_INT_64:
+		field_ += strconv.FormatInt(f.IValue, 10)
 
-	case FieldKindUint, FieldKindUint8, FieldKindUint16, FieldKindUint32, FieldKindUint64:
-		field += strconv.FormatUint(uint64(f.IValue), 10)
+	case field.KIND_TYPE_UINT, field.KIND_TYPE_UINT_8, field.KIND_TYPE_UINT_16, field.KIND_TYPE_UINT_32, field.KIND_TYPE_UINT_64:
+		field_ += strconv.FormatUint(uint64(f.IValue), 10)
 
-	case FieldKindFloat32:
-		field += strconv.FormatFloat(float64(math.Float32frombits(uint32(f.IValue))), 'f', 2, 32)
+	case field.KIND_TYPE_FLOAT_32:
+		field_ += strconv.FormatFloat(float64(math.Float32frombits(uint32(f.IValue))), 'f', 2, 32)
 
-	case FieldKindFloat64:
-		field += strconv.FormatFloat(float64(math.Float32frombits(uint32(f.IValue))), 'f', 2, 64)
+	case field.KIND_TYPE_FLOAT64:
+		field_ += strconv.FormatFloat(float64(math.Float32frombits(uint32(f.IValue))), 'f', 2, 64)
 
-	case FieldKindString:
-		field += f.SValue
+	case field.KIND_TYPE_STRING:
+		field_ += f.SValue
 
 	default:
 		return to
 	}
 
-	return bufw(to, field)
+	return bufw(to, field_)
 }
 
 // easy case because ASCII sequence already generated at the rvColor method.
@@ -889,5 +889,5 @@ func (ce *ConsoleEncoder) encJustText(fp formatPart, to []byte) []byte {
 
 // easy case because e.Message is the text we should add.
 func (ce *ConsoleEncoder) encBody(e *Entry, to []byte) []byte {
-	return bufw(to, e.Message)
+	return bufw(to, e.LogLetter.Items.Message)
 }

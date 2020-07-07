@@ -1,16 +1,16 @@
-// Copyright © 2019. All rights reserved.
-// Author: Ilya Yuryevich.
+// Copyright © 2020. All rights reserved.
+// Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package log
+package ekalog
 
 import (
 	"io"
 	"unsafe"
 
-	"github.com/qioalice/gext/dangerous"
-	"github.com/qioalice/gext/types"
+	"github.com/qioalice/ekago/ekadanger"
+	"github.com/qioalice/ekago/ekatyp"
 )
 
 // CommonIntegrator is the implementation way of Integrator interface.
@@ -89,7 +89,6 @@ type commonIntegratorOutput struct {
 // log entries with.
 // E.g. if minimum level is 'Warning', 'Debug' logs will be dropped.
 func (bi *CommonIntegrator) MinLevelEnabled() Level {
-
 	return bi.outputLowestLevel
 }
 
@@ -117,7 +116,7 @@ func (bi *CommonIntegrator) Sync() error {
 
 	for _, output := range bi.output {
 		for _, destination := range output.Destinations {
-			if syncer, ok := destination.(types.Syncer); ok {
+			if syncer, ok := destination.(ekatyp.Syncer); ok {
 				if err := syncer.Sync(); err != nil {
 					return err
 				}
@@ -125,6 +124,11 @@ func (bi *CommonIntegrator) Sync() error {
 		}
 	}
 	return nil
+}
+
+//
+func (bi *CommonIntegrator) IsAsync() bool {
+	return false
 }
 
 // WithEncoder marks that all next registered writers by WriteTo() method
@@ -135,7 +139,7 @@ func (bi *CommonIntegrator) WithEncoder(enc CommonIntegratorEncoder) *CommonInte
 		return bi
 	}
 
-	encAddr := dangerous.TakeRealAddr(enc) // encAddr == nil if enc == nil
+	encAddr := ekadanger.TakeRealAddr(enc) // encAddr == nil if enc == nil
 
 	switch {
 	case encAddr == nil && len(bi.output) == 0:

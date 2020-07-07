@@ -1,9 +1,9 @@
-// Copyright © 2019. All rights reserved.
-// Author: Ilya Yuryevich.
+// Copyright © 2020. All rights reserved.
+// Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package log
+package ekalog
 
 // -----
 // Integrator is the why this package called 'logintegro' earlier.
@@ -35,4 +35,10 @@ type Integrator interface {
 	//
 	// Logger type has the same name's method that just calls this method.
 	Sync() error
+
+	// IsAsync must return whether Integrator async or not.
+	// It's very important for internal parts (GC).
+	//
+	// If you not sure, return 'true'. It's more secure but slower.
+	IsAsync() bool
 }

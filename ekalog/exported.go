@@ -1,12 +1,14 @@
-// Copyright © 2019. All rights reserved.
-// Author: Ilya Yuryevich.
+// Copyright © 2020. All rights reserved.
+// Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package log
+package ekalog
 
 import (
 	"os"
+
+	"github.com/qioalice/ekago/internal/field"
 )
 
 // -----
@@ -52,28 +54,42 @@ import (
 // logger functions such a Debug, Debugf, Debugw, With, Group
 var baseLogger *Logger
 
-// init performs a baseLogger initialization.
-func init() {
+// initBaseLogger performs a baseLogger initialization.
+func initBaseLogger() {
 
-	var encoder commonIntegratorEncoderGenerator = &ConsoleEncoder{
-		format: "{{l}} {{t}}\n{{w}}\n{{m}}\n{{f}}\n{{s}}\n\n",
-	}
+	var (
+		consoleEncoder commonIntegratorEncoderGenerator = &ConsoleEncoder{
+			format: "{{l}} {{t}}\n{{w}}\n{{m}}\n{{f}}\n{{s}}\n\n",
+		}
+		jsonEncoder commonIntegratorEncoderGenerator = &JSONEncoder{}
+	)
+
+	_ = consoleEncoder
+	_ = jsonEncoder
+
+	encoder := jsonEncoder
 
 	integrator := new(CommonIntegrator).
 		WithEncoder(encoder.FreezeAndGetEncoder()).
-		WithMinLevel(lvlDebug).
+		WithMinLevel(LEVEL_DEBUG).
 		WriteTo(os.Stdout)
 
-	entry := getEntry().reset()
+	entry := acquireEntry()
 
 	baseLogger = new(Logger).setIntegrator(integrator).setEntry(entry)
+}
+
+//
+func ReplaceIntegrator(newIntegrator Integrator) {
+	// TODO: nil check
+	baseLogger.setIntegrator(newIntegrator)
 }
 
 // SyncThis forces to flush all default package logger's integrator's buffer
 // and makes sure all pending log's entries are written.
 func SyncThis() error {
 
-	// baseLogger.canContinue() always returns true
+	// baseLogger.IsValid() always returns true
 	// there is no need the same check as Logger.Sync has.
 	return baseLogger.Sync()
 }
@@ -83,25 +99,25 @@ func SyncThis() error {
 // This function works the same as any Logger constructor (New, Package, Func,
 // Class, Method) but all these things will be made on default baseLogger.
 // And it will be returned.
-func ApplyThis(options ...interface{}) (defaultLogger *Logger) {
-
-	defaultLogger = baseLogger
-
-	if len(options) > 0 {
-		defaultLogger = defaultLogger.apply(options)
-	}
-	return
-}
+//func ApplyThis(options ...interface{}) (defaultLogger *Logger) {
+//
+//	defaultLogger = baseLogger
+//
+//	if len(options) > 0 {
+//		defaultLogger = defaultLogger.apply(options)
+//	}
+//	return
+//}
 
 // Constructor.
-func New(options ...interface{}) *Logger {
-
-	// apply is private instead of public, because there is only 2 diff:
-	// 1. public's has canContinue check (baseLogger always passes which)
-	// 2. public's has empty options check (but it does not matter,
-	// cause we shall clone Logger anyway).
-	return baseLogger.apply(options) // has derive() call
-}
+//func New(options ...interface{}) *loge.Logger {
+//
+//	// apply is private instead of public, because there is only 2 diff:
+//	// 1. public's has IsValid check (baseLogger always passes which)
+//	// 2. public's has empty options check (but it does not matter,
+//	// cause we shall clone Logger anyway).
+//	return baseLogger.apply(options) // has derive() call
+//}
 
 // With adds the fields to the default package logger's copy.
 //
@@ -113,7 +129,7 @@ func With(fields ...interface{}) (copy *Logger) {
 	if len(fields) == 0 {
 		return baseLogger // avoid unnecessary copy
 	}
-	return baseLogger.derive(nil).entry.with(fields, nil).l
+	return baseLogger.derive(nil).entry.addFields(fields, nil).l
 }
 
 // WithThis is the same as With but doesn't create a copy of default package
@@ -123,48 +139,48 @@ func WithThis(fields ...interface{}) (defaultLogger *Logger) {
 	defaultLogger = baseLogger
 
 	if len(fields) > 0 {
-		defaultLogger.entry.with(fields, nil)
+		defaultLogger.entry.addFields(fields, nil)
 	}
 	return
 }
 
 // WithStrict adds an explicit fields to the default package logger's copy.
-func WithStrict(fields ...Field) (copy *Logger) {
+func WithStrict(fields ...field.Field) (copy *Logger) {
 
 	if len(fields) == 0 {
 		return baseLogger // avoid unnecessary copy
 	}
-	return baseLogger.derive(nil).entry.with(nil, fields).l
+	return baseLogger.derive(nil).entry.addFields(nil, fields).l
 }
 
 // WithStrictThis is the same as WithStrict but doesn't create a copy of default
 // package logger. Modifies it in-place and returns then.
-func WithStrictThis(fields ...Field) (defaultLogger *Logger) {
+func WithStrictThis(fields ...field.Field) (defaultLogger *Logger) {
 
 	defaultLogger = baseLogger
 
 	if len(fields) > 0 {
-		defaultLogger.entry.with(nil, fields)
+		defaultLogger.entry.addFields(nil, fields)
 	}
 	return
 }
 
 // SkipStackFrames specified how much stack frames shall be skipped
 // at the stacktrace generation. Forces stacktrace generation if it's not so.
-func SkipStackFrames(n int) (copy *Logger) {
-
-	return baseLogger.derive(nil).entry.forceStacktrace(n).l
-}
+//func SkipStackFrames(n int) (copy *Logger) {
+//
+//	return baseLogger.derive(nil).entry.forceStacktrace(n).l
+//}
 
 // SkipStackFramesThis is the same as SkipStackFrames but doesn't create a copy
 // of default package logger. Modifies it in-place and returns then.
-func SkipStackFramesThis(n int) (defaultLogger *Logger) {
-
-	defaultLogger = baseLogger
-	defaultLogger.entry.forceStacktrace(n)
-
-	return
-}
+//func SkipStackFramesThis(n int) (defaultLogger *Logger) {
+//
+//	defaultLogger = baseLogger
+//	defaultLogger.entry.forceStacktrace(n)
+//
+//	return
+//}
 
 // If returns package logger if 'cond' == 'true', otherwise nil. Thus it's useful
 // to chaining methods - next methods in chaining will be done only if 'cond' == true.
