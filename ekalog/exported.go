@@ -8,7 +8,7 @@ package ekalog
 import (
 	"os"
 
-	"github.com/qioalice/ekago/internal/field"
+	"github.com/qioalice/ekago/v2/internal/field"
 )
 
 // -----

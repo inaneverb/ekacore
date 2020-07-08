@@ -11,12 +11,18 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/qioalice/ekago/ekaerr"
-	"github.com/qioalice/ekago/ekalog"
+	"github.com/qioalice/ekago/v2/ekaerr"
+	"github.com/qioalice/ekago/v2/ekalog"
 )
 
+type T struct{}
+
+func (T) String() string {
+	return "stringer"
+}
+
 func foo() *ekaerr.Error {
-	return foo1().S("foo bad").W("foo_arg", 131).Throw()
+	return foo1().S("foo bad").W("foo_arg", T{}).Throw()
 }
 
 func foo1() *ekaerr.Error {
@@ -24,15 +30,15 @@ func foo1() *ekaerr.Error {
 }
 
 func foo2() *ekaerr.Error {
-	return foo3().S("foo2 bad").W("foo2_arg", 3243).Throw()
+	return foo3().S("foo2 bad").W("foo2_arg?", "").Throw()
 }
 
 func foo3() *ekaerr.Error {
-	return ekaerr.IllegalState.New("what??", "arg1", nil).Throw()
+	return ekaerr.IllegalState.New("what??", "arg1?", nil).Throw()
 }
 
 func TestError(t *testing.T) {
-	foo2().LogAsWarning()
+	foo().LogAsWarning()
 }
 
 func BenchmarkError(b *testing.B) {

@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/qioalice/ekago/ekadanger"
+	"github.com/qioalice/ekago/v2/ekadanger"
 
 	"github.com/modern-go/reflect2"
 )

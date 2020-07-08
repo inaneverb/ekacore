@@ -10,8 +10,8 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/qioalice/ekago/ekasys"
-	"github.com/qioalice/ekago/internal/field"
+	"github.com/qioalice/ekago/v2/ekasys"
+	"github.com/qioalice/ekago/v2/internal/field"
 
 	"github.com/modern-go/reflect2"
 )

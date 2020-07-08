@@ -9,8 +9,8 @@ import (
 	"io"
 	"unsafe"
 
-	"github.com/qioalice/ekago/ekadanger"
-	"github.com/qioalice/ekago/ekatyp"
+	"github.com/qioalice/ekago/v2/ekadanger"
+	"github.com/qioalice/ekago/v2/ekatyp"
 )
 
 // CommonIntegrator is the implementation way of Integrator interface.

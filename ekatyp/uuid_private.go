@@ -40,7 +40,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/qioalice/ekago/ekasys"
+	"github.com/qioalice/ekago/v2/ekasys"
 )
 
 //noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).

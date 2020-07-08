@@ -10,9 +10,9 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/qioalice/ekago/ekadeath"
-	"github.com/qioalice/ekago/internal/field"
-	"github.com/qioalice/ekago/internal/letter"
+	"github.com/qioalice/ekago/v2/ekadeath"
+	"github.com/qioalice/ekago/v2/internal/field"
+	"github.com/qioalice/ekago/v2/internal/letter"
 )
 
 // levelEnabled reports whether log's entry with level 'lvl' should be handled.

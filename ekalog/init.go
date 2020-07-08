@@ -6,7 +6,7 @@
 package ekalog
 
 import (
-	"github.com/qioalice/ekago/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/letter"
 )
 
 func init() {

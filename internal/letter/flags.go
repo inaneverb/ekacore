@@ -6,7 +6,7 @@
 package letter
 
 import (
-	"github.com/qioalice/ekago/ekamath"
+	"github.com/qioalice/ekago/v2/ekamath"
 )
 
 type (

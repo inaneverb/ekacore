@@ -8,7 +8,7 @@ package ekalog
 import (
 	"time"
 
-	"github.com/qioalice/ekago/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/letter"
 )
 
 //

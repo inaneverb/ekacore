@@ -10,10 +10,10 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/qioalice/ekago/ekadanger"
-	"github.com/qioalice/ekago/ekasys"
-	"github.com/qioalice/ekago/internal/field"
-	"github.com/qioalice/ekago/internal/letter"
+	"github.com/qioalice/ekago/v2/ekadanger"
+	"github.com/qioalice/ekago/v2/ekasys"
+	"github.com/qioalice/ekago/v2/internal/field"
+	"github.com/qioalice/ekago/v2/internal/letter"
 
 	"github.com/json-iterator/go"
 )

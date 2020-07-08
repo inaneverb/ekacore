@@ -6,13 +6,13 @@
 package ekaerr
 
 import (
-	"github.com/qioalice/ekago/ekatyp"
 	"runtime"
 	"strings"
 	"unicode/utf8"
 
-	"github.com/qioalice/ekago/ekasys"
-	"github.com/qioalice/ekago/internal/letter"
+	"github.com/qioalice/ekago/v2/ekasys"
+	"github.com/qioalice/ekago/v2/ekatyp"
+	"github.com/qioalice/ekago/v2/internal/letter"
 )
 
 //noinspection GoSnakeCaseUsage
@@ -297,7 +297,7 @@ func (e *Error) construct(baseMessage string, legacyErr error) *Error {
 			}
 		}
 		if baseMessage != "" {
-			baseMessage += ", cause: " + legacyErrStr
+			baseMessage += ", cause: " + legacyErrStr + "."
 			break
 		}
 		fallthrough

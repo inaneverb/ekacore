@@ -8,8 +8,8 @@ package ekaerr
 import (
 	"unsafe"
 
-	"github.com/qioalice/ekago/ekalog"
-	"github.com/qioalice/ekago/internal/letter"
+	"github.com/qioalice/ekago/v2/ekalog"
+	"github.com/qioalice/ekago/v2/internal/letter"
 )
 
 // ---------------------------------------------------------------------------- //

@@ -6,7 +6,7 @@
 package letter
 
 import (
-	"github.com/qioalice/ekago/internal/field"
+	"github.com/qioalice/ekago/v2/internal/field"
 )
 
 //noinspection GoNameStartsWithPackageName

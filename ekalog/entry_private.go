@@ -8,8 +8,8 @@ package ekalog
 import (
 	"runtime"
 
-	"github.com/qioalice/ekago/internal/field"
-	"github.com/qioalice/ekago/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/field"
+	"github.com/qioalice/ekago/v2/internal/letter"
 )
 
 // prepare prepares current Entry for being used assuming that Entry has been

@@ -10,8 +10,8 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/qioalice/ekago/ekadanger"
-	"github.com/qioalice/ekago/internal/field"
+	"github.com/qioalice/ekago/v2/ekadanger"
+	"github.com/qioalice/ekago/v2/internal/field"
 
 	"github.com/modern-go/reflect2"
 )
@@ -38,9 +38,7 @@ func (li *LetterItem) addImplicitField(name string, value interface{}, typ refle
 		return
 
 	case typ.Implements(field.ReflectedTypeFmtStringer):
-		var stringer fmt.Stringer
-		typ.Set(&stringer, &value)
-		f = field.Stringer(name, stringer)
+		f = field.Stringer(name, value.(fmt.Stringer))
 		goto recognizer
 	}
 
