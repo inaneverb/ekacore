@@ -273,6 +273,17 @@ func (e *Error) SetPublicMessage(newPublicMessage string) *Error {
 	return e
 }
 
+// ID returns an unique e's ID as UUIDv4. You can tell this ID to the user and
+// log this error. Then it will be easy to find an associated error.
+// Returns "" if e is not valid Error.
+// Nil safe.
+func (e *Error) ID() string {
+	if !e.IsValid() {
+		return ""
+	}
+	return e.letter.SystemFields[_ERR_SYS_FIELD_IDX_ERROR_ID].SValue
+}
+
 // ReleaseError prepares 'err' for being reused in the future and releases
 // its internal parts (returning them to the pool).
 //
