@@ -34,17 +34,17 @@ import (
 // 		ig := new(CommonIntegrator)
 // 		ig = ig.WithEncoder(encoder1). // there is 1st dest registration begin
 // 		        WithMinLevel(Level.Debug).
-// 		        WriteTo(os.Stdout). // there is 1st dest registration end
+// 		        WithWriters(os.Stdout). // there is 1st dest registration end
 // 		        WithEncoder(encoder2). // there is 2nd dest registration begin
 // 		        WithMinLevel(Level.Warn).
-// 		        WriteTo(os.Stderr). // there is 2nd dest registration end
+// 		        WithWriters(os.Stderr). // there is 2nd dest registration end
 // And there is!
 // Now you have 'ig' object and it is your integrator.
 type CommonIntegrator struct {
 
 	// How it works? When you call WithMinLevel, WithEncoder it saves min level
 	// or encoder to output[i], where i is outputRegisterIdx.
-	// When you call WriteTo it finishes output[i] (where i is outputRegisterIdx),
+	// When you call WithWriters it finishes output[i] (where i is outputRegisterIdx),
 	// and thus output[i] considered completed, the i counter increases
 	// and then go to new commonIntegratorOutput.
 
@@ -131,7 +131,7 @@ func (bi *CommonIntegrator) IsAsync() bool {
 	return false
 }
 
-// WithEncoder marks that all next registered writers by WriteTo() method
+// WithEncoder marks that all next registered writers by WithWriters() method
 // will be associated with 'enc' encoder.
 func (bi *CommonIntegrator) WithEncoder(enc CommonIntegratorEncoder) *CommonIntegrator {
 
@@ -166,7 +166,7 @@ func (bi *CommonIntegrator) WithEncoder(enc CommonIntegratorEncoder) *CommonInte
 		for i, alreadyRegistered := range bi.output {
 			if alreadyRegistered.EncoderAddr == encAddr {
 				// current's w can not be empty only if it not last
-				// but if it so, will be initialized by WriteTo() or reused
+				// but if it so, will be initialized by WithWriters() or reused
 				// by next call of WithEncoder().
 				bi.outputRegisterIdx = i
 				return bi
@@ -189,7 +189,7 @@ func (bi *CommonIntegrator) WithEncoder(enc CommonIntegratorEncoder) *CommonInte
 }
 
 // WithMinLevel changes minimum level log's Entry to be processed for next
-// registered writers by WriteTo() method.
+// registered writers by WithWriters() method.
 func (bi *CommonIntegrator) WithMinLevel(minLevel Level) *CommonIntegrator {
 
 	if bi == nil {
@@ -206,10 +206,10 @@ func (bi *CommonIntegrator) WithMinLevel(minLevel Level) *CommonIntegrator {
 	return bi
 }
 
-// WriteTo registers all passed 'io.Writer's as logger's destinations.
+// WithWriters registers all passed 'io.Writer's as logger's destinations.
 // All previous WithEncoder(), WithMinLevel() calls will be applied to these
 // writers.
-func (bi *CommonIntegrator) WriteTo(writers ...io.Writer) *CommonIntegrator {
+func (bi *CommonIntegrator) WithWriters(writers ...io.Writer) *CommonIntegrator {
 
 	if bi == nil {
 		return bi
@@ -235,7 +235,7 @@ func (bi *CommonIntegrator) WriteTo(writers ...io.Writer) *CommonIntegrator {
 
 	if len(bi.output) == 0 {
 		// only in that case bi.outputRegisterIdx == 0,
-		// it was a direct call WriteTo(), even w/o WithEncoder() before.
+		// it was a direct call WithWriters(), even w/o WithEncoder() before.
 		bi.WithEncoder(nil) // otherwise there will be SEGFAULT
 	}
 

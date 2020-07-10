@@ -6,8 +6,6 @@
 package ekalog
 
 import (
-	"os"
-
 	"github.com/qioalice/ekago/v2/internal/field"
 )
 
@@ -49,35 +47,6 @@ import (
 // package-level baseLogger object, also don't use Logger methods to avoiding
 // unnecessary copying and calls internal parts directly.
 // ------------------------------------------------------------------------- //
-
-// baseLogger is default package-level logger, that used by all package-level
-// logger functions such a Debug, Debugf, Debugw, With, Group
-var baseLogger *Logger
-
-// initBaseLogger performs a baseLogger initialization.
-func initBaseLogger() {
-
-	var (
-		consoleEncoder commonIntegratorEncoderGenerator = &ConsoleEncoder{
-			format: "{{l}} {{t}}\n{{w}}\n{{m}}\n{{f}}\n{{s}}\n\n",
-		}
-		jsonEncoder commonIntegratorEncoderGenerator = &JSONEncoder{}
-	)
-
-	_ = consoleEncoder
-	_ = jsonEncoder
-
-	encoder := jsonEncoder
-
-	integrator := new(CommonIntegrator).
-		WithEncoder(encoder.FreezeAndGetEncoder()).
-		WithMinLevel(LEVEL_DEBUG).
-		WriteTo(os.Stdout)
-
-	entry := acquireEntry()
-
-	baseLogger = new(Logger).setIntegrator(integrator).setEntry(entry)
-}
 
 //
 func ReplaceIntegrator(newIntegrator Integrator) {
