@@ -7,12 +7,19 @@ package ekalog
 
 import (
 	"fmt"
+	"os"
 	"time"
 	"unsafe"
 
 	"github.com/qioalice/ekago/v2/ekadeath"
 	"github.com/qioalice/ekago/v2/internal/field"
 	"github.com/qioalice/ekago/v2/internal/letter"
+)
+
+var (
+	// baseLogger is default package-level logger, that used by all package-level
+	// logger functions such a Debug, Debugf, Debugw, With, Group
+	baseLogger *Logger
 )
 
 // levelEnabled reports whether log's entry with level 'lvl' should be handled.
@@ -168,4 +175,29 @@ func logErr(logger unsafe.Pointer, level uint8, errLetter *letter.Letter) {
 // *Error's *Letter 'errLetter'.
 func logErrThroughDefaultLogger(level uint8, errLetter *letter.Letter) {
 	baseLogger.log(Level(level), "", errLetter, nil, nil)
+}
+
+// initBaseLogger performs a baseLogger initialization.
+func initBaseLogger() {
+
+	var (
+		consoleEncoder commonIntegratorEncoderGenerator = &ConsoleEncoder{
+			format: "{{l}} {{t}}\n{{w}}\n{{m}}\n{{f}}\n{{s}}\n\n",
+		}
+		jsonEncoder commonIntegratorEncoderGenerator = &JSONEncoder{}
+	)
+
+	_ = consoleEncoder
+	_ = jsonEncoder
+
+	encoder := jsonEncoder
+
+	integrator := new(CommonIntegrator).
+		WithEncoder(encoder.FreezeAndGetEncoder()).
+		WithMinLevel(LEVEL_DEBUG).
+		WithWriters(os.Stdout)
+
+	entry := acquireEntry()
+
+	baseLogger = new(Logger).setIntegrator(integrator).setEntry(entry)
 }
