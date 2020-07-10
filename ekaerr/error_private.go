@@ -212,7 +212,7 @@ func (e *Error) addFields(args []interface{}) *Error {
 func (e *Error) init(classID ClassID, namespaceID NamespaceID) *Error {
 
 	skip := 3 // init(), newError(), [Class.New(), Class.Wrap()]
-	e.letter.StackTrace = ekasys.GetStackTrace(skip, -1)
+	e.letter.StackTrace = ekasys.GetStackTrace(skip, -1).ExcludeInternal()
 
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_ID].IValue = int64(classID)
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_NAME].SValue =
