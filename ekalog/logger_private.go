@@ -7,7 +7,6 @@ package ekalog
 
 import (
 	"fmt"
-	"github.com/qioalice/ekago/v2/ekasys"
 	"time"
 	"unsafe"
 
@@ -133,11 +132,7 @@ func (l *Logger) log(
 
 	workTempEntry.LogLetter.Items.Message = format
 	workTempEntry.ErrLetter = errLetter
-
-	if errLetter == nil {
-		workTempEntry.LogLetter.StackTrace =
-			ekasys.GetStackTrace(2, -1).ExcludeInternal()
-	}
+	workTempEntry.addStacktrace()
 
 	// Try to extract message from 'args' if 'errLetter' == nil ('onlyFields' == false),
 	// but if 'errLetter' is set, it's OK to log w/o message.

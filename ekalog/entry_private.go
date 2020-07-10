@@ -8,6 +8,7 @@ package ekalog
 import (
 	"runtime"
 
+	"github.com/qioalice/ekago/v2/ekasys"
 	"github.com/qioalice/ekago/v2/internal/field"
 	"github.com/qioalice/ekago/v2/internal/letter"
 )
@@ -91,28 +92,13 @@ func (e *Entry) addFields(args []interface{}, explicitFields []field.Field) *Ent
 //	return e
 //}
 
-// addStacktrace adds caller (if it's not added yet manually) and stacktrace
-// (if it's not added before from error or if forced overwrite is enabled).
-//func (e *Entry) addStacktrace() (this *Entry) {
-//
-//	if !e.testFlag(bEntryFlagDisableStacktrace) &&
-//		(e.StackTrace == nil || e.testFlag(bEntryFlagOverwriteStacktrace)) {
-//		e.StackTrace = syse.GetStackTrace(e.ssf+e.ssfp, -1).ExcludeInternal()
-//	}
-//
-//	if !e.testFlag(bEntryFlagAutoGenerateCaller) {
-//		return e
-//	}
-//
-//	stacktrace := e.StackTrace
-//	if len(stacktrace) == 0 {
-//		stacktrace = syse.GetStackTrace(e.ssf+e.ssfp, 1)
-//		if len(stacktrace) == 0 {
-//			// TODO: Internal error, can't get a stacktrace => can't get a caller info
-//			return e
-//		}
-//	}
-//
-//	e.Caller = stacktrace[0]
-//	return e
-//}
+// addStacktrace generates and adds stacktrace
+// (if it's not presented by  ErrLetter's field).
+func (e *Entry) addStacktrace() (this *Entry) {
+
+	if e.ErrLetter == nil {
+		e.LogLetter.StackTrace = ekasys.GetStackTrace(2, -1).ExcludeInternal()
+	}
+
+	return e
+}
