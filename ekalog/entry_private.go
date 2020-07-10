@@ -36,6 +36,7 @@ func (e *Entry) cleanup() (this *Entry) {
 
 	e.l = nil
 	e.LogLetter.StackTrace = nil
+	e.ErrLetter = nil
 	letter.LI_ResetItem(e.LogLetter.Items)
 
 	return e

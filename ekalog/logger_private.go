@@ -150,7 +150,9 @@ func (l *Logger) log(
 	l.integrator.Write(workTempEntry)
 
 	if !l.integrator.IsAsync() {
-		letter.GErrRelease(errLetter)
+		if errLetter != nil {
+			letter.GErrRelease(errLetter)
+		}
 		releaseEntry(workTempEntry)
 	}
 
