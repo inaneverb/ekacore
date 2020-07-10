@@ -115,8 +115,9 @@ func (s StackTrace) ExcludeInternal() StackTrace {
 	// a special list of stack frames that won't be included to the result set.
 
 	idx := len(s) - 1
-	for idx > 0 && strings.HasPrefix(s[idx].Function, "runtime.") {
-		idx--
+	for continue_ := true; continue_; idx-- {
+		continue_ = idx > 0 && (strings.HasPrefix(s[idx].Function, "runtime.") ||
+			strings.HasPrefix(s[idx].Function, "testing."))
 	}
 	return s[:idx+1]
 }
