@@ -98,7 +98,7 @@ func (e *Entry) addFields(args []interface{}, explicitFields []field.Field) *Ent
 func (e *Entry) addStacktrace() (this *Entry) {
 
 	if e.ErrLetter == nil {
-		e.LogLetter.StackTrace = ekasys.GetStackTrace(2, -1).ExcludeInternal()
+		e.LogLetter.StackTrace = ekasys.GetStackTrace(3, -1).ExcludeInternal()
 	}
 
 	return e
