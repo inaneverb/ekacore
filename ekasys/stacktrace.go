@@ -119,7 +119,7 @@ func (s StackTrace) ExcludeInternal() StackTrace {
 		continue_ = idx > 0 && (strings.HasPrefix(s[idx].Function, "runtime.") ||
 			strings.HasPrefix(s[idx].Function, "testing."))
 	}
-	return s[:idx+1]
+	return s[:idx+2]
 }
 
 // Write writes generated stacktrace to the w or to the stdout if w == nil.
