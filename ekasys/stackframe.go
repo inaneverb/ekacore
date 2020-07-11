@@ -8,7 +8,8 @@ package ekasys
 import (
 	"path/filepath"
 	"runtime"
-	"strconv"
+
+	"github.com/qioalice/ekago/v2/ekastr"
 )
 
 // StackFrame represents one stack level (frame/item).
@@ -40,26 +41,87 @@ type StackFrame struct {
 func (f *StackFrame) DoFormat() string {
 
 	if f.Format == "" {
-
-		fullPackage, fn := filepath.Split(f.Function)
-		_, file := filepath.Split(f.File)
-
-		// we need last package from the fullPackage
-		lastPackage := filepath.Base(fullPackage)
-
-		// need remove last package from fullPackage
-		if len(lastPackage)+2 <= len(fullPackage) && lastPackage != "." {
-			fullPackage = fullPackage[:len(fullPackage)-len(lastPackage)-2]
-		}
-
-		f.Format += lastPackage + "/" + fn
-
-		f.FormatFileOffset = len(f.Format) + 1
-		f.Format += " (" + file + ":" + strconv.Itoa(f.Line) + ")"
-
-		f.FormatFullPathOffset = len(f.Format) + 1
-		f.Format += " " + fullPackage
+		f.Format = f.doFormat()
 	}
 
 	return f.Format
+}
+
+// doFormat is a private part of DoFormat() function.
+func (f *StackFrame) doFormat() string {
+
+	fullPackage, fn := filepath.Split(f.Function)
+	_, file := filepath.Split(f.File)
+
+	// we need last package from the fullPackage
+	lastPackage := filepath.Base(fullPackage)
+
+	// need remove last package from fullPackage
+	if len(lastPackage)+2 <= len(fullPackage) && lastPackage != "." {
+		fullPackage = fullPackage[:len(fullPackage)-len(lastPackage)-2]
+	}
+
+	requiredBufLen := 9 // 2 spaces, '/', '(', ')', ':' + 3 reserved bytes
+	requiredBufLen += len(fullPackage) + len(lastPackage) + len(file) + len(fn)
+	requiredBufLen += ekastr.PItoa32(int32(f.Line))
+
+	buf := make([]byte, requiredBufLen)
+	offset := 0
+
+	// maybe 'lastPackage' is version of package?
+	if len(lastPackage) > 1 && (lastPackage[0] == 'v' || lastPackage[0] == 'V') {
+		is := true
+		for i, n := 1, len(lastPackage); i < n && is; i++ {
+			if lastPackage[i] < '0' || lastPackage[i] > '9' {
+				is = false
+			}
+		}
+		if is {
+			lastPackage2 := filepath.Base(fullPackage)
+			if len(lastPackage2)+2 <= len(fullPackage) && lastPackage2 != "." {
+				fullPackage = fullPackage[:len(fullPackage)-len(lastPackage2)-1]
+			}
+			copy(buf, lastPackage2)
+			offset += len(lastPackage2)
+
+			buf[offset] = '.'
+			offset++
+		}
+	}
+
+	copy(buf[offset:], lastPackage)
+	offset += len(lastPackage)
+
+	buf[offset] = '.'
+	offset++
+
+	copy(buf[offset:], fn)
+	offset += len(fn)
+
+	buf[offset] = ' '
+	offset++
+	buf[offset] = '('
+	offset++
+
+	f.FormatFileOffset = offset - 1
+
+	copy(buf[offset:], file)
+	offset += len(file)
+
+	buf[offset] = ':'
+	offset++
+
+	offset += ekastr.BItoa32(buf[offset:], int32(f.Line))
+
+	buf[offset] = ')'
+	offset++
+	buf[offset] = ' '
+	offset++
+
+	f.FormatFullPathOffset = offset
+
+	copy(buf[offset:], fullPackage)
+	offset += len(fullPackage)
+
+	return string(buf[:offset])
 }

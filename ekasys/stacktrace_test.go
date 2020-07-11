@@ -6,6 +6,7 @@
 package ekasys
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -118,4 +119,34 @@ func TestGetStackTraceCommonDepthAbsolutelyFull(t *testing.T) {
 	}
 
 	frames.Print(nil)
+}
+
+type T struct{}
+
+func (T) foo() StackFrame {
+	return GetStackTrace(0, 1)[0]
+}
+
+// TestStackFrame_DoFormat just see what StackFrame.DoFormat generates.
+func TestStackFrame_DoFormat(t *testing.T) {
+
+	frame := GetStackTrace(0, 1)[0]
+	fmt.Println(frame.doFormat())
+
+	frame = new(T).foo()
+	fmt.Println(frame.doFormat())
+}
+
+// Bench StackFrame.doFormat func (generating readable output of stack frame).
+func BenchmarkStackFrame_DoFormat(b *testing.B) {
+
+	b.ReportAllocs()
+	b.StopTimer()
+
+	frame := GetStackTrace(0, 1)[0]
+
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		frame.doFormat()
+	}
 }
