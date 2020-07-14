@@ -29,6 +29,11 @@ type Integrator interface {
 	// E.g. if minimum level is 'Warning', 'Debug' logs will be dropped.
 	MinLevelEnabled() Level
 
+	// MinLevelForStackTrace must return a minimum level starting with a stacktrace
+	// must be generated and added to the Logger's Entry only if it's not presented
+	// yet by attached ekaerr.Error object.
+	MinLevelForStackTrace() Level
+
 	// Sync flushes all pending log entries to integrator destination.
 	// It useful when integrator does async work and sometimes you need to make sure
 	// all pending entries are flushed.

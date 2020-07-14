@@ -6,6 +6,7 @@
 package ekalog
 
 import (
+	"github.com/qioalice/ekago/v2/ekadanger"
 	"github.com/qioalice/ekago/v2/internal/field"
 )
 
@@ -50,7 +51,14 @@ import (
 
 //
 func ReplaceIntegrator(newIntegrator Integrator) {
-	// TODO: nil check
+
+	if ekadanger.TakeRealAddr(newIntegrator) == nil {
+		return
+	}
+	if ci, ok := newIntegrator.(*CommonIntegrator); !(ok && ci != nil && ci.tryToBuild()) {
+		return
+	}
+
 	baseLogger.setIntegrator(newIntegrator)
 }
 
