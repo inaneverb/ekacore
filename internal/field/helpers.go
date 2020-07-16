@@ -7,6 +7,22 @@ package field
 
 // IsZero reports whether f contains zero value of its type (based on kind).
 func (f Field) IsZero() bool {
+
+	if f.Kind.IsSystem() {
+		switch f.Kind.BaseType() {
+
+		case KIND_SYS_TYPE_EKAERR_UUID, KIND_SYS_TYPE_EKAERR_PUBLIC_MESSAGE,
+			KIND_SYS_TYPE_EKAERR_CLASS_NAME:
+			return f.SValue == ""
+
+		case KIND_SYS_TYPE_EKAERR_CLASS_ID:
+			return f.IValue == 0
+
+		default:
+			return true
+		}
+	}
+
 	switch f.Kind.BaseType() {
 
 	case KIND_TYPE_BOOL,
