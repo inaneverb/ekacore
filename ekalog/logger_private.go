@@ -188,6 +188,7 @@ func initBaseLogger() {
 	integrator := new(CommonIntegrator).
 		WithEncoder(defaultConsoleEncoder).
 		WithMinLevel(LEVEL_DEBUG).
+		WithMinLevelForStackTrace(LEVEL_WARNING).
 		WriteTo(os.Stdout)
 
 	entry := acquireEntry()
