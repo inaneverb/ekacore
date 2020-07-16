@@ -6,118 +6,213 @@
 package ekalog
 
 import (
-	"image/color"
 	"math"
 	"strconv"
 	"strings"
 	"time"
-	"unsafe"
 
-	"github.com/qioalice/ekago/v2/ekadanger"
+	"github.com/qioalice/ekago/v2/ekasys"
 	"github.com/qioalice/ekago/v2/internal/field"
 	"github.com/qioalice/ekago/v2/internal/letter"
-	"github.com/qioalice/ekago/v2/internal/xtermcolor"
 )
 
-// TODO: Update doc, comments
+//noinspection GoSnakeCaseUsage
+type (
+	// CI_ConsoleEncoder is a type that built to be used as a part of CommonIntegrator
+	// as an log Entries encoder to the TTY (console) with human readable format,
+	// custom format supporting and ability to enable coloring.
+	//
+	// If you want to use CI_ConsoleEncoder, you need to instantiate object,
+	// set log's text format string using SetFormat() and then call
+	// FreezeAndGetEncoder() method. By that you'll get the function that has
+	// an alias CI_Encoder and you can add it as encoder by
+	// CommonIntegrator.WithEncoder().
+	//
+	// See https://github.com/qioalice/ekago/ekalog/integrator.go ,
+	// https://github.com/qioalice/ekago/ekalog/integrator_common.go for more info.
+	CI_ConsoleEncoder struct {
 
-// "complex verb" - is any other verb than "just text" verb.
+		// RAW FORMAT
+		// This is what user is set by SetFormat() method.
+		//
+		// It will be parsed, converted and casted to internal structures
+		// that are more convenient to be used as source of log message format
+		// generator.
+		format string
 
-//
-type ConsoleEncoder struct {
+		// BUILT FORMAT
+		// This part represents parsed raw format string.
+		//
+		// First of all RAW format string parsed to the two group of entities:
+		// - Just string, not verb (writes as is),
+		// - Format verbs (will be substituted to the log's parts, such as
+		//   log's message, timestamp, log's level, log's fields, stacktrace, etc).
+		//
+		// These parts (w/o reallocation) will be stored with the same sequence
+		// as they represented in 'format' but there will be specified verb's types also.
+		// Moreover their common length will be calculated and stored to decrease
+		// destination []byte buffer reallocations (just allocate big buffer,
+		// at least as more as 'formatParts' required).
+		formatParts []_CICE_FormatPart
 
-	// -----
-	// RAW FORMAT
-	// This is the ConsoleEncoder's parts that are considered raw.
-	// These parts are set directly by some methods or with minimum aggregation.
-	// They will be parsed, converted and casted to internal structures
-	// that are more convenient to be used as source of log message format
-	// generator.
-	// -----
-	format string
+		colorMap    map[Level]string // map of default colors for each level
+		colorMapMax int              // max used len of ASCII color encoded seq.
 
-	// -----
-	// BUILT FORMAT
-	// This part represents parsed raw format string.
-	// First of all RAW format string parsed to the two group of entities:
-	// - Just string, not verb (writes as is),
-	// - Format verbs (will be substituted to the log's parts, such as
-	//   log's message, timestamp, log's level, log's fields, stacktrace, etc).
-	// These parts (w/o reallocation) will be stored with the same sequence
-	// as they represented in 'format' but there will be specified verb's types also.
-	// Moreover their common length will be calculated and stored to decrease
-	// destination []byte buffer reallocations (just allocate big buffer,
-	// at least as more as 'formatParts' required).
-	// -----
-	formatParts []formatPart
-	// Sum of: len of just text parts + predicted len of log's parts.
-	minimumBufferLen int
-}
+		// Sum of: len of just text parts + predicted len of log's parts.
+		minimumBufferLen int
 
-// formatPart represents built format's part (parsed RAW format string).
-// - for 'typ' == 'cefptVerbJustText', 'value' is original RAW format string's part;
-// - for 'typ' == 'cefptVerbColor', 'value' is calculated bash escape sequence
-// (like "\033[01;03;38;05;144m");
-// - for other 'typ' variants, 'value' is empty, 'cause it's log's verbs
-// and they're runtime calculated entities.
-type formatPart struct {
-	typ   formatPartType
-	value string
-}
+		ff _CICE_FieldsFormat     // parts of fields formatting
+		bf _CICE_BodyFormat       // parts of body formatting
+		cf _CICE_CallerFormat     // parts of caller, stacktrace's frames formatting
+		sf _CICE_StacktraceFormat // parts of stacktrace formatting
+		ef _CICE_ErrorFormat      // parts of attached error formatting
+	}
 
-//
-type formatPartType uint16
+	// _CICE_FormatPart represents built format's part (parsed RAW format string).
+	// - for 'typ' == '_CICE_FPT_VERB_JUST_TEXT', 'value' is original RAW format string's part;
+	// - for 'typ' == '_CICE_FPT_VERB_COLOR_CUSTOM', 'value' is calculated bash escape sequence
+	//   (like "\033[01;03;38;05;144m");
+	// - for other 'typ' variants, 'value' is empty, 'cause it's log's verbs
+	// and they're runtime calculated entities.
+	_CICE_FormatPart struct {
+		typ   _CICE_FormatPartType
+		value string
+	}
 
-//
-type colorBuilder struct {
+	// _CICE_FormatPartType is a special type of _CICE_FormatPart's field 'typ' that contains
+	// an info what kind of format verb current _CICE_FormatPart object is
+	// and how exactly it will be converted to the text at the runtime.
+	_CICE_FormatPartType uint16
 
-	// https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_parameters
+	_CICE_FieldsFormat struct {
+		isSet                bool
+		beforeFields         string
+		afterFields          string
+		beforeKey            string
+		afterKey             string
+		afterValue           string
+		afterNewLine         string
+		afterNewLineForError string
+		itemsPerLine         int16
+	}
 
-	// [0..255] - xterm256 ANSI SGR color code
-	// -1 if 'do cleanup color to terminal default' ( "\033[39m" or "\033[49m" )
-	// -2 if 'not set, use those one that was used' (not included to SGR)
-	bg, fg int16
+	_CICE_BodyFormat struct {
+		isSet      bool
+		beforeBody string
+		afterBody  string
+	}
 
-	// 0 - 'not set, use those one that was used' (not included to SGR)
-	// 1 - enable (included to SGR (01/03/04))
-	// -1 - disable (included to SGR (22/23/24))
-	bold, italic, underline int8
+	_CICE_CallerFormat struct {
+		isSet     bool
+		isDefault bool
+		parts     [10]struct {
+			typ int16
+			val string
+		}
+	}
 
-	// Yes, there is no support blanking text.
-	// I think it's disgusting. It will never be added.
-}
+	_CICE_StacktraceFormat struct {
+		isSet       bool
+		beforeStack string
+		afterStack  string
+	}
 
-// [c]onsole [e]ncoder [f]ormat [p]art [t]ype (cefpt) predefined constants.
+	_CICE_ErrorFormat struct {
+		isSet       bool
+		beforeError string
+		afterError  string
+	}
+)
+
+//noinspection GoSnakeCaseUsage
 const (
-	cefptMaskType formatPartType = 0x00FF
-	cefptMaskData formatPartType = 0xFF00
+	// Common Integrator Console Encoder Format Part Type (CICE FPT)
+	// predefined constants.
 
-	// TODO: formatPartType.setd,getd -> setter/getter of data with offset
-	cefptOffsetData int = 8
+	_CICE_FPT_MASK_TYPE _CICE_FormatPartType = 0x00_FF
+	_CICE_FPT_MASK_DATA _CICE_FormatPartType = 0xFF_00
 
-	cefptVerbJustText formatPartType = 0x01
-	cefptVerbColor    formatPartType = 0x02
+	_CICE_FPT_VERB_JUST_TEXT       _CICE_FormatPartType = 0x01
+	_CICE_FPT_VERB_COLOR_CUSTOM    _CICE_FormatPartType = 0x02
+	_CICE_FPT_VERB_COLOR_FOR_LEVEL _CICE_FormatPartType = 0x03
+	_CICE_FPT_VERB_BODY            _CICE_FormatPartType = 0x0A
+	_CICE_FPT_VERB_TIME            _CICE_FormatPartType = 0x0B
+	_CICE_FPT_VERB_LEVEL           _CICE_FormatPartType = 0x0C
+	_CICE_FPT_VERB_STACKTRACE      _CICE_FormatPartType = 0x1A
+	_CICE_FPT_VERB_FIELDS          _CICE_FormatPartType = 0x2A
+	_CICE_FPT_VERB_CALLER          _CICE_FormatPartType = 0x3A
 
-	cefptVerbBody    formatPartType = 0x0A
-	cefptVerbTime    formatPartType = 0x0B
-	cefptVerbLevelD  formatPartType = 0x0C
-	cefptVerbLevelS  formatPartType = 0x0D
-	cefptVerbLevelSS formatPartType = 0x0E
+	// Common Integrator Console Encoder Level Format (CICE LF)
+	// type constants.
 
-	cefptVerbStack  formatPartType = 0x1A
-	cefptVerbFields formatPartType = 0x2A
-	cefptVerbCaller formatPartType = 0x3A
+	_CICE_LF_NUMBER           _CICE_FormatPartType = 1
+	_CICE_LF_SHORT_NORMAL     _CICE_FormatPartType = 2
+	_CICE_LF_SHORT_UPPER_CASE _CICE_FormatPartType = 3
+	_CICE_LF_FULL_NORMAL      _CICE_FormatPartType = 4
+	_CICE_LF_FULL_UPPER_CASE  _CICE_FormatPartType = 5
+
+	// Common Integrator Console Encoder Time Format (CICE TF)
+	// type constants.
+
+	_CICE_TF_TIMESTAMP _CICE_FormatPartType = 1
+	_CICE_TF_ANSIC     _CICE_FormatPartType = 2
+	_CICE_TF_UNIXDATE  _CICE_FormatPartType = 3
+	_CICE_TF_RUBYDATE  _CICE_FormatPartType = 4
+	_CICE_TF_RFC822    _CICE_FormatPartType = 5
+	_CICE_TF_RFC822_Z  _CICE_FormatPartType = 6
+	_CICE_TF_RFC850    _CICE_FormatPartType = 7
+	_CICE_TF_RFC1123   _CICE_FormatPartType = 8
+	_CICE_TF_RFC1123_Z _CICE_FormatPartType = 9
+	_CICE_TF_RFC3339   _CICE_FormatPartType = 10
+
+	// Common Integrator Console Encoder Caller Format (CICE CF)
+	// type constants.
+
+	_CICE_CF_TYPE_SEPARATOR  int16 = -1
+	_CICE_CF_TYPE_FUNC_SHORT int16 = 1
+	_CICE_CF_TYPE_FUNC_FULL  int16 = 2
+	_CICE_CF_TYPE_FILE_SHORT int16 = 3
+	_CICE_CF_TYPE_FILE_FULL  int16 = 4
+	_CICE_CF_TYPE_LINE_NUM   int16 = 5
+	_CICE_CF_TYPE_PKG_SHORT  int16 = 6 // unused
+	_CICE_CF_TYPE_PKG_FULL   int16 = 7
+
+	// Common Integrator Console Encoder (CICE) verb predefined constants.
+
+	_CICE_VERB_START_INDICATOR rune = '{'
+	_CICE_VERB_END_INDICATOR   rune = '}'
+	_CICE_VERB_SEPARATOR       byte = '/'
+
+	// Common Integrator Console Integrator Standard Colors (CICE SC)
+	// predefined constants.
+
+	_CICE_SC_DEBUG   string = `c/fg:ascii:36`
+	_CICE_SC_INFO    string = `c/fg:ascii:32`
+	_CICE_SC_WARNING string = `c/fg:ascii:33/b`
+	_CICE_SC_ERROR   string = `c/fg:ascii:31/b`
+	_CICE_SC_FATAL   string = `c/fg:ascii:35/b`
+
+	// Common Integrator Console Encoder (CICE) defaults.
+
+	_CICE_DEFAULT_FORMAT string =
+	// include colored level, colored time
+	"{{c}}{{l}} {{t}}{{c/0}}\n" +
+		// include message with \n if non-empty
+		"{{m/?$\n}}" +
+		// include fields with " = " as key-value separator, colored key
+		"{{f/?$\n/v = /e, /l\t/le\t\t}}" +
+		// include stacktrace with \n if non-empty
+		"{{s/?$\n/e, }}" +
+		// omit caller, specify each stacktrace's frame format
+		"{{w/0/fd}}" +
+		//
+		"\n"
+
+	_CICE_DEFAULT_TIME_FORMAT string = "Mon, Jan 02 15:04:05"
 )
 
-//
-const (
-	ceVerbStartIndicator rune = '{'
-	ceVerbEndIndicator   rune = '}'
-	ceVerbSeparator      byte = '/'
-)
-
-// [c]onsole [e]ncoder [v]erb [t]ype values, that are used in format string
-// to determine what kind of verb must be used.
+// Common Integrator Console Encoder Verb Types (CICE VT)
+// that are used in format string to determine what kind of verb must be used.
 var (
 	cevtCaller     = []string{"caller", "who", "w"}
 	cevtColor      = []string{"color", "c"}
@@ -129,40 +224,66 @@ var (
 )
 
 var (
-	// Make sure we won't break API.
-	_ CommonIntegratorEncoder = (*ConsoleEncoder)(nil).encode
-
-	// Package's console encoder
-	consoleEncoder     CommonIntegratorEncoder
-	consoleEncoderAddr unsafe.Pointer
+	// Make sure we won't break API by declaring package's console encoder
+	defaultConsoleEncoder CI_Encoder
 )
 
-func init() {
-	consoleEncoder = (&ConsoleEncoder{}).FreezeAndGetEncoder()
-	consoleEncoderAddr = ekadanger.TakeRealAddr(consoleEncoder)
+// Type extracts verb's type from current _CICE_FormatPartType that can be compared
+// with _CEFPT_VERB... constants.
+func (fpt _CICE_FormatPartType) Type() _CICE_FormatPartType {
+	return fpt & _CICE_FPT_MASK_TYPE
 }
 
-func (fpt formatPartType) Type() formatPartType {
-	return fpt & cefptMaskType
+// Data extracts verb's type data from current _CICE_FormatPartType that is needed
+// for some internal verb's encoders.
+func (fpt _CICE_FormatPartType) Data() _CICE_FormatPartType {
+	return (fpt & _CICE_FPT_MASK_DATA) >> 8
 }
 
-func (fpt formatPartType) Data() formatPartType {
-	return fpt & cefptMaskData
+// SetFormat
+func (ce *CI_ConsoleEncoder) SetFormat(newFormat string) *CI_ConsoleEncoder {
+
+	if s := strings.TrimSpace(newFormat); s == "" {
+		// Just check whether 'newFormat' is non-empty string or a string
+		// that contains not only whitespace characters. But do not ignore them.
+		return ce
+	}
+
+	// TODO: calculate buf size
+
+	ce.format = newFormat
+	return ce
 }
 
-//
-func (ce *ConsoleEncoder) FreezeAndGetEncoder() CommonIntegratorEncoder {
+// SetColorFor sets color what will be used as a replace for level-depended
+// color verb from the 'format' string that is set by SetFormat() func.
+func (ce *CI_ConsoleEncoder) SetColorFor(level Level, color string) *CI_ConsoleEncoder {
+
+	if ce.colorMap == nil {
+		ce.colorMap = make(map[Level]string)
+	}
+
+	if encodedColor := ce.rvColorHelper(color); encodedColor != "" {
+		ce.colorMap[level] = encodedColor
+		if l := len(encodedColor); ce.colorMapMax < l {
+			ce.colorMapMax = l
+		}
+	}
+
+	return ce
+}
+
+// FreezeAndGetEncoder builds current CI_ConsoleEncoder if it has not built yet
+// and if format string has been provided by SetFormat() returning a function
+// (has an alias CI_Encoder) that can be used at the
+// CommonIntegrator.WithEncoder() call while initializing.
+func (ce *CI_ConsoleEncoder) FreezeAndGetEncoder() CI_Encoder {
 	return ce.doBuild().encode
 }
 
-//
-func (ce *ConsoleEncoder) SetFormat() {
-	// TODO: ce.minimumBufferLen = 0
-}
-
-// doBuild builds the current console encoder only if it has not built yet.
-// There is no-op if format string is empty.
-func (ce *ConsoleEncoder) doBuild() *ConsoleEncoder {
+// doBuild builds the current CI_ConsoleEncoder only if it has not built yet.
+// There is no-op if format string is empty or encoder already built.
+func (ce *CI_ConsoleEncoder) doBuild() *CI_ConsoleEncoder {
 
 	switch {
 	case ce == nil:
@@ -173,6 +294,11 @@ func (ce *ConsoleEncoder) doBuild() *ConsoleEncoder {
 		return ce
 	}
 
+	ce.format = strings.TrimSpace(ce.format)
+	if ce.format == "" {
+		ce.format = _CICE_DEFAULT_FORMAT
+	}
+
 	// start parsing ce.format
 	// all parsing loops are for-range based (because there is UTF-8 support)
 	// (yes, you can use not only ASCII parts in your format string,
@@ -180,36 +306,39 @@ func (ce *ConsoleEncoder) doBuild() *ConsoleEncoder {
 	for rest := ce.format; rest != ""; rest = ce.parseFirstVerb(rest) {
 	}
 
-	return ce.uniteJustTextVerbs()
+	ce.uniteJustTextVerbs()
+	ce.setStandardParts()
+
+	return ce
 }
 
-// uniteJustTextVerbs just unites "just text" verbs in 'ce.formatParts'
-// that follows each other. It could be occur when something with bad verbs
+// uniteJustTextVerbs unites "just text" verbs in 'ce.formatParts'
+// that follows each other. It may happen when something with bad verbs
 // were included in 'ce.format'.
-func (ce *ConsoleEncoder) uniteJustTextVerbs() *ConsoleEncoder {
+func (ce *CI_ConsoleEncoder) uniteJustTextVerbs() *CI_ConsoleEncoder {
 
 	var (
 		// idx of "just text" verb next "just text" verbs will be united with
 		justTextVerbIdx = -1
 		// new out slice of verbs
-		newFormatParts = make([]formatPart, 0, len(ce.formatParts))
+		newFormatParts = make([]_CICE_FormatPart, 0, len(ce.formatParts))
 	)
 
 	for idx, verb := range ce.formatParts {
 		switch verbTyp := verb.typ.Type(); {
 
-		case justTextVerbIdx == -1 && verbTyp == cefptVerbJustText:
+		case justTextVerbIdx == -1 && verbTyp == _CICE_FPT_VERB_JUST_TEXT:
 			justTextVerbIdx = idx
 
-		case justTextVerbIdx != -1 && verbTyp == cefptVerbJustText:
+		case justTextVerbIdx != -1 && verbTyp == _CICE_FPT_VERB_JUST_TEXT:
 			ce.formatParts[justTextVerbIdx].value += verb.value
 
-		case justTextVerbIdx != -1 && verbTyp != cefptVerbJustText:
+		case justTextVerbIdx != -1 && verbTyp != _CICE_FPT_VERB_JUST_TEXT:
 			newFormatParts = append(newFormatParts, ce.formatParts[justTextVerbIdx])
 			justTextVerbIdx = -1
 			fallthrough
 
-		case justTextVerbIdx == -1 && verbTyp != cefptVerbJustText:
+		case justTextVerbIdx == -1 && verbTyp != _CICE_FPT_VERB_JUST_TEXT:
 			newFormatParts = append(newFormatParts, verb)
 		}
 	}
@@ -223,9 +352,44 @@ func (ce *ConsoleEncoder) uniteJustTextVerbs() *ConsoleEncoder {
 	return ce
 }
 
+// setStandardParts saves standard colors for standard log levels
+// if they has not been set yet.
+func (ce *CI_ConsoleEncoder) setStandardParts() *CI_ConsoleEncoder {
+
+	if ce.colorMap == nil {
+		ce.colorMap = make(map[Level]string)
+	}
+
+	if ce.colorMap[LEVEL_DEBUG] == "" {
+		ce.colorMap[LEVEL_DEBUG] = ce.rvColorHelper(_CICE_SC_DEBUG)
+	}
+
+	if ce.colorMap[LEVEL_INFO] == "" {
+		ce.colorMap[LEVEL_INFO] = ce.rvColorHelper(_CICE_SC_INFO)
+	}
+
+	if ce.colorMap[LEVEL_WARNING] == "" {
+		ce.colorMap[LEVEL_WARNING] = ce.rvColorHelper(_CICE_SC_WARNING)
+	}
+
+	if ce.colorMap[LEVEL_ERROR] == "" {
+		ce.colorMap[LEVEL_ERROR] = ce.rvColorHelper(_CICE_SC_ERROR)
+	}
+
+	if ce.colorMap[LEVEL_FATAL] == "" {
+		ce.colorMap[LEVEL_FATAL] = ce.rvColorHelper(_CICE_SC_FATAL)
+	}
+
+	if !ce.cf.isSet {
+		ce.cf.isDefault = true
+	}
+
+	return ce
+}
+
 // parseFirstVerb parses 'format', extracts first verb (even if it's "just text"
 // verb), saves it to ce.formatParts and then returns the rest of 'format' string.
-func (ce *ConsoleEncoder) parseFirstVerb(format string) (rest string) {
+func (ce *CI_ConsoleEncoder) parseFirstVerb(format string) (rest string) {
 
 	var (
 		i   = 0
@@ -239,25 +403,25 @@ func (ce *ConsoleEncoder) parseFirstVerb(format string) (rest string) {
 	// and yes if you do it, you are mad. stop it!).
 	for _, c := range format {
 		switch {
-		case c == ceVerbStartIndicator && pc == ceVerbStartIndicator && wv:
+		case c == _CICE_VERB_START_INDICATOR && pc == _CICE_VERB_START_INDICATOR && wv:
 			// unexpected "{{" inside complex verb, treat all prev as "just text",
 			// try to treat as starting complex verb
 			wv = false
 			i--
 
-		case c == ceVerbStartIndicator && pc == ceVerbStartIndicator && i > 1:
+		case c == _CICE_VERB_START_INDICATOR && pc == _CICE_VERB_START_INDICATOR && i > 1:
 			// > 1 (not > 0) because if string started with "{{", after first "{"
 			// i already == 1.
 			//
 			// was "just text", found complex verb start
 			i--
 
-		case c == ceVerbEndIndicator && pc == ceVerbEndIndicator && wv:
+		case c == _CICE_VERB_END_INDICATOR && pc == _CICE_VERB_END_INDICATOR && wv:
 			// ending of complex verb
 			wve = true
 			i++
 
-		case c == ceVerbStartIndicator && pc == ceVerbStartIndicator:
+		case c == _CICE_VERB_START_INDICATOR && pc == _CICE_VERB_START_INDICATOR:
 			// this is the beginning of 'format' and of complex verb
 			wv = true
 			i++
@@ -282,20 +446,19 @@ func (ce *ConsoleEncoder) parseFirstVerb(format string) (rest string) {
 }
 
 // rv (resolve verb) tries to determine what kind of complex verb 'verb' is,
-// creates related 'formatPart', fills it and adds to 'ce.formatParts'.
+// creates related '_CICE_FormatPart', fills it and adds to 'ce.formatParts'.
 // Returned predicted minimum length of bytes that required in buffer to store
 // formatted verb.
-func (ce *ConsoleEncoder) rv(verb string) (predictedLen int) {
+func (ce *CI_ConsoleEncoder) rv(verb string) (predictedLen int) {
 
-	// hpm is "has prefix many"
-	// just like strings.HasPrefix, but you can check many prefixes at the same time.
-	hpm := func(verb string, prefixes []string) bool {
-		for _, prefix := range prefixes {
-			if strings.HasPrefix(verb, prefix) {
-				return true
-			}
+	// applyOnce is a helper func to avoid many if-else statements in tht switch below.
+	applyOnce := func(isSet *bool, fallback, applicator func(string) int, verb string) int {
+		if !*isSet {
+			*isSet = true
+			return applicator(verb)
+		} else {
+			return fallback(verb)
 		}
-		return false
 	}
 
 	// it guarantees that "verb" starts from "{{",
@@ -303,7 +466,7 @@ func (ce *ConsoleEncoder) rv(verb string) (predictedLen int) {
 	switch verb = verb[2 : len(verb)-2]; {
 
 	case hpm(verb, cevtCaller):
-		return ce.rvCaller(verb)
+		return applyOnce(&ce.cf.isSet, ce.rvJustText, ce.rvCaller, verb)
 
 	case hpm(verb, cevtColor):
 		return ce.rvColor(verb)
@@ -315,13 +478,13 @@ func (ce *ConsoleEncoder) rv(verb string) (predictedLen int) {
 		return ce.rvTime(verb)
 
 	case hpm(verb, cevtMessage):
-		return ce.rvBody(verb)
+		return applyOnce(&ce.bf.isSet, ce.rvJustText, ce.rvBody, verb)
 
 	case hpm(verb, cevtFields):
-		return ce.rvFields(verb)
+		return applyOnce(&ce.ff.isSet, ce.rvJustText, ce.rvFields, verb)
 
 	case hpm(verb, cevtStacktrace):
-		return ce.rvStacktrace(verb)
+		return applyOnce(&ce.sf.isSet, ce.rvJustText, ce.rvStacktrace, verb)
 
 	default:
 		// incorrect verb, treat it as "just text" verb
@@ -329,378 +492,55 @@ func (ce *ConsoleEncoder) rv(verb string) (predictedLen int) {
 	}
 }
 
-// rvLevel is a part of "resolve verb" functions.
+// rvHelper is a part of "resolve verb" functions but moreover it's a helper.
+// This function literally have no recognition algorithm but splits 'verb'
+// to verb parts (ignoring first part, assuming that its verb's name) and then
+// calls 'resolver' for each that part.
+// Stops splitting and calling 'resolver' if it's return 'false' one time.
 //
-func (ce *ConsoleEncoder) rvLevel(verb string) (predictedLen int) {
-
-	var typ = cefptVerbLevelSS // by default print full string level
-
-	if idx := strings.IndexByte(verb, ceVerbSeparator); idx != -1 {
-		switch verb[idx+1:] {
-
-		case "d":
-			typ = cefptVerbLevelD
-			predictedLen = 3
-
-		case "s":
-			typ = cefptVerbLevelS
-			predictedLen = 3
-
-		case "ss":
-			typ = cefptVerbLevelSS
-			// guess it's enough to store any logger.Level full string
-			// representation
-			predictedLen = 16
-		}
-	}
-
-	ce.formatParts = append(ce.formatParts, formatPart{
-		typ: typ,
-	})
-
-	return predictedLen
-}
-
-// rvTime is a part of "resolve verb" functions.
+// It guarantees that if 'verbPart' is empty, 'resolver' won't be called for that
+// and processing will stopped.
 //
-func (ce *ConsoleEncoder) rvTime(verb string) (predictedLen int) {
+// Requirements:
+// 'verb' != "", 'resolver' != nil. Otherwise no-op.
+func (_ *CI_ConsoleEncoder) rvHelper(verb string, resolver func(verbPart string) (continue_ bool)) {
 
-	// TODO: Add possibility to encode time as unix timestamp.
-	var format string
-
-	if idx := strings.IndexByte(verb, ceVerbSeparator); idx != -1 {
-		if format = strings.TrimSpace(verb[idx+1:]); format == "" {
-			format = time.RFC1123
-		}
-	} else {
-		format = time.RFC1123
-	}
-
-	ce.formatParts = append(ce.formatParts, formatPart{
-		typ:   cefptVerbTime,
-		value: format,
-	})
-
-	return len(format) + 10 // stock for some weekdays
-}
-
-//
-func (cb *colorBuilder) init() {
-
-	cb.bg, cb.fg = -2, -2
-	cb.bold, cb.italic, cb.underline = 0, 0, 0
-}
-
-//
-func (cb *colorBuilder) parseEntity(verbPart string) (parsed bool) {
-
-	switch verbPart = strings.ToUpper(strings.TrimSpace(verbPart)); verbPart {
-	// --- REMINDER! 1ST ARGUMENT IS ALWAYS UPPER CASED! ---
-
-	case "":
-		return true
-
-	case "BOLD", "B":
-		cb.bold = 1
-		return true
-
-	case "NOBOLD", "NOB":
-		cb.bold = -1
-		return true
-
-	case "ITALIC", "I":
-		cb.italic = 1
-		return true
-
-	case "NOITALIC", "NOI":
-		cb.italic = -1
-		return true
-
-	case "UNDERLINE", "U":
-		cb.underline = 1
-		return true
-
-	case "NOUNDERLINE", "NOU":
-		cb.underline = -1
-		return true
-	}
-
-	// okay, it's color, but which one? what format? RGB? HEX? RGBA? (lol, wtf?)
-	// TODO: Add supporting of color's literals like "red", "pink", "blue", etc.
-
-	// what's kind of color? default is fg
-	var colorDestination *int16
-	switch {
-
-	case strings.HasPrefix(verbPart, "BG"):
-		colorDestination = &cb.bg
-		verbPart = strings.TrimSpace(verbPart[2:])
-
-	case strings.HasPrefix(verbPart, "FG"): // already defaulted
-		colorDestination = &cb.fg
-		verbPart = strings.TrimSpace(verbPart[2:])
-
-	default:
-		colorDestination = &cb.fg
-	}
-
-	// handle special easy cases cases
-	switch {
-	case len(verbPart) == 0:
-		// rare case, wasn't more chars after "bg" or "fg"
-		return false
-
-	case verbPart == "-1":
-		// color cleanup (to default in term)
-		*colorDestination = -1
+	if verb == "" || resolver == nil {
 		return
-
-	case verbPart[0] == '#':
-		// easy case if it's explicit hex
-		return cb.parseHexTo(verbPart[1:], colorDestination)
 	}
 
-	// okay, maybe easy rgb/rgba?
-	switch {
-	case strings.HasPrefix(verbPart, "RGB"):
-		return cb.parseRgbTo(verbPart[3:], colorDestination)
-
-	case strings.HasPrefix(verbPart, "RGBA"):
-		return cb.parseRgbTo(verbPart[4:], colorDestination)
-
-	case strings.HasPrefix(verbPart, "RGB(") && verbPart[len(verbPart)-1] == ')':
-		return cb.parseRgbTo(verbPart[4:len(verbPart)-1], colorDestination)
-
-	case strings.HasPrefix(verbPart, "RGBA(") && verbPart[len(verbPart)-1] == ')':
-		return cb.parseRgbTo(verbPart[4:len(verbPart)-1], colorDestination)
-	}
-
-	// okay maybe rgb by comma?
-	if commas := strings.Count(verbPart, ","); commas >= 3 && commas <= 4 {
-		return cb.parseRgbTo(verbPart, colorDestination)
-	}
-
-	// believe it's hex
-	return cb.parseHexTo(verbPart, colorDestination)
-}
-
-//
-func (cb *colorBuilder) parseHexTo(verbPart string, destination *int16) (parsed bool) {
-	// --- REMINDER! 1ST ARGUMENT IS ALWAYS UPPER CASED! ---
-
-	switch verbPart = strings.TrimSpace(verbPart); len(verbPart) {
-	case 4:
-		// short case with alpha, ignore alpha, extend to 6
-		verbPart = verbPart[:3]
-		fallthrough
-	case 3:
-		// short case, extend to 6
-		var hexParts [6]uint8
-		hexParts[0], hexParts[1] = verbPart[0], verbPart[0]
-		hexParts[2], hexParts[3] = verbPart[1], verbPart[1]
-		hexParts[4], hexParts[5] = verbPart[2], verbPart[2]
-		verbPart = string(hexParts[:])
-	case 8:
-		// with alpha, ignore it
-		verbPart = verbPart[:6]
-	case 6:
-		// default HEX case, handle later
-	default:
-		return false
-	}
-
-	termColor, err := xtermcolor.FromHexStr(verbPart)
-	*destination = int16(termColor)
-
-	return err == nil
-}
-
-//
-func (cb *colorBuilder) parseRgbTo(verbPart string, destination *int16) (parsed bool) {
-	// --- REMINDER! 1ST ARGUMENT IS ALWAYS UPPER CASED! ---
-
-	rgbParts := strings.Split(strings.TrimSpace(verbPart), ",")
-	if l := len(rgbParts); l < 3 && l > 4 {
-		return false
-	}
-
-	var (
-		r, g, b          int
-		err1, err2, err3 error
-	)
-
-	r, err1 = strconv.Atoi(strings.TrimSpace(rgbParts[0]))
-	g, err2 = strconv.Atoi(strings.TrimSpace(rgbParts[1]))
-	b, err3 = strconv.Atoi(strings.TrimSpace(rgbParts[2]))
-
-	if err1 != nil || err2 != nil || err3 != nil ||
-		r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255 {
-		return false
-	}
-
-	rgb := color.RGBA{R: uint8(r), G: uint8(g), B: uint8(b), A: 255}
-	*destination = int16(xtermcolor.FromColor(rgb))
-
-	return true
-}
-
-//
-func (cb *colorBuilder) encode() string {
-
-	// TODO: Here is too much Golang string mem reallocations
-	//  maybe use []byte instead of string with only one allocation ?
-
-	// https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_parameters
-	out := "\033["
-
-	switch cb.bold {
-	case 1:
-		out += "01;" // enable bold
-	case -1:
-		out += "22;" // disable bold
-	}
-
-	switch cb.italic {
-	case 1:
-		out += "03;" // enable italic
-	case -1:
-		out += "23;" // disable italic
-	}
-
-	switch cb.underline {
-	case 1:
-		out += "04;" // enable underline
-	case -1:
-		out += "24;" // disable underline
-	}
-
-	switch cb.fg {
-	case -2:
-		// do nothing, use those one that was used
-	case -1:
-		// set foreground to term default
-		out += "39;"
-	default:
-		out += "38;5;" + strconv.Itoa(int(cb.fg)) + ";"
-	}
-
-	switch cb.fg {
-	case -2:
-		// do nothing, use those one that was used
-	case -1:
-		// set background to term default
-		out += "49;"
-	default:
-		out += "48;5;" + strconv.Itoa(int(cb.bg)) + ";"
-	}
-
-	if out[len(out)-1] != ';' {
-		return "" // all values are default and ignored
-	}
-
-	out = out[:len(out)-1] + "m"
-	return out
-}
-
-//
-// ""
-func (ce *ConsoleEncoder) rvColor(verb string) (predictedLen int) {
-
-	var (
-		cb           colorBuilder
-		encodedColor string
-		verbBak      = verb
-	)
-
-	cb.init()
-
-	// skip verb identifier (this is color verb)
-	if idx := strings.IndexByte(verb, ceVerbSeparator); idx != -1 {
+	// skip verb name
+	if idx := strings.IndexByte(verb, _CICE_VERB_SEPARATOR); idx != -1 {
 		verb = verb[idx+1:]
-
-		for idx = strings.IndexByte(verb, ceVerbSeparator); idx != -1; {
-			if parsingFailed := !cb.parseEntity(verb[:idx]); parsingFailed {
-				goto UNSUPPORTED_COLOR_ENTITY
-			}
-			verb = verb[idx+1:]
-		}
-
-		// parse last entity
-		if parsingFailed := !cb.parseEntity(verb); parsingFailed {
-			goto UNSUPPORTED_COLOR_ENTITY
-		}
+	} else {
+		// there is no verb separator, it's simple verb. Do nothing
+		return
 	}
 
-	if encodedColor = cb.encode(); encodedColor == "" {
-		goto UNSUPPORTED_COLOR_ENTITY
+	for idx := strings.IndexByte(verb, _CICE_VERB_SEPARATOR); idx != -1; {
+		if idx == 0 || !resolver(verb[:idx]) {
+			goto STOP
+		}
+		verb = verb[idx+1:]
+		idx = strings.IndexByte(verb, _CICE_VERB_SEPARATOR)
 	}
 
-	ce.formatParts = append(ce.formatParts, formatPart{
-		typ:   cefptVerbColor,
-		value: encodedColor,
-	})
+	// parse last entity
+	if !resolver(verb) {
+		goto STOP
+	}
 
-	return len(encodedColor)
-
-UNSUPPORTED_COLOR_ENTITY: // label and goto only for make code more clean and clear
-	return ce.rvJustText(verbBak)
-}
-
-//
-
-// rvBody is a part of "resolve verb" functions.
-//
-func (ce *ConsoleEncoder) rvBody(verb string) (predictedLen int) {
-
-	ce.formatParts = append(ce.formatParts, formatPart{
-		typ: cefptVerbBody,
-	})
-	return 256
-}
-
-//
-func (ce *ConsoleEncoder) rvCaller(verb string) (predictedLen int) {
-
-	// TODO: Implement fields format
-
-	ce.formatParts = append(ce.formatParts, formatPart{
-		typ: cefptVerbCaller,
-	})
-
-	return 256
-}
-
-//
-func (ce *ConsoleEncoder) rvFields(verb string) (predictedLen int) {
-
-	// TODO: Implement fields format
-
-	ce.formatParts = append(ce.formatParts, formatPart{
-		typ: cefptVerbFields,
-	})
-
-	return 512
-}
-
-//
-func (ce *ConsoleEncoder) rvStacktrace(verb string) (predictedLen int) {
-
-	// TODO: Implement stacktrace format
-
-	ce.formatParts = append(ce.formatParts, formatPart{
-		typ: cefptVerbStack,
-	})
-
-	return 2048
+STOP:
+	return
 }
 
 // rvJustText is a part of "resolve verb" functions.
 //
-func (ce *ConsoleEncoder) rvJustText(text string) (predictedLen int) {
+func (ce *CI_ConsoleEncoder) rvJustText(text string) (predictedLen int) {
 
 	if text != "" {
-		ce.formatParts = append(ce.formatParts, formatPart{
-			typ:   cefptVerbJustText,
+		ce.formatParts = append(ce.formatParts, _CICE_FormatPart{
+			typ:   _CICE_FPT_VERB_JUST_TEXT,
 			value: text,
 		})
 	}
@@ -708,186 +548,751 @@ func (ce *ConsoleEncoder) rvJustText(text string) (predictedLen int) {
 	return len(text)
 }
 
+// rvLevel is a part of "resolve verb" functions.
 //
-func (ce *ConsoleEncoder) encode(e *Entry) []byte {
+func (ce *CI_ConsoleEncoder) rvLevel(verb string) (predictedLen int) {
+
+	formattedLevel := _CICE_LF_FULL_NORMAL
+	if idx := strings.IndexByte(verb, _CICE_VERB_SEPARATOR); idx != -1 {
+		switch verb[idx+1:] {
+		case "d", "D":
+			formattedLevel = _CICE_LF_NUMBER
+		case "s":
+			formattedLevel = _CICE_LF_SHORT_NORMAL
+		case "S":
+			formattedLevel = _CICE_LF_SHORT_UPPER_CASE
+		case "ss":
+			formattedLevel = _CICE_LF_FULL_NORMAL
+		case "SS":
+			formattedLevel = _CICE_LF_FULL_UPPER_CASE
+		}
+	}
+
+	ce.formatParts = append(ce.formatParts, _CICE_FormatPart{
+		typ: _CICE_FPT_VERB_LEVEL | (formattedLevel << 8),
+	})
+
+	return predictedLen
+}
+
+// rvTime is a part of "resolve verb" functions.
+//
+func (ce *CI_ConsoleEncoder) rvTime(verb string) (predictedLen int) {
+
+	format := _CICE_DEFAULT_TIME_FORMAT
+	formattedTime := _CICE_FormatPartType(0)
+
+	(*CI_ConsoleEncoder)(nil).rvHelper(verb, func(verbPart string) (continue_ bool) {
+		if verbPart = strings.TrimSpace(format); verbPart != "" {
+			switch predefined := strings.ToUpper(verbPart); predefined {
+			case "UNIX", "TIMESTAMP":
+				formattedTime = _CICE_TF_TIMESTAMP
+			case "ANSIC":
+				formattedTime = _CICE_TF_ANSIC
+			case "UNIXDATE", "UNIX_DATE":
+				formattedTime = _CICE_TF_UNIXDATE
+			case "RUBYDATE", "RUBY_DATE":
+				formattedTime = _CICE_TF_RUBYDATE
+			case "RFC822":
+				formattedTime = _CICE_TF_RFC822
+			case "RFC822Z":
+				formattedTime = _CICE_TF_RFC822_Z
+			case "RFC850":
+				formattedTime = _CICE_TF_RFC850
+			case "RFC1123":
+				formattedTime = _CICE_TF_RFC1123
+			case "RFC1123Z":
+				formattedTime = _CICE_TF_RFC1123_Z
+			case "RFC3339":
+				formattedTime = _CICE_TF_RFC3339
+			default:
+				format = verbPart
+			}
+		}
+		return false // only first time verb is allowed and will be parsed
+	})
+
+	ce.formatParts = append(ce.formatParts, _CICE_FormatPart{
+		typ:   _CICE_FPT_VERB_TIME | (formattedTime << 8),
+		value: format,
+	})
+
+	return len(format) + 10 // stock for some weekdays
+}
+
+//
+// ""
+func (ce *CI_ConsoleEncoder) rvColor(verb string) (predictedLen int) {
+
+	if idx := strings.IndexByte(verb, _CICE_VERB_SEPARATOR); idx == -1 {
+		ce.formatParts = append(ce.formatParts, _CICE_FormatPart{
+			typ: _CICE_FPT_VERB_COLOR_FOR_LEVEL,
+		})
+		return ce.colorMapMax
+	}
+
+	if encodedColor := ce.rvColorHelper(verb); encodedColor != "" {
+		ce.formatParts = append(ce.formatParts, _CICE_FormatPart{
+			typ:   _CICE_FPT_VERB_COLOR_CUSTOM,
+			value: encodedColor,
+		})
+		return len(encodedColor)
+	} else {
+		return ce.rvJustText(verb)
+	}
+}
+
+//
+func (_ *CI_ConsoleEncoder) rvColorHelper(colorVerb string) string {
+
+	cb := colorBuilder{}
+	cb.init()
+
+	(*CI_ConsoleEncoder)(nil).rvHelper(colorVerb, func(verbPart string) (continue_ bool) {
+		return cb.parseEntity(verbPart)
+	})
+
+	return cb.encode()
+}
+
+// rvBody is a part of "resolve verb" functions.
+// rvBody tries to parse 'verb' as logger Entry's body and anyway indicates that
+// here will be stored Entry's body.
+//
+// Verb's arguments:
+// - For non-empty body:
+//   - "?^<text>": <text> will be prepended to the Entry's body at the runtime.
+//   - "?$<text>": <text> will be appended to the Entry's body at the runtime.
+func (ce *CI_ConsoleEncoder) rvBody(verb string) (predictedLen int) {
+
+	(*CI_ConsoleEncoder)(nil).rvHelper(verb, func(verbPart string) (continue_ bool) {
+		switch {
+		case strings.HasPrefix(verbPart, "?^"):
+			ce.bf.beforeBody = verbPart[2:]
+		case strings.HasPrefix(verbPart, "?$"):
+			ce.bf.afterBody = verbPart[2:]
+		default:
+			return false
+		}
+		return true
+	})
+
+	ce.formatParts = append(ce.formatParts, _CICE_FormatPart{
+		typ: _CICE_FPT_VERB_BODY,
+	})
+
+	return 256 + len(ce.bf.beforeBody) + len(ce.bf.afterBody)
+}
+
+//
+func (ce *CI_ConsoleEncoder) rvCaller(verb string) (predictedLen int) {
+
+	isAdd := true
+	formatPrefixes := []string{"f", "F"}
+
+	(*CI_ConsoleEncoder)(nil).rvHelper(verb, func(verbPart string) (continue_ bool) {
+		switch {
+		case verbPart == "0":
+			isAdd = false
+		case hpm(verbPart, formatPrefixes):
+			predictedLen += ce.rvCallerFormat(verbPart[1:])
+		default:
+			return false
+		}
+		return true
+	})
+
+	if isAdd {
+		ce.formatParts = append(ce.formatParts, _CICE_FormatPart{
+			typ: _CICE_FPT_VERB_CALLER,
+		})
+		return predictedLen
+	} else {
+		return 0
+	}
+}
+
+//
+func (ce *CI_ConsoleEncoder) rvCallerFormat(f string) (predictedLen int) {
+
+	if f == "" || f == "d" || f == "D" {
+		ce.cf.isDefault = true
+		return 256
+	}
+
+	j := 0 // index of ce.cf.parts
+	for _, fc := range f {
+
+		t := _CICE_CF_TYPE_SEPARATOR // by default threat it as a separator
+
+		switch fc {
+		case 'w':
+			t = _CICE_CF_TYPE_FUNC_SHORT
+		case 'W':
+			t = _CICE_CF_TYPE_FUNC_FULL
+		case 'f':
+			t = _CICE_CF_TYPE_FILE_SHORT
+		case 'F':
+			t = _CICE_CF_TYPE_FILE_FULL
+		case 'l', 'L':
+			t = _CICE_CF_TYPE_LINE_NUM
+		case 'p', 'P':
+			t = _CICE_CF_TYPE_PKG_FULL
+		default:
+			switch ce.cf.parts[j].typ {
+			default:
+				j++
+				fallthrough
+			case 0:
+				ce.cf.parts[j].typ = _CICE_CF_TYPE_SEPARATOR
+				fallthrough
+			case -1:
+				ce.cf.parts[j].val += string(fc)
+			}
+			continue
+		}
+
+		// maybe it's already existed? skip it if it so
+		for i, n := 0, len(ce.cf.parts); i < n && ce.cf.parts[i].typ != 0; i++ {
+			if ce.cf.parts[i].typ == t {
+				t = _CICE_CF_TYPE_SEPARATOR
+			}
+		}
+
+		if t != _CICE_CF_TYPE_SEPARATOR {
+			if ce.cf.parts[j].typ != 0 {
+				j++
+			}
+			ce.cf.parts[j].typ = t
+		}
+	}
+
+	return 256
+}
+
+// rvFields is a part of "resolve verb" functions.
+// rvFields tries to parse 'verb' as logger Entry's fields (not attached Error's)
+// but anyway indicates that here will be stored Entry's body.
+//
+// Verb's arguments:
+// - If at least one Field presented:
+//   - "?^<text>": <text> will be write before any Field is written at the runtime.
+//   - "?$<text>": <text> will be appended to the end of last Field at the runtime.
+//   - "k<text>": <text> will be written before Field's keys is written.
+//   - "v<text>": <text> will be written before Field's value is written.
+//   - "e<text>": <text> will be written after Field's value excluding last.
+//   - "l<text>": <text> will be written at the each new line of fields' part set.
+//   - "*<int>": <int> is how much fields are placed at the one line
+//     (by default: 4. Use <= 0 value to place all fields at the one line).
+func (ce *CI_ConsoleEncoder) rvFields(verb string) (predictedLen int) {
+
+	ce.ff.itemsPerLine = 4
+
+	(*CI_ConsoleEncoder)(nil).rvHelper(verb, func(verbPart string) (continue_ bool) {
+		switch upperCased := strings.ToUpper(verbPart); {
+		case strings.HasPrefix(verbPart, "?^"):
+			ce.ff.beforeFields = verbPart[2:]
+		case strings.HasPrefix(verbPart, "?$"):
+			ce.ff.afterFields = verbPart[2:]
+		case strings.HasPrefix(upperCased, "LE"):
+			ce.ff.afterNewLineForError = verbPart[2:]
+		case upperCased[0] == 'L':
+			ce.ff.afterNewLine = verbPart[1:]
+		case upperCased[0] == 'K':
+			ce.ff.beforeKey = verbPart[1:]
+		case upperCased[0] == 'V':
+			ce.ff.afterKey = verbPart[1:]
+		case upperCased[0] == 'E':
+			ce.ff.afterValue = verbPart[1:]
+
+		case verbPart[0] == '*':
+			if perLine_, err := strconv.Atoi(verbPart[1:]); err == nil {
+				if perLine_ < 0 {
+					ce.ff.itemsPerLine = 0
+				} else {
+					ce.ff.itemsPerLine = int16(perLine_)
+				}
+			}
+
+		default:
+			return false
+		}
+		return true
+	})
+
+	ce.formatParts = append(ce.formatParts, _CICE_FormatPart{
+		typ: _CICE_FPT_VERB_FIELDS,
+	})
+
+	return 512 + len(ce.ff.beforeFields) + len(ce.ff.afterFields) + len(ce.ff.beforeKey) +
+		len(ce.ff.afterKey) + len(ce.ff.afterValue) + len(ce.ff.afterNewLine)
+}
+
+// rvStacktrace is a part of "resolve verb" functions.
+func (ce *CI_ConsoleEncoder) rvStacktrace(verb string) (predictedLen int) {
+
+	(*CI_ConsoleEncoder)(nil).rvHelper(verb, func(verbPart string) (continue_ bool) {
+		switch {
+		case strings.HasPrefix(verbPart, "?^"):
+			ce.sf.beforeStack = verbPart[2:]
+		case strings.HasPrefix(verbPart, "?$"):
+			ce.sf.afterStack = verbPart[2:]
+		default:
+			return false
+		}
+		return true
+	})
+
+	ce.formatParts = append(ce.formatParts, _CICE_FormatPart{
+		typ: _CICE_FPT_VERB_STACKTRACE,
+	})
+
+	return 2048
+}
+
+//
+func (ce *CI_ConsoleEncoder) encode(e *Entry) []byte {
 
 	// TODO: Reuse allocated buffers
 
 	buf := make([]byte, 0, ce.minimumBufferLen)
+	allowEmpty := e.LogLetter.Items.Flags.TestAll(FLAG_INTEGRATOR_IGNORE_EMPTY_PARTS)
 
 	for _, part := range ce.formatParts {
 		switch part.typ.Type() {
 
-		case cefptVerbJustText:
-			buf = ce.encJustText(part, buf)
+		case _CICE_FPT_VERB_JUST_TEXT:
+			buf = ce.encodeJustText(buf, part)
 
-		case cefptVerbColor:
-			buf = ce.encColor(part, buf)
+		case _CICE_FPT_VERB_COLOR_CUSTOM:
+			buf = ce.encodeColor(buf, part)
 
-		case cefptVerbBody:
-			buf = ce.encBody(e, buf)
+		case _CICE_FPT_VERB_COLOR_FOR_LEVEL:
+			buf = ce.encodeColorForLevel(buf, e)
 
-		case cefptVerbTime:
-			buf = ce.encTime(e, part, buf)
+		case _CICE_FPT_VERB_BODY:
+			buf = ce.encodeBody(buf, e)
 
-		case cefptVerbLevelD, cefptVerbLevelS, cefptVerbLevelSS:
-			buf = ce.encLevel(e, part, buf)
+		case _CICE_FPT_VERB_TIME:
+			buf = ce.encodeTime(e, part, buf)
 
-		case cefptVerbStack:
-			//buf = ce.encStacktrace(e, part, buf)
+		case _CICE_FPT_VERB_LEVEL:
+			buf = ce.encodeLevel(buf, part, e)
 
-		case cefptVerbFields:
-			buf = ce.encFields(e.LogLetter.Items.Fields, part, buf)
+		case _CICE_FPT_VERB_STACKTRACE:
+			buf = ce.encodeStacktrace(buf, e, allowEmpty)
 
-		case cefptVerbCaller:
-			//buf = ce.encCaller(e, part, buf)
+		case _CICE_FPT_VERB_FIELDS:
+			fields := e.LogLetter.Items.Fields
+			if len(fields) == 0 && e.ErrLetter != nil {
+				fields = e.ErrLetter.SystemFields
+			}
+			buf = ce.encodeFields(buf, fields, allowEmpty, false)
+
+		case _CICE_FPT_VERB_CALLER:
+			buf = ce.encodeCaller(buf, e)
 		}
 	}
 
 	return buf
 }
 
+// easy case because fp.value is the text we should add.
+func (ce *CI_ConsoleEncoder) encodeJustText(to []byte, fp _CICE_FormatPart) []byte {
+	return bufw(to, fp.value)
+}
+
 //
-func (ce *ConsoleEncoder) encLevel(e *Entry, fp formatPart, to []byte) []byte {
+func (ce *CI_ConsoleEncoder) encodeLevel(to []byte, fp _CICE_FormatPart, e *Entry) []byte {
 
 	formattedLevel := ""
-	switch fp.typ {
+	switch fp.typ.Data() {
 
-	case cefptVerbLevelD:
+	case _CICE_LF_NUMBER:
 		formattedLevel = strconv.Itoa(int(e.Level))
 
-	case cefptVerbLevelS:
+	case _CICE_LF_SHORT_NORMAL:
 		formattedLevel = e.Level.String()[:3]
 
-	case cefptVerbLevelSS:
+	case _CICE_LF_SHORT_UPPER_CASE:
+		formattedLevel = strings.ToUpper(e.Level.String()[:3])
+
+	case _CICE_LF_FULL_NORMAL:
 		formattedLevel = e.Level.String()
+
+	case _CICE_LF_FULL_UPPER_CASE:
+		formattedLevel = strings.ToUpper(e.Level.String())
 	}
 
-	return append(bufgr(to, len(formattedLevel)), formattedLevel...)
+	return bufw(to, formattedLevel)
 }
 
 //
-func (ce *ConsoleEncoder) encTime(e *Entry, fp formatPart, to []byte) []byte {
+func (ce *CI_ConsoleEncoder) encodeTime(e *Entry, fp _CICE_FormatPart, to []byte) []byte {
 
-	formattedTime := e.Time.Format(fp.value)
-	if formattedTime == "" {
+	formattedTime := ""
+
+	switch fp.typ.Data() {
+	case _CICE_TF_TIMESTAMP:
+		formattedTime = strconv.FormatInt(e.Time.Unix(), 10)
+	case _CICE_TF_ANSIC:
+		formattedTime = e.Time.Format(time.ANSIC)
+	case _CICE_TF_UNIXDATE:
+		formattedTime = e.Time.Format(time.UnixDate)
+	case _CICE_TF_RUBYDATE:
+		formattedTime = e.Time.Format(time.RubyDate)
+	case _CICE_TF_RFC822:
+		formattedTime = e.Time.Format(time.RFC822)
+	case _CICE_TF_RFC822_Z:
+		formattedTime = e.Time.Format(time.RFC822Z)
+	case _CICE_TF_RFC850:
+		formattedTime = e.Time.Format(time.RFC850)
+	case _CICE_TF_RFC1123:
 		formattedTime = e.Time.Format(time.RFC1123)
+	case _CICE_TF_RFC1123_Z:
+		formattedTime = e.Time.Format(time.RFC1123Z)
+	case _CICE_TF_RFC3339:
+		formattedTime = e.Time.Format(time.RFC3339)
+	default:
+		formattedTime = e.Time.Format(fp.value)
 	}
-	return append(bufgr(to, len(formattedTime)), formattedTime...)
+
+	return bufw(to, formattedTime)
+}
+
+// easy case because ASCII sequence already generated at the rvColor method.
+func (ce *CI_ConsoleEncoder) encodeColor(to []byte, fp _CICE_FormatPart) []byte {
+	return bufw(to, fp.value)
 }
 
 //
-//func (ce *ConsoleEncoder) encCaller(e *Entry, fp formatPart, to []byte) []byte {
-//
-//	// TODO: Implement caller format
-//
-//	if e.Caller.PC == 0 {
-//		return to
-//	}
-//
-//	return bufw(to, e.Caller.DoFormat())
-//}
+func (ce *CI_ConsoleEncoder) encodeColorForLevel(to []byte, e *Entry) []byte {
 
-//
-//func (ce *ConsoleEncoder) encStacktrace(e *Entry, fp formatPart, to []byte) []byte {
-//
-//	// TODO: Implement stacktrace format
-//	// Reminder: e.StackTrace.ExcludeInternal already called
-//
-//	if l := len(e.StackTrace); l > 0 {
-//		for _, stackFrame := range e.StackTrace[:l-1] {
-//			to = ce.encStackFrame(stackFrame, fp, to)
-//			to = bufw(to, "\n")
-//		}
-//		to = ce.encStackFrame(e.StackTrace[l-1], fp, to)
-//	}
-//
-//	return to
-//}
+	if color := ce.colorMap[e.Level]; color != "" {
+		return bufw(to, color)
+	}
 
-//
-//func (ce *ConsoleEncoder) encStackFrame(frame syse.StackFrame, fp formatPart, to []byte) []byte {
-//
-//	_, file := filepath.Split(frame.Function)
-//	s := frame.Function + " (" + file + ":" + strconv.Itoa(frame.Line) + ")"
-//
-//	return bufw(to, s)
-//}
+	// TODO: mocked (find the closes log level and use that's color)
+	return to
+}
 
-//
-func (ce *ConsoleEncoder) encFields(fields []field.Field, fp formatPart, to []byte) []byte {
+// easy case because e.Message is the text we should add.
+func (ce *CI_ConsoleEncoder) encodeBody(to []byte, e *Entry) []byte {
 
-	// TODO: Implement fields format
+	body := e.LogLetter.Items.Message
+	//if body == "" && e.ErrLetter != nil {
+	//	// TODO: It's guaranteed that first err letter's item has non-empty
+	//	//  and marked message (it's what error has been constructed w/)
+	//	//  but anyway the better way is to find first marked letter item w/ message
+	//	body = e.ErrLetter.Items.Message
+	//}
 
-	lFields := len(fields)
-
-	if lFields == 0 {
+	if body == "" {
 		return to
 	}
 
-	unnamedFieldIdx := 1
-
-	for _, field_ := range fields[:lFields-1] {
-		to = ce.encField(field_, to, &unnamedFieldIdx)
-		to = bufw(to, ", ")
+	if ce.bf.beforeBody != "" {
+		to = bufw(to, ce.bf.beforeBody)
 	}
-	to = ce.encField(fields[lFields-1], to, &unnamedFieldIdx)
+
+	to = bufw(to, body)
+
+	if ce.bf.afterBody != "" {
+		to = bufw(to, ce.bf.afterBody)
+	}
 
 	return to
 }
 
-//
-func (ce *ConsoleEncoder) encField(f field.Field, to []byte, unnamedFieldIdx *int) []byte {
+func (ce *CI_ConsoleEncoder) encodeCaller(to []byte, e *Entry) []byte {
 
-	field_ := f.Key
-	if field_ == "" {
-		field_ = letter.UnnamedAsStr(*unnamedFieldIdx)
-		*unnamedFieldIdx++
-	}
+	var frame ekasys.StackFrame
 
-	field_ += " = "
+	switch {
+	case len(e.LogLetter.StackTrace) > 0:
+		frame = e.LogLetter.StackTrace[0]
 
-	switch f.Kind {
-	case field.KIND_TYPE_BOOL:
-		if f.IValue != 0 {
-			field_ += "true"
-		} else {
-			field_ += "false"
-		}
-
-	case field.KIND_TYPE_INT, field.KIND_TYPE_INT_8, field.KIND_TYPE_INT_16, field.KIND_TYPE_INT_32, field.KIND_TYPE_INT_64:
-		field_ += strconv.FormatInt(f.IValue, 10)
-
-	case field.KIND_TYPE_UINT, field.KIND_TYPE_UINT_8, field.KIND_TYPE_UINT_16, field.KIND_TYPE_UINT_32, field.KIND_TYPE_UINT_64:
-		field_ += strconv.FormatUint(uint64(f.IValue), 10)
-
-	case field.KIND_TYPE_FLOAT_32:
-		field_ += strconv.FormatFloat(float64(math.Float32frombits(uint32(f.IValue))), 'f', 2, 32)
-
-	case field.KIND_TYPE_FLOAT_64:
-		field_ += strconv.FormatFloat(float64(math.Float32frombits(uint32(f.IValue))), 'f', 2, 64)
-
-	case field.KIND_TYPE_STRING:
-		field_ += f.SValue
+	case e.ErrLetter != nil:
+		frame = e.ErrLetter.StackTrace[0]
 
 	default:
 		return to
 	}
 
-	return bufw(to, field_)
+	return ce.encodeStackFrame(to, frame, nil, false)
 }
 
-// easy case because ASCII sequence already generated at the rvColor method.
-func (ce *ConsoleEncoder) encColor(fp formatPart, to []byte) []byte {
-	return bufw(to, fp.value)
+//
+func (ce *CI_ConsoleEncoder) encodeFields(
+
+	to []byte,
+	fields []field.Field,
+	allowEmpty,
+	isErrors bool,
+
+) []byte {
+
+	if len(fields) == 0 {
+		return to
+	}
+
+	if ce.ff.beforeFields != "" {
+		to = bufw(to, ce.ff.beforeFields)
+	}
+
+	newLine := ce.ff.afterNewLine
+	if isErrors {
+		newLine = ce.ff.afterNewLineForError
+	}
+	if newLine != "" {
+		to = bufw(to, newLine)
+	}
+
+	unnamedFieldIdx := 1
+	writtenFieldIdx := int16(0)
+	for i, n := int16(0), int16(len(fields)); i < n; i++ {
+
+		// write new line and new line title
+		if ce.ff.itemsPerLine > 0 &&
+			writtenFieldIdx != 0 &&
+			writtenFieldIdx%ce.ff.itemsPerLine == 0 {
+
+			to = bufw(to, "\n")
+			newLine := ce.ff.afterNewLine
+			if isErrors {
+				newLine = ce.ff.afterNewLineForError
+			}
+			if newLine != "" {
+				to = bufw(to, newLine)
+			}
+		}
+
+		// IsZero also covers cases when field is system's
+		if fields[i].IsZero() && !allowEmpty {
+			continue
+		} else {
+			writtenFieldIdx++
+		}
+
+		// before key (key identifier)
+		if ce.ff.beforeKey != "" {
+			to = bufw(to, ce.ff.beforeKey)
+		}
+
+		// write key
+		if fields[i].Key != "" {
+			to = bufw(to, fields[i].Key)
+		} else {
+			to = bufw(to, letter.UnnamedAsStr(unnamedFieldIdx))
+			unnamedFieldIdx++
+		}
+
+		// before value (value identifier)
+		if ce.ff.afterKey != "" {
+			to = bufw(to, ce.ff.afterKey)
+		}
+
+		// write value
+
+		// ----- SYSTEM FIELDS -----
+
+		if fields[i].Kind.IsSystem() {
+			switch fields[i].Kind.BaseType() {
+
+			case field.KIND_SYS_TYPE_EKAERR_UUID, field.KIND_SYS_TYPE_EKAERR_CLASS_NAME,
+				field.KIND_SYS_TYPE_EKAERR_PUBLIC_MESSAGE:
+				to = bufw(to, `"`)
+				to = bufw(to, fields[i].SValue)
+				to = bufw(to, `"`)
+
+			case field.KIND_SYS_TYPE_EKAERR_CLASS_ID:
+				to = bufw(to, strconv.FormatInt(fields[i].IValue, 10))
+
+			default:
+				to = bufw(to, `"<unsupported system field>"`)
+			}
+			goto END_FIELD_PROCESSING
+		}
+
+		// ----- NIL FIELDS -----
+
+		if fields[i].Kind.IsNil() {
+			to = bufw(to, "null")
+			goto END_FIELD_PROCESSING
+		}
+
+		// ----- ARRAY FIELDS -----
+		// todo
+
+		// ----- BASE TYPE FIELDS -----
+
+		switch fields[i].Kind.BaseType() {
+
+		case field.KIND_TYPE_BOOL:
+			if fields[i].IValue != 0 {
+				to = bufw(to, "true")
+			} else {
+				to = bufw(to, "false")
+			}
+
+		case field.KIND_TYPE_INT,
+			field.KIND_TYPE_INT_8, field.KIND_TYPE_INT_16,
+			field.KIND_TYPE_INT_32, field.KIND_TYPE_INT_64:
+			to = bufw(to, strconv.FormatInt(fields[i].IValue, 10))
+
+		case field.KIND_TYPE_UINT,
+			field.KIND_TYPE_UINT_8, field.KIND_TYPE_UINT_16,
+			field.KIND_TYPE_UINT_32, field.KIND_TYPE_UINT_64:
+			to = bufw(to, strconv.FormatUint(uint64(fields[i].IValue), 10))
+
+		case field.KIND_TYPE_FLOAT_32:
+			f := float64(math.Float32frombits(uint32(fields[i].IValue)))
+			to = bufw(to, strconv.FormatFloat(f, 'f', 2, 32))
+
+		case field.KIND_TYPE_FLOAT_64:
+			f := float64(math.Float32frombits(uint32(fields[i].IValue)))
+			to = bufw(to, strconv.FormatFloat(f, 'f', 2, 64))
+
+		case field.KIND_TYPE_STRING:
+			to = bufw(to, `"`)
+			to = bufw(to, fields[i].SValue)
+			to = bufw(to, `"`)
+
+		default:
+		}
+
+	END_FIELD_PROCESSING:
+
+		// write after value
+		if ce.ff.afterValue != "" {
+			to = bufw(to, ce.ff.afterValue)
+		}
+
+	} // end loop of fields
+
+	// remove last after value
+	if ce.ff.afterValue != "" {
+		to = to[:len(to)-len(ce.ff.afterValue)]
+	}
+
+	if ce.ff.afterFields != "" {
+		to = bufw(to, ce.ff.afterFields)
+	}
+
+	return to
 }
 
-// easy case because fp.value is the text we should add.
-func (ce *ConsoleEncoder) encJustText(fp formatPart, to []byte) []byte {
-	return bufw(to, fp.value)
+// encodeStacktrace
+func (ce *CI_ConsoleEncoder) encodeStacktrace(to []byte, e *Entry, allowEmpty bool) []byte {
+
+	stacktrace := e.LogLetter.StackTrace
+	if len(stacktrace) == 0 && e.ErrLetter != nil {
+		stacktrace = e.ErrLetter.StackTrace
+	}
+
+	lStacktrace := int16(len(stacktrace))
+	if lStacktrace == 0 {
+		return to
+	}
+
+	if ce.sf.beforeStack != "" {
+		to = bufw(to, ce.sf.beforeStack)
+	}
+
+	letterItem := (*letter.LetterItem)(nil)
+	letterItemIdx := int16(0)
+	if e.ErrLetter != nil {
+		letterItem = e.ErrLetter.Items
+		letterItemIdx = letterItem.StackFrameIdx()
+	}
+
+	for i := int16(0); i < lStacktrace; i++ {
+		letterItemPassed := (*letter.LetterItem)(nil)
+		if letterItem != nil && letterItemIdx == i {
+			letterItemPassed = letterItem
+			letterItem = letterItem.Next()
+			letterItemIdx = letterItem.StackFrameIdx()
+		}
+		to = ce.encodeStackFrame(to, stacktrace[i], letterItemPassed, allowEmpty)
+		if i < lStacktrace-1 {
+			to = bufw(to, "\n")
+		}
+	}
+
+	if ce.sf.afterStack != "" {
+		to = bufw(to, ce.sf.afterStack)
+	}
+
+	return to
 }
 
-// easy case because e.Message is the text we should add.
-func (ce *ConsoleEncoder) encBody(e *Entry, to []byte) []byte {
-	return bufw(to, e.LogLetter.Items.Message)
+//
+func (ce *CI_ConsoleEncoder) encodeStackFrame(
+
+	to []byte,
+	frame ekasys.StackFrame,
+	letterItem *letter.LetterItem,
+	allowEmpty bool,
+
+) []byte {
+
+	if !ce.cf.isDefault {
+		// Reminder: frame.DoFormat does once:
+		// "<package>/<func> (<short_file>:<file_line>) <full_package_path>".
+
+		for i, n := 0, len(ce.cf.parts); i < n && ce.cf.parts[i].typ != 0; i++ {
+			switch ce.cf.parts[i].typ {
+
+			case _CICE_CF_TYPE_SEPARATOR:
+				to = bufw(to, ce.cf.parts[i].val)
+
+			case _CICE_CF_TYPE_FUNC_SHORT:
+				frame.DoFormat()
+				to = bufw(to, frame.Format[:frame.FormatFileOffset-1])
+
+			case _CICE_CF_TYPE_FUNC_FULL:
+				to = bufw(to, frame.Function)
+
+			case _CICE_CF_TYPE_FILE_SHORT:
+				frame.DoFormat()
+				i := strings.IndexByte(frame.Format, ':')
+				to = bufw(to, frame.Format[frame.FormatFileOffset+1:i])
+
+			case _CICE_CF_TYPE_FILE_FULL:
+				to = bufw(to, frame.File)
+
+			case _CICE_CF_TYPE_LINE_NUM:
+				to = bufw(to, strconv.Itoa(frame.Line))
+
+			case _CICE_CF_TYPE_PKG_FULL:
+				to = bufw(to, frame.Format[frame.FormatFullPathOffset:])
+			}
+		}
+	} else {
+		to = bufw(to, frame.DoFormat())
+	}
+
+	if letterItem != nil {
+		to = bufw(to, "\n")
+
+		if letterItem.Flags.TestAll(letter.FLAG_MARKED_LETTER_ITEM) {
+			if ce.ff.afterNewLineForError != "" {
+				to = bufw(to, ce.ff.afterNewLineForError)
+			}
+			to = bufw(to, `(*) `)
+		}
+
+		to = bufw(to, letterItem.Message)
+		to = bufw(to, "\n")
+
+		lToBak := len(to)
+		to = ce.encodeFields(to, letterItem.Fields, allowEmpty, true)
+
+		// ce.encodeFields may write no fields. Then we must clear last "\n"
+		if len(to) == lToBak {
+			to = to[:len(to)-1]
+		}
+	}
+
+	return to
 }

@@ -8,9 +8,7 @@ package ekalog
 import (
 	"math"
 	"time"
-	"unsafe"
 
-	"github.com/qioalice/ekago/v2/ekadanger"
 	"github.com/qioalice/ekago/v2/ekasys"
 	"github.com/qioalice/ekago/v2/internal/field"
 	"github.com/qioalice/ekago/v2/internal/letter"
@@ -18,33 +16,27 @@ import (
 	"github.com/json-iterator/go"
 )
 
-//
-type JSONEncoder struct {
-	jsoniterConfig jsoniter.Config
-	jsoniterAPI    jsoniter.API
-}
-
-var (
-	// Make sure we won't break API.
-	_ CommonIntegratorEncoder = (*JSONEncoder)(nil).encode
-
-	// Package's JSON encoder
-	jsonEncoder     CommonIntegratorEncoder
-	jsonEncoderAddr unsafe.Pointer
+//noinspection GoSnakeCaseUsage
+type (
+	//
+	CI_JSONEncoder struct {
+		jsoniterConfig jsoniter.Config
+		jsoniterAPI    jsoniter.API
+	}
 )
 
-func init() {
-	jsonEncoder = (&JSONEncoder{}).FreezeAndGetEncoder()
-	jsonEncoderAddr = ekadanger.TakeRealAddr(jsonEncoder)
-}
+var (
+	// Make sure we won't break API by declaring package's console encoder
+	defaultJSONEncoder CI_Encoder
+)
 
 //
-func (je *JSONEncoder) FreezeAndGetEncoder() CommonIntegratorEncoder {
+func (je *CI_JSONEncoder) FreezeAndGetEncoder() CI_Encoder {
 	return je.encode
 }
 
 //
-func (je *JSONEncoder) encode(e *Entry) []byte {
+func (je *CI_JSONEncoder) encode(e *Entry) []byte {
 
 	je.jsoniterAPI = je.jsoniterConfig.Froze()
 
@@ -90,7 +82,7 @@ func (je *JSONEncoder) encode(e *Entry) []byte {
 }
 
 // encodeBase encodes e's level, timestamp, message to s.
-func (je *JSONEncoder) encodeBase(s *jsoniter.Stream, e *Entry, allowEmpty bool) {
+func (je *CI_JSONEncoder) encodeBase(s *jsoniter.Stream, e *Entry, allowEmpty bool) {
 
 	s.WriteObjectField("level")
 	s.WriteString(e.Level.String())
@@ -117,7 +109,7 @@ func (je *JSONEncoder) encodeBase(s *jsoniter.Stream, e *Entry, allowEmpty bool)
 }
 
 //
-func (je *JSONEncoder) encodeError(s *jsoniter.Stream, errLetter *letter.Letter, allowEmpty bool) {
+func (je *CI_JSONEncoder) encodeError(s *jsoniter.Stream, errLetter *letter.Letter, allowEmpty bool) {
 
 	for i, n := 0, len(errLetter.SystemFields); i < n; i++ {
 		switch errLetter.SystemFields[i].BaseType() {
@@ -152,7 +144,7 @@ func (je *JSONEncoder) encodeError(s *jsoniter.Stream, errLetter *letter.Letter,
 }
 
 //
-func (je *JSONEncoder) encodeFields(
+func (je *CI_JSONEncoder) encodeFields(
 
 	s *jsoniter.Stream,
 	fields []field.Field,
@@ -189,7 +181,7 @@ func (je *JSONEncoder) encodeFields(
 }
 
 //
-func (je *JSONEncoder) encodeStacktrace(s *jsoniter.Stream, e *Entry, allowEmpty bool) {
+func (je *CI_JSONEncoder) encodeStacktrace(s *jsoniter.Stream, e *Entry, allowEmpty bool) {
 
 	stacktrace := e.LogLetter.StackTrace
 	if len(stacktrace) == 0 && e.ErrLetter != nil {
@@ -197,7 +189,6 @@ func (je *JSONEncoder) encodeStacktrace(s *jsoniter.Stream, e *Entry, allowEmpty
 	}
 
 	lStacktrace := int16(len(stacktrace))
-
 	if lStacktrace == 0 && !allowEmpty {
 		return
 	}
@@ -236,7 +227,7 @@ func (je *JSONEncoder) encodeStacktrace(s *jsoniter.Stream, e *Entry, allowEmpty
 }
 
 //
-func (je *JSONEncoder) encodeField(s *jsoniter.Stream, f field.Field, unnamedFieldIdx *int) {
+func (je *CI_JSONEncoder) encodeField(s *jsoniter.Stream, f field.Field, unnamedFieldIdx *int) {
 
 	s.WriteObjectStart()
 
@@ -308,7 +299,7 @@ exit:
 }
 
 //
-func (je *JSONEncoder) encodeStackFrame(
+func (je *CI_JSONEncoder) encodeStackFrame(
 
 	s *jsoniter.Stream,
 	frame ekasys.StackFrame,

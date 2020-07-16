@@ -182,24 +182,14 @@ func logErrThroughDefaultLogger(level uint8, errLetter *letter.Letter) {
 // initBaseLogger performs a baseLogger initialization.
 func initBaseLogger() {
 
-	var (
-		consoleEncoder commonIntegratorEncoderGenerator = &ConsoleEncoder{
-			format: "{{l}} {{t}}\n{{w}}\n{{m}}\n{{f}}\n{{s}}\n\n",
-		}
-		jsonEncoder commonIntegratorEncoderGenerator = &JSONEncoder{}
-	)
-
-	_ = consoleEncoder
-	_ = jsonEncoder
-
-	encoder := jsonEncoder
+	defaultConsoleEncoder = new(CI_ConsoleEncoder).FreezeAndGetEncoder()
+	defaultJSONEncoder = new(CI_JSONEncoder).FreezeAndGetEncoder()
 
 	integrator := new(CommonIntegrator).
-		WithEncoder(encoder.FreezeAndGetEncoder()).
+		WithEncoder(defaultConsoleEncoder).
 		WithMinLevel(LEVEL_DEBUG).
-		WithWriters(os.Stdout)
+		WriteTo(os.Stdout)
 
 	entry := acquireEntry()
-
 	baseLogger = new(Logger).setIntegrator(integrator).setEntry(entry)
 }
