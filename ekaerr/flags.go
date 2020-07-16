@@ -17,7 +17,7 @@ const (
 
 	// FLAG_MARKED_LETTER_ITEM means that this *LetterItem is marked
 	// (maybe it's important one? maybe contain important message or/and field(s)?).
-	FLAG_MARKED_LETTER_ITEM letter.Flag = 0x0001
+	FLAG_MARKED_LETTER_ITEM letter.Flag = letter.FLAG_MARKED_LETTER_ITEM
 
 	// FLAG_ONLY_EXPLICIT_FIELDS means that only explicit key-value paired
 	// arguments (called fields) were (or may) used for this *LetterItem.

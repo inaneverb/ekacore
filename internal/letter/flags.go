@@ -21,6 +21,10 @@ const (
 	// These flags are used to determine the behaviour of *Letter, *LetterItem
 	// and its linked list.
 
+	// FLAG_MARKED_LETTER_ITEM means that this *LetterItem is marked
+	// (maybe it's important one? maybe contain important message or/and field(s)?).
+	FLAG_MARKED_LETTER_ITEM Flag = 0x0001
+
 	// FLAG_ONLY_EXPLICIT_FIELDS means that only explicit key-value paired
 	// arguments (called fields) were (or may) used for this *LetterItem.
 	//
