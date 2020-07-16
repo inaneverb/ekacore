@@ -129,8 +129,8 @@ const (
 	// Common Integrator Console Encoder Format Part Type (CICE FPT)
 	// predefined constants.
 
-	_CICE_FPT_MASK_TYPE _CICE_FormatPartType = 0x00_FF
-	_CICE_FPT_MASK_DATA _CICE_FormatPartType = 0xFF_00
+	_CICE_FPT_MASK_TYPE            _CICE_FormatPartType = 0x00_FF
+	_CICE_FPT_MASK_DATA            _CICE_FormatPartType = 0xFF_00
 
 	_CICE_FPT_VERB_JUST_TEXT       _CICE_FormatPartType = 0x01
 	_CICE_FPT_VERB_COLOR_CUSTOM    _CICE_FormatPartType = 0x02
@@ -145,58 +145,58 @@ const (
 	// Common Integrator Console Encoder Level Format (CICE LF)
 	// type constants.
 
-	_CICE_LF_NUMBER           _CICE_FormatPartType = 1
-	_CICE_LF_SHORT_NORMAL     _CICE_FormatPartType = 2
-	_CICE_LF_SHORT_UPPER_CASE _CICE_FormatPartType = 3
-	_CICE_LF_FULL_NORMAL      _CICE_FormatPartType = 4
-	_CICE_LF_FULL_UPPER_CASE  _CICE_FormatPartType = 5
+	_CICE_LF_NUMBER                _CICE_FormatPartType = 1
+	_CICE_LF_SHORT_NORMAL          _CICE_FormatPartType = 2
+	_CICE_LF_SHORT_UPPER_CASE      _CICE_FormatPartType = 3
+	_CICE_LF_FULL_NORMAL           _CICE_FormatPartType = 4
+	_CICE_LF_FULL_UPPER_CASE       _CICE_FormatPartType = 5
 
 	// Common Integrator Console Encoder Time Format (CICE TF)
 	// type constants.
 
-	_CICE_TF_TIMESTAMP _CICE_FormatPartType = 1
-	_CICE_TF_ANSIC     _CICE_FormatPartType = 2
-	_CICE_TF_UNIXDATE  _CICE_FormatPartType = 3
-	_CICE_TF_RUBYDATE  _CICE_FormatPartType = 4
-	_CICE_TF_RFC822    _CICE_FormatPartType = 5
-	_CICE_TF_RFC822_Z  _CICE_FormatPartType = 6
-	_CICE_TF_RFC850    _CICE_FormatPartType = 7
-	_CICE_TF_RFC1123   _CICE_FormatPartType = 8
-	_CICE_TF_RFC1123_Z _CICE_FormatPartType = 9
-	_CICE_TF_RFC3339   _CICE_FormatPartType = 10
+	_CICE_TF_TIMESTAMP             _CICE_FormatPartType = 1
+	_CICE_TF_ANSIC                 _CICE_FormatPartType = 2
+	_CICE_TF_UNIXDATE              _CICE_FormatPartType = 3
+	_CICE_TF_RUBYDATE              _CICE_FormatPartType = 4
+	_CICE_TF_RFC822                _CICE_FormatPartType = 5
+	_CICE_TF_RFC822_Z              _CICE_FormatPartType = 6
+	_CICE_TF_RFC850                _CICE_FormatPartType = 7
+	_CICE_TF_RFC1123               _CICE_FormatPartType = 8
+	_CICE_TF_RFC1123_Z             _CICE_FormatPartType = 9
+	_CICE_TF_RFC3339               _CICE_FormatPartType = 10
 
 	// Common Integrator Console Encoder Caller Format (CICE CF)
 	// type constants.
 
-	_CICE_CF_TYPE_SEPARATOR  int16 = -1
-	_CICE_CF_TYPE_FUNC_SHORT int16 = 1
-	_CICE_CF_TYPE_FUNC_FULL  int16 = 2
-	_CICE_CF_TYPE_FILE_SHORT int16 = 3
-	_CICE_CF_TYPE_FILE_FULL  int16 = 4
-	_CICE_CF_TYPE_LINE_NUM   int16 = 5
-	_CICE_CF_TYPE_PKG_SHORT  int16 = 6 // unused
-	_CICE_CF_TYPE_PKG_FULL   int16 = 7
+	_CICE_CF_TYPE_SEPARATOR        int16 = -1
+	_CICE_CF_TYPE_FUNC_SHORT       int16 = 1
+	_CICE_CF_TYPE_FUNC_FULL        int16 = 2
+	_CICE_CF_TYPE_FILE_SHORT       int16 = 3
+	_CICE_CF_TYPE_FILE_FULL        int16 = 4
+	_CICE_CF_TYPE_LINE_NUM         int16 = 5
+	_CICE_CF_TYPE_PKG_SHORT        int16 = 6 // unused
+	_CICE_CF_TYPE_PKG_FULL         int16 = 7
 
 	// Common Integrator Console Encoder (CICE) verb predefined constants.
 
-	_CICE_VERB_START_INDICATOR rune = '{'
-	_CICE_VERB_END_INDICATOR   rune = '}'
-	_CICE_VERB_SEPARATOR       byte = '/'
+	_CICE_VERB_START_INDICATOR     rune = '{'
+	_CICE_VERB_END_INDICATOR       rune = '}'
+	_CICE_VERB_SEPARATOR           byte = '/'
 
 	// Common Integrator Console Integrator Standard Colors (CICE SC)
 	// predefined constants.
 
-	_CICE_SC_DEBUG   string = `c/fg:ascii:36`
-	_CICE_SC_INFO    string = `c/fg:ascii:32`
-	_CICE_SC_WARNING string = `c/fg:ascii:33/b`
-	_CICE_SC_ERROR   string = `c/fg:ascii:31/b`
-	_CICE_SC_FATAL   string = `c/fg:ascii:35/b`
+	_CICE_SC_DEBUG                 string = `c/fg:ascii:36`
+	_CICE_SC_INFO                  string = `c/fg:ascii:32`
+	_CICE_SC_WARNING               string = `c/fg:ascii:33/b`
+	_CICE_SC_ERROR                 string = `c/fg:ascii:31/b`
+	_CICE_SC_FATAL                 string = `c/fg:ascii:35/b`
 
 	// Common Integrator Console Encoder (CICE) defaults.
 
-	_CICE_DEFAULT_FORMAT string =
-	// include colored level, colored time
-	"{{c}}{{l}} {{t}}{{c/0}}\n" +
+	_CICE_DEFAULT_FORMAT           string =
+		// include colored level, colored time
+		"{{c}}{{l}} {{t}}{{c/0}}\n" +
 		// include message with \n if non-empty
 		"{{m/?$\n}}" +
 		// include fields with " = " as key-value separator, colored key
@@ -555,16 +555,11 @@ func (ce *CI_ConsoleEncoder) rvLevel(verb string) (predictedLen int) {
 	formattedLevel := _CICE_LF_FULL_NORMAL
 	if idx := strings.IndexByte(verb, _CICE_VERB_SEPARATOR); idx != -1 {
 		switch verb[idx+1:] {
-		case "d", "D":
-			formattedLevel = _CICE_LF_NUMBER
-		case "s":
-			formattedLevel = _CICE_LF_SHORT_NORMAL
-		case "S":
-			formattedLevel = _CICE_LF_SHORT_UPPER_CASE
-		case "ss":
-			formattedLevel = _CICE_LF_FULL_NORMAL
-		case "SS":
-			formattedLevel = _CICE_LF_FULL_UPPER_CASE
+		case "d", "D": formattedLevel = _CICE_LF_NUMBER
+		case "s":      formattedLevel = _CICE_LF_SHORT_NORMAL
+		case "S":      formattedLevel = _CICE_LF_SHORT_UPPER_CASE
+		case "ss":     formattedLevel = _CICE_LF_FULL_NORMAL
+		case "SS":     formattedLevel = _CICE_LF_FULL_UPPER_CASE
 		}
 	}
 
@@ -585,28 +580,17 @@ func (ce *CI_ConsoleEncoder) rvTime(verb string) (predictedLen int) {
 	(*CI_ConsoleEncoder)(nil).rvHelper(verb, func(verbPart string) (continue_ bool) {
 		if verbPart = strings.TrimSpace(format); verbPart != "" {
 			switch predefined := strings.ToUpper(verbPart); predefined {
-			case "UNIX", "TIMESTAMP":
-				formattedTime = _CICE_TF_TIMESTAMP
-			case "ANSIC":
-				formattedTime = _CICE_TF_ANSIC
-			case "UNIXDATE", "UNIX_DATE":
-				formattedTime = _CICE_TF_UNIXDATE
-			case "RUBYDATE", "RUBY_DATE":
-				formattedTime = _CICE_TF_RUBYDATE
-			case "RFC822":
-				formattedTime = _CICE_TF_RFC822
-			case "RFC822Z":
-				formattedTime = _CICE_TF_RFC822_Z
-			case "RFC850":
-				formattedTime = _CICE_TF_RFC850
-			case "RFC1123":
-				formattedTime = _CICE_TF_RFC1123
-			case "RFC1123Z":
-				formattedTime = _CICE_TF_RFC1123_Z
-			case "RFC3339":
-				formattedTime = _CICE_TF_RFC3339
-			default:
-				format = verbPart
+			case "UNIX", "TIMESTAMP":     formattedTime = _CICE_TF_TIMESTAMP
+			case "ANSIC":                 formattedTime = _CICE_TF_ANSIC
+			case "UNIXDATE", "UNIX_DATE": formattedTime = _CICE_TF_UNIXDATE
+			case "RUBYDATE", "RUBY_DATE": formattedTime = _CICE_TF_RUBYDATE
+			case "RFC822":                formattedTime = _CICE_TF_RFC822
+			case "RFC822Z":               formattedTime = _CICE_TF_RFC822_Z
+			case "RFC850":                formattedTime = _CICE_TF_RFC850
+			case "RFC1123":               formattedTime = _CICE_TF_RFC1123
+			case "RFC1123Z":              formattedTime = _CICE_TF_RFC1123_Z
+			case "RFC3339":               formattedTime = _CICE_TF_RFC3339
+			default:                      format = verbPart
 			}
 		}
 		return false // only first time verb is allowed and will be parsed
@@ -667,12 +651,9 @@ func (ce *CI_ConsoleEncoder) rvBody(verb string) (predictedLen int) {
 
 	(*CI_ConsoleEncoder)(nil).rvHelper(verb, func(verbPart string) (continue_ bool) {
 		switch {
-		case strings.HasPrefix(verbPart, "?^"):
-			ce.bf.beforeBody = verbPart[2:]
-		case strings.HasPrefix(verbPart, "?$"):
-			ce.bf.afterBody = verbPart[2:]
-		default:
-			return false
+		case strings.HasPrefix(verbPart, "?^"): ce.bf.beforeBody = verbPart[2:]
+		case strings.HasPrefix(verbPart, "?$"): ce.bf.afterBody = verbPart[2:]
+		default:                                return false
 		}
 		return true
 	})
@@ -692,12 +673,9 @@ func (ce *CI_ConsoleEncoder) rvCaller(verb string) (predictedLen int) {
 
 	(*CI_ConsoleEncoder)(nil).rvHelper(verb, func(verbPart string) (continue_ bool) {
 		switch {
-		case verbPart == "0":
-			isAdd = false
-		case hpm(verbPart, formatPrefixes):
-			predictedLen += ce.rvCallerFormat(verbPart[1:])
-		default:
-			return false
+		case verbPart == "0":               isAdd = false
+		case hpm(verbPart, formatPrefixes): predictedLen += ce.rvCallerFormat(verbPart[1:])
+		default:                            return false
 		}
 		return true
 	})
@@ -724,20 +702,15 @@ func (ce *CI_ConsoleEncoder) rvCallerFormat(f string) (predictedLen int) {
 	for _, fc := range f {
 
 		t := _CICE_CF_TYPE_SEPARATOR // by default threat it as a separator
-
 		switch fc {
-		case 'w':
-			t = _CICE_CF_TYPE_FUNC_SHORT
-		case 'W':
-			t = _CICE_CF_TYPE_FUNC_FULL
-		case 'f':
-			t = _CICE_CF_TYPE_FILE_SHORT
-		case 'F':
-			t = _CICE_CF_TYPE_FILE_FULL
-		case 'l', 'L':
-			t = _CICE_CF_TYPE_LINE_NUM
-		case 'p', 'P':
-			t = _CICE_CF_TYPE_PKG_FULL
+
+		case 'w':      t = _CICE_CF_TYPE_FUNC_SHORT
+		case 'W':      t = _CICE_CF_TYPE_FUNC_FULL
+		case 'f':      t = _CICE_CF_TYPE_FILE_SHORT
+		case 'F':      t = _CICE_CF_TYPE_FILE_FULL
+		case 'l', 'L': t = _CICE_CF_TYPE_LINE_NUM
+		case 'p', 'P': t = _CICE_CF_TYPE_PKG_FULL
+
 		default:
 			switch ce.cf.parts[j].typ {
 			default:
@@ -790,20 +763,14 @@ func (ce *CI_ConsoleEncoder) rvFields(verb string) (predictedLen int) {
 
 	(*CI_ConsoleEncoder)(nil).rvHelper(verb, func(verbPart string) (continue_ bool) {
 		switch upperCased := strings.ToUpper(verbPart); {
-		case strings.HasPrefix(verbPart, "?^"):
-			ce.ff.beforeFields = verbPart[2:]
-		case strings.HasPrefix(verbPart, "?$"):
-			ce.ff.afterFields = verbPart[2:]
-		case strings.HasPrefix(upperCased, "LE"):
-			ce.ff.afterNewLineForError = verbPart[2:]
-		case upperCased[0] == 'L':
-			ce.ff.afterNewLine = verbPart[1:]
-		case upperCased[0] == 'K':
-			ce.ff.beforeKey = verbPart[1:]
-		case upperCased[0] == 'V':
-			ce.ff.afterKey = verbPart[1:]
-		case upperCased[0] == 'E':
-			ce.ff.afterValue = verbPart[1:]
+
+		case strings.HasPrefix(verbPart, "?^"):   ce.ff.beforeFields = verbPart[2:]
+		case strings.HasPrefix(verbPart, "?$"):   ce.ff.afterFields = verbPart[2:]
+		case strings.HasPrefix(upperCased, "LE"): ce.ff.afterNewLineForError = verbPart[2:]
+		case upperCased[0] == 'L':                ce.ff.afterNewLine = verbPart[1:]
+		case upperCased[0] == 'K':                ce.ff.beforeKey = verbPart[1:]
+		case upperCased[0] == 'V':                ce.ff.afterKey = verbPart[1:]
+		case upperCased[0] == 'E':                ce.ff.afterValue = verbPart[1:]
 
 		case verbPart[0] == '*':
 			if perLine_, err := strconv.Atoi(verbPart[1:]); err == nil {
@@ -833,12 +800,9 @@ func (ce *CI_ConsoleEncoder) rvStacktrace(verb string) (predictedLen int) {
 
 	(*CI_ConsoleEncoder)(nil).rvHelper(verb, func(verbPart string) (continue_ bool) {
 		switch {
-		case strings.HasPrefix(verbPart, "?^"):
-			ce.sf.beforeStack = verbPart[2:]
-		case strings.HasPrefix(verbPart, "?$"):
-			ce.sf.afterStack = verbPart[2:]
-		default:
-			return false
+		case strings.HasPrefix(verbPart, "?^"): ce.sf.beforeStack = verbPart[2:]
+		case strings.HasPrefix(verbPart, "?$"): ce.sf.afterStack = verbPart[2:]
+		default:                                return false
 		}
 		return true
 	})
@@ -861,26 +825,14 @@ func (ce *CI_ConsoleEncoder) encode(e *Entry) []byte {
 	for _, part := range ce.formatParts {
 		switch part.typ.Type() {
 
-		case _CICE_FPT_VERB_JUST_TEXT:
-			buf = ce.encodeJustText(buf, part)
-
-		case _CICE_FPT_VERB_COLOR_CUSTOM:
-			buf = ce.encodeColor(buf, part)
-
-		case _CICE_FPT_VERB_COLOR_FOR_LEVEL:
-			buf = ce.encodeColorForLevel(buf, e)
-
-		case _CICE_FPT_VERB_BODY:
-			buf = ce.encodeBody(buf, e)
-
-		case _CICE_FPT_VERB_TIME:
-			buf = ce.encodeTime(e, part, buf)
-
-		case _CICE_FPT_VERB_LEVEL:
-			buf = ce.encodeLevel(buf, part, e)
-
-		case _CICE_FPT_VERB_STACKTRACE:
-			buf = ce.encodeStacktrace(buf, e, allowEmpty)
+		case _CICE_FPT_VERB_JUST_TEXT:       buf = ce.encodeJustText(buf, part)
+		case _CICE_FPT_VERB_COLOR_CUSTOM:    buf = ce.encodeColor(buf, part)
+		case _CICE_FPT_VERB_COLOR_FOR_LEVEL: buf = ce.encodeColorForLevel(buf, e)
+		case _CICE_FPT_VERB_BODY:            buf = ce.encodeBody(buf, e)
+		case _CICE_FPT_VERB_TIME:            buf = ce.encodeTime(e, part, buf)
+		case _CICE_FPT_VERB_LEVEL:           buf = ce.encodeLevel(buf, part, e)
+		case _CICE_FPT_VERB_STACKTRACE:      buf = ce.encodeStacktrace(buf, e, allowEmpty)
+		case _CICE_FPT_VERB_CALLER:          buf = ce.encodeCaller(buf, e)
 
 		case _CICE_FPT_VERB_FIELDS:
 			fields := e.LogLetter.Items.Fields
@@ -888,9 +840,6 @@ func (ce *CI_ConsoleEncoder) encode(e *Entry) []byte {
 				fields = e.ErrLetter.SystemFields
 			}
 			buf = ce.encodeFields(buf, fields, allowEmpty, false)
-
-		case _CICE_FPT_VERB_CALLER:
-			buf = ce.encodeCaller(buf, e)
 		}
 	}
 
@@ -908,20 +857,11 @@ func (ce *CI_ConsoleEncoder) encodeLevel(to []byte, fp _CICE_FormatPart, e *Entr
 	formattedLevel := ""
 	switch fp.typ.Data() {
 
-	case _CICE_LF_NUMBER:
-		formattedLevel = strconv.Itoa(int(e.Level))
-
-	case _CICE_LF_SHORT_NORMAL:
-		formattedLevel = e.Level.String()[:3]
-
-	case _CICE_LF_SHORT_UPPER_CASE:
-		formattedLevel = strings.ToUpper(e.Level.String()[:3])
-
-	case _CICE_LF_FULL_NORMAL:
-		formattedLevel = e.Level.String()
-
-	case _CICE_LF_FULL_UPPER_CASE:
-		formattedLevel = strings.ToUpper(e.Level.String())
+	case _CICE_LF_NUMBER:           formattedLevel = strconv.Itoa(int(e.Level))
+	case _CICE_LF_SHORT_NORMAL:     formattedLevel = e.Level.String()[:3]
+	case _CICE_LF_SHORT_UPPER_CASE: formattedLevel = strings.ToUpper(e.Level.String()[:3])
+	case _CICE_LF_FULL_NORMAL:      formattedLevel = e.Level.String()
+	case _CICE_LF_FULL_UPPER_CASE:  formattedLevel = strings.ToUpper(e.Level.String())
 	}
 
 	return bufw(to, formattedLevel)
@@ -933,28 +873,17 @@ func (ce *CI_ConsoleEncoder) encodeTime(e *Entry, fp _CICE_FormatPart, to []byte
 	formattedTime := ""
 
 	switch fp.typ.Data() {
-	case _CICE_TF_TIMESTAMP:
-		formattedTime = strconv.FormatInt(e.Time.Unix(), 10)
-	case _CICE_TF_ANSIC:
-		formattedTime = e.Time.Format(time.ANSIC)
-	case _CICE_TF_UNIXDATE:
-		formattedTime = e.Time.Format(time.UnixDate)
-	case _CICE_TF_RUBYDATE:
-		formattedTime = e.Time.Format(time.RubyDate)
-	case _CICE_TF_RFC822:
-		formattedTime = e.Time.Format(time.RFC822)
-	case _CICE_TF_RFC822_Z:
-		formattedTime = e.Time.Format(time.RFC822Z)
-	case _CICE_TF_RFC850:
-		formattedTime = e.Time.Format(time.RFC850)
-	case _CICE_TF_RFC1123:
-		formattedTime = e.Time.Format(time.RFC1123)
-	case _CICE_TF_RFC1123_Z:
-		formattedTime = e.Time.Format(time.RFC1123Z)
-	case _CICE_TF_RFC3339:
-		formattedTime = e.Time.Format(time.RFC3339)
-	default:
-		formattedTime = e.Time.Format(fp.value)
+	case _CICE_TF_TIMESTAMP: formattedTime = strconv.FormatInt(e.Time.Unix(), 10)
+	case _CICE_TF_ANSIC:     formattedTime = e.Time.Format(time.ANSIC)
+	case _CICE_TF_UNIXDATE:  formattedTime = e.Time.Format(time.UnixDate)
+	case _CICE_TF_RUBYDATE:  formattedTime = e.Time.Format(time.RubyDate)
+	case _CICE_TF_RFC822:    formattedTime = e.Time.Format(time.RFC822)
+	case _CICE_TF_RFC822_Z:  formattedTime = e.Time.Format(time.RFC822Z)
+	case _CICE_TF_RFC850:    formattedTime = e.Time.Format(time.RFC850)
+	case _CICE_TF_RFC1123:   formattedTime = e.Time.Format(time.RFC1123)
+	case _CICE_TF_RFC1123_Z: formattedTime = e.Time.Format(time.RFC1123Z)
+	case _CICE_TF_RFC3339:   formattedTime = e.Time.Format(time.RFC3339)
+	default:                 formattedTime = e.Time.Format(fp.value)
 	}
 
 	return bufw(to, formattedTime)
@@ -1100,7 +1029,7 @@ func (ce *CI_ConsoleEncoder) encodeFields(
 			switch fields[i].Kind.BaseType() {
 
 			case field.KIND_SYS_TYPE_EKAERR_UUID, field.KIND_SYS_TYPE_EKAERR_CLASS_NAME,
-				field.KIND_SYS_TYPE_EKAERR_PUBLIC_MESSAGE:
+			field.KIND_SYS_TYPE_EKAERR_PUBLIC_MESSAGE:
 				to = bufw(to, `"`)
 				to = bufw(to, fields[i].SValue)
 				to = bufw(to, `"`)
@@ -1136,13 +1065,13 @@ func (ce *CI_ConsoleEncoder) encodeFields(
 			}
 
 		case field.KIND_TYPE_INT,
-			field.KIND_TYPE_INT_8, field.KIND_TYPE_INT_16,
-			field.KIND_TYPE_INT_32, field.KIND_TYPE_INT_64:
+		field.KIND_TYPE_INT_8, field.KIND_TYPE_INT_16,
+		field.KIND_TYPE_INT_32, field.KIND_TYPE_INT_64:
 			to = bufw(to, strconv.FormatInt(fields[i].IValue, 10))
 
 		case field.KIND_TYPE_UINT,
-			field.KIND_TYPE_UINT_8, field.KIND_TYPE_UINT_16,
-			field.KIND_TYPE_UINT_32, field.KIND_TYPE_UINT_64:
+		field.KIND_TYPE_UINT_8, field.KIND_TYPE_UINT_16,
+		field.KIND_TYPE_UINT_32, field.KIND_TYPE_UINT_64:
 			to = bufw(to, strconv.FormatUint(uint64(fields[i].IValue), 10))
 
 		case field.KIND_TYPE_FLOAT_32:
