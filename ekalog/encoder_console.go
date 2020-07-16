@@ -965,7 +965,7 @@ func (ce *CI_ConsoleEncoder) encodeFields(
 		return to
 	}
 
-	if ce.ff.beforeFields != "" {
+	if !isErrors && ce.ff.beforeFields != "" {
 		to = bufw(to, ce.ff.beforeFields)
 	}
 
@@ -997,7 +997,7 @@ func (ce *CI_ConsoleEncoder) encodeFields(
 		}
 
 		// IsZero also covers cases when field is system's
-		if fields[i].IsZero() && !allowEmpty {
+		if fields[i].IsZero() && !allowEmpty || strings.HasPrefix(fields[i].Key, "sys.") {
 			continue
 		} else {
 			writtenFieldIdx++
@@ -1104,7 +1104,7 @@ func (ce *CI_ConsoleEncoder) encodeFields(
 		to = to[:len(to)-len(ce.ff.afterValue)]
 	}
 
-	if ce.ff.afterFields != "" {
+	if !isErrors && ce.ff.afterFields != "" {
 		to = bufw(to, ce.ff.afterFields)
 	}
 
