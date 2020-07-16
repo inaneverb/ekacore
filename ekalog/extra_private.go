@@ -5,6 +5,21 @@
 
 package ekalog
 
+import (
+	"strings"
+)
+
+// hpm is "has prefix many" just like strings.HasPrefix,
+// but you can check many prefixes at the same time.
+func hpm(verb string, prefixes []string) bool {
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(verb, prefix) {
+			return true
+		}
+	}
+	return false
+}
+
 // bufgr is buffer grow - a function that takes some buffer 'buf',
 // and checks whether it has at least 'required' free bytes. Returns 'buf' if it so.
 // Otherwise creates a new buffer, with X as a new capacity, where:
