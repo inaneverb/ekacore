@@ -8,12 +8,18 @@ package letter
 import (
 	"fmt"
 	"reflect"
+	"time"
 	"unsafe"
 
 	"github.com/qioalice/ekago/v2/ekadanger"
 	"github.com/qioalice/ekago/v2/internal/field"
 
 	"github.com/modern-go/reflect2"
+)
+
+var (
+	reflectedTimeTime = reflect2.TypeOf(time.Time{})
+	reflectedTimeDuration = reflect2.TypeOf(time.Duration(0))
 )
 
 // addImplicitField adds new field to l.Fields treating 'name' as field's name,
@@ -139,15 +145,21 @@ func (li *LetterItem) addImplicitField(name string, value interface{}, typ refle
 		typ.UnsafeSet(unsafe.Pointer(&stringVal), reflect2.PtrOf(value))
 		f = field.String(name, stringVal)
 
-	case reflect.Uintptr:
-		var uintptrVal uintptr
-		typ.Set(&uintptrVal, &value)
-		f = field.Addr(name, uintptrVal)
+	case reflect.Uintptr, reflect.UnsafePointer:
+		f = field.Addr(name, value)
 
-	case reflect.UnsafePointer:
-		var unsafePtrVal unsafe.Pointer
-		typ.Set(&unsafePtrVal, &value)
-		f = field.Addr(name, unsafePtrVal)
+	default:
+		switch typ {
+		case reflectedTimeTime:
+			var timeVal time.Time
+			typ.UnsafeSet(unsafe.Pointer(&timeVal), reflect2.PtrOf(value))
+			f = field.Time(name, timeVal)
+
+		case reflectedTimeDuration:
+			var durationVal time.Duration
+			typ.UnsafeSet(unsafe.Pointer(&durationVal), reflect2.PtrOf(value))
+			f = field.Duration(name, durationVal)
+		}
 	}
 
 recognizer:

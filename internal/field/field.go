@@ -8,6 +8,7 @@ package field
 import (
 	"fmt"
 	"math"
+	"time"
 
 	"github.com/qioalice/ekago/v2/ekadanger"
 
@@ -433,6 +434,16 @@ func Addr(key string, value interface{}) Field {
 	} else {
 		return Field{Key: key, Kind: KIND_TYPE_ADDR}
 	}
+}
+
+// Time constructs a field with the given time.Time and its key.
+func Time(key string, t time.Time) Field {
+	return String(key, t.String())
+}
+
+// Duration constructs a field with given time.Duration and its key.
+func Duration(key string, d time.Duration) Field {
+	return String(key, d.String())
 }
 
 // ---------------------- INTERNAL AUXILIARY FUNCTIONS ------------------------ //
