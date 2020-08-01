@@ -33,7 +33,7 @@ func (f Field) IsZero() bool {
 		return f.IValue == 0
 
 	case KIND_TYPE_STRING:
-		return f.SValue == ""
+		return f.SValue == "" || f.SValue == "00000000-0000-0000-0000-000000000000"
 
 	default:
 		return f.Value == nil
