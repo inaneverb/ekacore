@@ -168,28 +168,21 @@ recognizer:
 	}
 }
 
-// addExplicitField assumes that 'field' either 'Field' or '*Field' type
-// (checks it by 'fieldType') and adds it to the l.Fields.
-// If field == (*Field)(nil) there is no-op.
-func (li *LetterItem) addExplicitField(fieldValue interface{}, fieldType reflect2.Type) {
-
-	var fPtr *field.Field
-
-	if fieldType == field.ReflectedTypePtr {
-		fPtr = fieldValue.(*field.Field)
-
-	} else {
-		fPtr = new(field.Field)
-		*fPtr = fieldValue.(field.Field)
+// addExplicitFieldByPtr adds 'f' to the l.Fields only if it's not nil and
+// if it's not a vary-zero field.
+func (li *LetterItem) addExplicitFieldByPtr(f *field.Field) {
+	if f != nil {
+		li.addExplicitField2(*f)
 	}
+}
 
-	if fPtr != nil {
-		varyField := fPtr.Key != "" && fPtr.Key[len(fPtr.Key)-1] == '?'
-		if varyField {
-			fPtr.Key = fPtr.Key[:len(fPtr.Key)-1]
-		}
-		if !(varyField && fPtr.IsZero()) {
-			li.Fields = append(li.Fields, *fPtr)
-		}
+// addExplicitField2 adds 'f' to the l.Fields only if it's not vary-zero field.
+func (li *LetterItem) addExplicitField2(f field.Field) {
+	varyField := f.Key != "" && f.Key[len(f.Key)-1] == '?'
+	if varyField {
+		f.Key = f.Key[:len(f.Key)-1]
+	}
+	if !(varyField && f.IsZero()) {
+		li.Fields = append(li.Fields, f)
 	}
 }

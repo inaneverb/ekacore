@@ -6,8 +6,6 @@
 package letter
 
 import (
-	"fmt"
-	"reflect"
 	"unsafe"
 
 	"github.com/qioalice/ekago/v2/ekasys"
@@ -61,172 +59,11 @@ var (
 	TypesBeingIgnoredForParsing []reflect2.Type
 )
 
-// ParseTo is all-in-one function that actually does one of two things:
-// - Saves 'explicitFields' -> 'li' as is (add) if len('explicitFields') > 0 or
-// - Parses 'args' to extract message and fields -> 'li' if len('args') > 0.
-//
-// If it's saving there is easy case. Just assign or append() call and nothing more.
-// If it's parsing, then:
-//
-// - If 'onlyField' is true then only fields tries to be extracted from 'args'
-//   (explicit or implicit) and then saves -> 'li'.
-// - If 'onlyField' is false then also a message tried to be extracted (or generated)
-//   from 'args' and use it as 'li's message and the rest of 'args' will be used
-//   to extract fields.
-//
-// If it's message extraction, then:
-//   The first item in 'args' that can be used as message (or its generation)
-//   will be used to do it. If it's not string-like something - just use it as message.
-//   But if it's something that looks like string (duck types), it will be tried to
-//   used as printf format string if it has printf verbs. If it so, the N values
-//   from 'args' will be used (and then the rest after N args will be used as fields),
-//   where N is the count of printf verbs that has been detected in the printf format.
-//
-// Limitations:
-// If 'args' contain item that has one of the following type it will be SKIPPED:
-//   *Error, Error, *Letter, Letter, *LetterItem, LetterItem.
-//   See InitRestrictedTypesBeingParsed() for more details.
-//   IT IS NOT POSSIBLE TO USE ANOTHER ERRORS OR THEIR PRIVATE TYPES AS FIELDS.
-//   BUILD ONE ERROR THAT WILL CONTAIN ALL YOU WANT INSTEAD OF ERROR SPAWNING.
-//
-// Requirements:
-// 'li' != nil. Otherwise UB (may panic).
-//
-// Used to:
-// - Add fields (explicit/implicit) into *Error,
-// - Add fields (explicit/implicit) or/and message to *Logger's *Entry.
-func ParseTo(li *LetterItem, args []interface{}, explicitFields []field.Field, onlyFields bool) {
-
-	// REMINDER!
-	// IT IS STRONGLY GUARANTEES THAT BOTH OF 'args' AND 'explicitFields'
-	// CAN NOT BE AN EMPTY (OR SET) AT THE SAME TIME!
-
-	var (
-		messageNeedsArgs int
-		messageArgs      []interface{}
-	)
-
-	switch {
-	case len(explicitFields) > 0 && len(li.Fields) > 0:
-		li.Fields = append(li.Fields, explicitFields...) // easy case
-		return
-
-	case len(explicitFields) > 0:
-		li.Fields = explicitFields // easy case
-		return
-
-	case len(args) > 0 && !onlyFields:
-		messageNeedsArgs = PrintfVerbsCount(&li.Message)
-		messageArgs = make([]interface{}, 0, messageNeedsArgs)
-	}
-
-	var (
-		fieldKey   string // below loop's var
-		messageBak string
-	)
-
-	if onlyFields {
-		messageBak = li.Message
-		li.Message = "message must be not empty to avoid its generating"
-	}
-
-	// isRestrictedType is an auxiliary function that will be used in the loop above
-	// to figure out whether 'args's item must be ignored.
-	isRestrictedType := func(typ reflect2.Type, basedOn []reflect2.Type) bool {
-		for i, n := 0, len(basedOn); i < n; i++ {
-			if typ == basedOn[i] {
-				return true
-			}
-		}
-		return false
-	}
-
-	// -- MAIN LOOP --
-
-	for i, n := 0, len(args); i < n; i++ {
-
-		// let's recognize what kind of arg we have
-		switch argType := reflect2.TypeOf(args[i]); {
-
-		case argType == field.ReflectedType || argType == field.ReflectedTypePtr:
-			li.addExplicitField(args[i], argType)
-
-		case isRestrictedType(argType, TypesBeingIgnoredForParsing):
-			// DO NOTHING
-
-		case fieldKey != "":
-			// it guarantees that if 'fieldKey' is not empty, message's body
-			// is already formed
-			li.addImplicitField(fieldKey, args[i], argType)
-			fieldKey = ""
-
-		case messageNeedsArgs > 0:
-			// printf wants value to its associated verb;
-			// l.messagePrintfArgs is used to store all printf values
-			messageNeedsArgs--
-			fallthrough
-
-		case li.Flags.TestAll(FLAG_ONLY_EXPLICIT_FIELDS) && !onlyFields:
-			// even if it's overwrites required printf values, use it
-			// we must not drop any passed arg!
-			fallthrough
-
-		case li.Message == "" && len(messageArgs) == 0:
-			// there is no message's body still and we'll use current arg
-			// as message's body but only if there is no another one the same
-			// assuming that implicit fields are enabled
-			// (and all other args will be treated as explicit/implicit fields)
-			messageArgs = append(messageArgs, args[i])
-
-		case argType.Kind() == reflect.String:
-			// at this code point arg could be only field's key or unnamed arg
-			// well, looks like it's a key of implicit field.
-			//
-			// the same as fieldKey = field.(string)
-			argType.UnsafeSet(unsafe.Pointer(&fieldKey), reflect2.PtrOf(args[i]))
-
-			// it can be "" (empty string) then handle it as unnamed field
-			if fieldKey != "" {
-				break // break switch, go to next loop's iter
-			}
-			fallthrough // fallthrough can't be in 'if' statement
-
-		case args[i] != nil || li.Flags.TestAll(FLAG_ALLOW_UNNAMED_NIL):
-			// unnamed field
-			li.addImplicitField("", args[i], argType)
-		}
-	} // end loop
-
-	if onlyFields {
-		li.Message = messageBak
-		return
-	}
-
-	// if after loop 'fieldKey' != "", it's the last unnamed field
-	if fieldKey != "" {
-		li.Fields = append(li.Fields, field.String("", fieldKey))
-	}
-
-	// TODO: What do we have to do if we had printf verbs < than required ones?
-	//  Now it's handled by fmt.Printf, but I guess we shall to handle it manually.
-
-	switch hasPrintArgs := len(messageArgs) > 0; {
-
-	case hasPrintArgs && li.Message != "":
-		li.Message = fmt.Sprintf(li.Message, messageArgs...)
-
-	case hasPrintArgs && li.Message == "":
-		li.Message = fmt.Sprint(messageArgs...)
-
-	default:
-		// li.Message = li.Message (already formed)
-	}
-
-	// TODO: Shall we do something else with empty log messages?
-	//if li.Message == "" { ??? }
-}
-
 // L_SetLastItem is just 'l'.lastItem = 'item'. Returns modified 'l'.
+//
+// It's a function, not a method, because it's a part of internal package and
+// I want to use this inside other ekago's packages (can't make it private method),
+// but don't want user to use this method (can't make it public method).
 //
 // Requirements:
 // 'l' != nil. Otherwise UB (may panic).
@@ -239,6 +76,10 @@ func L_SetLastItem(l *Letter, item *LetterItem) *Letter {
 
 // L_GetLastItem just returns 'l'.lastItem.
 //
+// It's a function, not a method, because it's a part of internal package and
+// I want to use this inside other ekago's packages (can't make it private method),
+// but don't want user to use this method (can't make it public method).
+//
 // Requirements:
 // 'l' != nil. Otherwise UB (may panic).
 //
@@ -248,6 +89,10 @@ func L_GetLastItem(l *Letter) *LetterItem {
 }
 
 // L_SetSomething is just 'l'.something = 'ptr'. Returns modified 'l'.
+//
+// It's a function, not a method, because it's a part of internal package and
+// I want to use this inside other ekago's packages (can't make it private method),
+// but don't want user to use this method (can't make it public method).
 //
 // Requirements:
 // 'l' != nil. Otherwise UB (may panic).
@@ -259,6 +104,10 @@ func L_SetSomething(l *Letter, ptr unsafe.Pointer) *Letter {
 }
 
 // L_GetSomething just returns 'l'.something.
+//
+// It's a function, not a method, because it's a part of internal package and
+// I want to use this inside other ekago's packages (can't make it private method),
+// but don't want user to use this method (can't make it public method).
 //
 // Requirements:
 // 'l' != nil. Otherwise UB (may panic).
