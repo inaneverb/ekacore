@@ -996,8 +996,17 @@ func (ce *CI_ConsoleEncoder) encodeFields(
 			}
 		}
 
-		// IsZero also covers cases when field is system's
-		if fields[i].IsZero() && !allowEmpty || strings.HasPrefix(fields[i].Key, "sys.") {
+		// Despite the fact, that letter.ParseTo() already contains IsZero() call
+		// it's only vary fields filtering (fields with the "?" at the end of name).
+		//
+		// So, there may be a non-vary zero fields that may be not allowed.
+		// Some user's system fields (started with "sys." as their names) also
+		// must not be added.
+		//
+		// allowEmpty must be first at the SCE, because we don't need IsZero() call
+		// (it's kinda heavy) if empty fields are allowed.
+		// https://en.wikipedia.org/wiki/Short-circuit_evaluation
+		if (!allowEmpty && fields[i].IsZero()) || strings.HasPrefix(fields[i].Key, "sys.") {
 			continue
 		} else {
 			writtenFieldIdx++
