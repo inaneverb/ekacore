@@ -15,6 +15,11 @@ func init() {
 	// Create first N *Error objects and fill its pool by them.
 	initErrorPool()
 
+	letter.BridgeErrorGetLetter = bridgeGetLetter
+
+	letter.BridgeErrorGetStackIdx = bridgeGetStackIdx
+	letter.BridgeErrorSetStackIdx = bridgeSetStackIdx
+
 	// Initialize the gate's functions to link ekalog <-> ekaerr packages.
 	letter.GErrRelease = releaseErrorForGate
 
