@@ -20,6 +20,21 @@ import (
 
 var (
 
+	// BridgeErrorGetLetter is a function that is initialized
+	// in the ekaerr package and used in the ekaunsafe package.
+	//
+	// This function must return an underlying *Letter object
+	// from the 'err' - *ekaerr.Error object.
+	BridgeErrorGetLetter func(err unsafe.Pointer) *Letter
+
+	// BridgeErrorGetStackIdx, BridgeErrorSetStackIdx are a functions that are initialized
+	// in the ekaerr package and used in the ekaunsafe package.
+	//
+	// These functions are *ekaerr.Error object's 'stackIdx' field getter/setter.
+
+	BridgeErrorGetStackIdx func(err unsafe.Pointer) int16
+	BridgeErrorSetStackIdx func(err unsafe.Pointer, newStackIdx int16)
+
 	// BridgeLogErr2 and BridgeLogwErr2 are a functions that are initialized
 	// in the ekalog package and used in the ekaerr package.
 	//
