@@ -11,11 +11,16 @@ import (
 	"io/ioutil"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/qioalice/ekago/v2/ekadeath"
 	"github.com/qioalice/ekago/v2/ekaerr"
 	"github.com/qioalice/ekago/v2/ekalog"
 )
+
+func foo() *ekaerr.Error {
+	return ekaerr.Interrupted.New("fwefwf").W("test", 42).Throw()
+}
 
 func TestLog(t *testing.T) {
 
@@ -36,13 +41,16 @@ func TestLog(t *testing.T) {
 
 	ekalog.ReplaceIntegrator(stdoutConsoleIntegrator)
 
-	ekaerr.Interrupted.New("test").LogAsWarning()
+	ekaerr.Interrupted.New("test").LogAsWarn("", "key", "value")
+
+	ekalog.Debug("test %s %d", "hello", 25, "arg", 42)
 
 	ekalog.Debug("test", "field1", 42, "field2", nil)
-	ekalog.Info("test")
-	ekalog.Warn("test")
+	ekalog.Info("test", "dur", time.Minute * 20 + time.Second * 12, "i64", int64(3234234))
+	ekalog.Warn("test", "time", time.Now())
 	ekalog.Error("test")
-	ekalog.Fatal("test")
+
+	foo().LogAsFatal()
 }
 
 //

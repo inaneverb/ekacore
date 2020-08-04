@@ -125,15 +125,24 @@ func (l *Logger) log(
 
 	// maybe first arg is something like string (ducktypes)?
 	// if it so, use it as message's body
-	if errLetter == nil && format == "" && len(args) > 0 {
+	onlyFields := false
+	if format == "" && len(args) > 0 {
 
-		if str, ok := args[0].(string); ok && str != "" {
+		if str, ok := args[0].(string); ok {
 			format = str
 			args = args[1:]
+			if format == "" {
+				// if user pass empty string as argument,
+				// it means he don't want log message, only fields
+				onlyFields = true
+			}
 
 		} else if stringer, ok := args[0].(fmt.Stringer); ok && stringer != nil {
 			format = stringer.String()
 			args = args[1:]
+			if format == "" {
+				onlyFields = true
+			}
 		}
 	}
 
@@ -144,7 +153,7 @@ func (l *Logger) log(
 	// Try to extract message from 'args' if 'errLetter' == nil ('onlyFields' == false),
 	// but if 'errLetter' is set, it's OK to log w/o message.
 	if len(args) > 0 || len(explicitFields) > 0 {
-		letter.ParseTo(workTempEntry.LogLetter.Items, args, explicitFields, errLetter != nil)
+		letter.ParseTo(workTempEntry.LogLetter.Items, args, explicitFields, onlyFields)
 	}
 
 	l.integrator.Write(workTempEntry)
@@ -169,14 +178,26 @@ func (l *Logger) log(
 //
 // Requirements:
 // 'logger'.IsValid() == true. Otherwise UB (may panic).
-func logErr(logger unsafe.Pointer, level uint8, errLetter *letter.Letter) {
-	(*Logger)(logger).log(Level(level), "", errLetter, nil, nil)
+func logErr(logger unsafe.Pointer, level uint8, errLetter *letter.Letter, args []interface{}) {
+
+	loggerTyped := (*Logger)(logger)
+	if loggerTyped == nil {
+		loggerTyped = baseLogger
+	}
+
+	loggerTyped.log(Level(level), "", errLetter, args, nil)
 }
 
 // logErrThroughDefaultLogger is just the same as baseLogger.log() but only for
 // *Error's *Letter 'errLetter'.
-func logErrThroughDefaultLogger(level uint8, errLetter *letter.Letter) {
-	baseLogger.log(Level(level), "", errLetter, nil, nil)
+func logErrw(logger unsafe.Pointer, level uint8, errLetter *letter.Letter, message string, fields []field.Field) {
+
+	loggerTyped := (*Logger)(logger)
+	if loggerTyped == nil {
+		loggerTyped = baseLogger
+	}
+
+	loggerTyped.log(Level(level), message, errLetter, nil, fields)
 }
 
 // initBaseLogger performs a baseLogger initialization.

@@ -18,6 +18,6 @@ func init() {
 	initBaseLogger()
 
 	// Initialize the gate's functions to link ekalog <-> ekaerr packages.
-	letter.GLogErr = logErr
-	letter.GLogErrThroughDefaultLogger = logErrThroughDefaultLogger
+	letter.BridgeLogErr2 = logErr
+	letter.BridgeLogwErr2 = logErrw
 }
