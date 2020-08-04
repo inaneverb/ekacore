@@ -835,11 +835,11 @@ func (ce *CI_ConsoleEncoder) encode(e *Entry) []byte {
 		case _CICE_FPT_VERB_CALLER:          buf = ce.encodeCaller(buf, e)
 
 		case _CICE_FPT_VERB_FIELDS:
-			fields := e.LogLetter.Items.Fields
-			if len(fields) == 0 && e.ErrLetter != nil {
-				fields = e.ErrLetter.SystemFields
+			buf = ce.encodeFields(buf, e.LogLetter.SystemFields, allowEmpty, false)
+			if e.ErrLetter != nil {
+				buf = ce.encodeFields(buf, e.ErrLetter.SystemFields, allowEmpty, false)
 			}
-			buf = ce.encodeFields(buf, fields, allowEmpty, false)
+			buf = ce.encodeFields(buf, e.LogLetter.Items.Fields, allowEmpty, false)
 		}
 	}
 

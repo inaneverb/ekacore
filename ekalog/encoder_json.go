@@ -65,7 +65,9 @@ func (je *CI_JSONEncoder) encode(e *Entry) []byte {
 	je.encodeBase(s, e, allowEmpty)
 	s.WriteMore()
 
-	continueWriting = je.encodeFields(s, e.LogLetter.Items.Fields, allowEmpty)
+	fields := append(e.LogLetter.SystemFields[:0:0], e.LogLetter.SystemFields...)
+	fields = append(fields, e.LogLetter.Items.Fields...)
+	continueWriting = je.encodeFields(s, fields, allowEmpty)
 	if continueWriting {
 		s.WriteMore()
 	}
