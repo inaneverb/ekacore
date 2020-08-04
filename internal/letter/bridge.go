@@ -7,6 +7,8 @@ package letter
 
 import (
 	"unsafe"
+
+	"github.com/qioalice/ekago/v2/internal/field"
 )
 
 // It's a special file that contains gate functions.
@@ -17,20 +19,17 @@ import (
 // as arguments to describe arguments but do not specify types.
 
 var (
-	// GLogErr is a function that is initialized in the ekalog package and used
-	// in the ekaerr package.
-	//
-	// This function must log an *Error (using its internal private *Letter
-	// 'errLetter') with log level 'level' using 'logger' as a untyped pointer
-	// to the Logger object.
-	GLogErr func(logger unsafe.Pointer, level uint8, errLetter *Letter)
 
-	// GLogErrThroughDefaultLogger is a function that is initialized in the ekalog
-	// package and used in the ekaerr package.
+	// BridgeLogErr2 and BridgeLogwErr2 are a functions that are initialized
+	// in the ekalog package and used in the ekaerr package.
 	//
-	// This function must log an *Error (using its internal private *Letter
-	// 'errLetter') with log level 'level' using default package's logger.
-	GLogErrThroughDefaultLogger func(level uint8, errLetter *Letter)
+	// These functions must log an *ekaerr.Error
+	// (using its internal private *Letter 'errLetter') with log level 'level',
+	// using 'logger' as untyped pointer to the *ekalog.Logger object
+	// (or keep it nil if standard package's level logger must be used).
+
+	BridgeLogErr2 func(logger unsafe.Pointer, level uint8, errLetter *Letter, errArgs []interface{})
+	BridgeLogwErr2 func(logger unsafe.Pointer, level uint8, errLetter *Letter, errMessage string, errFields []field.Field)
 
 	// GErrRelease is a function that is initialized in the ekaerr package
 	// and used in the ekalog package.
