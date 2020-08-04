@@ -1213,10 +1213,11 @@ func (ce *CI_ConsoleEncoder) encodeStackFrame(
 	if letterItem != nil {
 		to = bufw(to, "\n")
 
+		if ce.ff.afterNewLineForError != "" {
+			to = bufw(to, ce.ff.afterNewLineForError)
+		}
+
 		if letterItem.Flags.TestAll(letter.FLAG_MARKED_LETTER_ITEM) {
-			if ce.ff.afterNewLineForError != "" {
-				to = bufw(to, ce.ff.afterNewLineForError)
-			}
 			to = bufw(to, `(*) `)
 		}
 
