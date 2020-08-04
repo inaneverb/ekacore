@@ -38,7 +38,7 @@ func foo3() *ekaerr.Error {
 }
 
 func TestError(t *testing.T) {
-	foo().LogAsWarning()
+	foo().LogAsWarn()
 }
 
 func BenchmarkError(b *testing.B) {
@@ -46,7 +46,7 @@ func BenchmarkError(b *testing.B) {
 	b.ReportAllocs()
 
 	devNullJSONIntegrator := new(ekalog.CommonIntegrator).
-		WithEncoder(new(ekalog.JSONEncoder).FreezeAndGetEncoder()).
+		WithEncoder(new(ekalog.CI_JSONEncoder).FreezeAndGetEncoder()).
 		WithMinLevel(ekalog.LEVEL_DEBUG).
 		WriteTo(ioutil.Discard)
 
@@ -54,7 +54,7 @@ func BenchmarkError(b *testing.B) {
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		foo2().LogAsWarning()
+		foo2().LogAsWarn()
 	}
 
 	defer func() {
