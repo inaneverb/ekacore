@@ -138,9 +138,10 @@ func (je *CI_JSONEncoder) encode(e *Entry) []byte {
 	s.WriteObjectEnd()
 
 	buf := s.Buffer()
-	copied := make([]byte, len(buf))
+	copied := make([]byte, len(buf) +1)
 	copy(copied, buf)
 
+	copied[len(copied)-1] = '\n'
 	return copied
 }
 
