@@ -206,6 +206,9 @@ func initBaseLogger() {
 	defaultConsoleEncoder = new(CI_ConsoleEncoder).FreezeAndGetEncoder()
 	defaultJSONEncoder = new(CI_JSONEncoder).FreezeAndGetEncoder()
 
+	_ = defaultConsoleEncoder
+	_ = defaultJSONEncoder
+
 	integrator := new(CommonIntegrator).
 		WithEncoder(defaultConsoleEncoder).
 		WithMinLevel(LEVEL_DEBUG).

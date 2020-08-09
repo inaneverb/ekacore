@@ -18,10 +18,46 @@ import (
 
 //noinspection GoSnakeCaseUsage
 type (
+	// CI_JSONEncoder is a type that built to be used as a part of CommonIntegrator
+	// as an log Entries encoder to the some output as JSON.
+	// Custom indentation supported.
 	//
+	// If you want to use CI_JSONEncoder, you need to instantiate object,
+	// set indentation (if you need, default is 0) and then call
+	// FreezeAndGetEncoder() method. By that you'll get the function that has
+	// an alias CI_Encoder and you can add it as encoder by
+	// CommonIntegrator.WithEncoder().
+	//
+	// See https://github.com/qioalice/ekago/ekalog/integrator.go ,
+	// https://github.com/qioalice/ekago/ekalog/integrator_common.go for more info.
 	CI_JSONEncoder struct {
-		jsoniterConfig jsoniter.Config
-		jsoniterAPI    jsoniter.API
+
+		// You know what is JSON indent (pretty JSON, etc), right?
+		// How much spaces will be added to the beginning of line for each
+		// nested JSON entity for each nesting level.
+		//
+		// So, for indent == 4, you will get:
+		//
+		// 		{
+		// 		    "key1": "value",
+		// 		    "nested": {
+		// 		        "nested_key": "value"
+		// 		    }
+		// 		}
+		//
+		// So, keys for 1st nesting level JSON entities has 4 spaces before
+		// ("key1", "nested") and for 2nd nesting level - 8 spaces before
+		// ("nested_key").
+		//
+		// You may set this value using SetIndent() method.
+		indent int
+
+		// api is jsoniter's API object.
+		// Created at the first FreezeAndGetEncoder() call for object.
+		// Won't be called twice. Only one.
+		//
+		// See FreezeAndGetEncoder() and doBuild() methods for more info.
+		api jsoniter.API
 	}
 )
 
@@ -31,17 +67,36 @@ var (
 )
 
 //
-func (je *CI_JSONEncoder) FreezeAndGetEncoder() CI_Encoder {
-	return je.encode
+func (je *CI_JSONEncoder) SetIndent(num int) *CI_JSONEncoder {
+
+	if num >= 0 {
+		je.indent = num
+	}
+	return je
 }
 
-//
-func (je *CI_JSONEncoder) encode(e *Entry) []byte {
+// FreezeAndGetEncoder builds current CI_JSONEncoder if it has not built yet
+// returning a function (has an alias CI_Encoder) that can be used at the
+// CommonIntegrator.WithEncoder() call while initializing.
+func (je *CI_JSONEncoder) FreezeAndGetEncoder() CI_Encoder {
+	return je.doBuild().encode
+}
 
-	je.jsoniterAPI = je.jsoniterConfig.Froze()
+// doBuild builds the current CI_JSONEncoder only if it has not built yet.
+// There is no-op if encoder already built.
+func (je *CI_JSONEncoder) doBuild() *CI_JSONEncoder {
 
-	cfg := jsoniter.Config{
-		IndentionStep:                 4,
+	switch {
+	case je == nil:
+		return nil
+
+	case je.api != nil:
+		// do not build if it's so already
+		return je
+	}
+
+	je.api = jsoniter.Config{
+		IndentionStep:                 je.indent,
 		MarshalFloatWith6Digits:       true,
 		EscapeHTML:                    false,
 		SortMapKeys:                   false,
@@ -54,8 +109,14 @@ func (je *CI_JSONEncoder) encode(e *Entry) []byte {
 		CaseSensitive:                 false,
 	}.Froze()
 
-	s := cfg.BorrowStream(nil)
-	defer cfg.ReturnStream(s)
+	return je
+}
+
+//
+func (je *CI_JSONEncoder) encode(e *Entry) []byte {
+
+	s := je.api.BorrowStream(nil)
+	defer je.api.ReturnStream(s)
 
 	allowEmpty := e.LogLetter.Items.Flags.TestAll(FLAG_INTEGRATOR_IGNORE_EMPTY_PARTS)
 	continueWriting := false
