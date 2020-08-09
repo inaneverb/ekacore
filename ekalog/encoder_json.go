@@ -119,7 +119,8 @@ func (je *CI_JSONEncoder) encode(e *Entry) []byte {
 	defer je.api.ReturnStream(s)
 
 	allowEmpty := e.LogLetter.Items.Flags.TestAll(FLAG_INTEGRATOR_IGNORE_EMPTY_PARTS)
-	continueWriting := false
+
+	removeLastChar := true
 
 	s.WriteObjectStart()
 
@@ -128,12 +129,21 @@ func (je *CI_JSONEncoder) encode(e *Entry) []byte {
 
 	fields := append(e.LogLetter.SystemFields[:0:0], e.LogLetter.SystemFields...)
 	fields = append(fields, e.LogLetter.Items.Fields...)
-	continueWriting = je.encodeFields(s, fields, allowEmpty)
-	if continueWriting {
+
+	fieldsWasAdded := je.encodeFields(s, fields, allowEmpty)
+	if fieldsWasAdded {
 		s.WriteMore()
 	}
 
-	je.encodeStacktrace(s, e, allowEmpty)
+	stacktraceWasAdded := je.encodeStacktrace(s, e, allowEmpty)
+	if stacktraceWasAdded {
+		removeLastChar = false
+	}
+
+	if removeLastChar {
+		b := s.Buffer()
+		s.SetBuffer(b[:len(b)-1])
+	}
 
 	s.WriteObjectEnd()
 
@@ -245,7 +255,13 @@ func (je *CI_JSONEncoder) encodeFields(
 }
 
 //
-func (je *CI_JSONEncoder) encodeStacktrace(s *jsoniter.Stream, e *Entry, allowEmpty bool) {
+func (je *CI_JSONEncoder) encodeStacktrace(
+
+	s *jsoniter.Stream,
+	e *Entry,
+	allowEmpty bool,
+
+) (wasAdded bool) {
 
 	stacktrace := e.LogLetter.StackTrace
 	if len(stacktrace) == 0 && e.ErrLetter != nil {
@@ -254,7 +270,7 @@ func (je *CI_JSONEncoder) encodeStacktrace(s *jsoniter.Stream, e *Entry, allowEm
 
 	lStacktrace := int16(len(stacktrace))
 	if lStacktrace == 0 && !allowEmpty {
-		return
+		return false
 	}
 
 	s.WriteObjectField("stacktrace")
@@ -288,6 +304,8 @@ func (je *CI_JSONEncoder) encodeStacktrace(s *jsoniter.Stream, e *Entry, allowEm
 	} else {
 		s.WriteEmptyArray()
 	}
+
+	return true
 }
 
 //
