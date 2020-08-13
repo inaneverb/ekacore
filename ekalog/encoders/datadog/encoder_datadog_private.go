@@ -14,7 +14,7 @@ import (
 	"github.com/qioalice/ekago/v2/internal/field"
 	"github.com/qioalice/ekago/v2/internal/letter"
 
-	"github.com/qioalice/ekago/v2/internal/helpers/ekalog"
+	"github.com/qioalice/ekago/v2/ekalog/internal/helpers"
 
 	"github.com/json-iterator/go"
 )
