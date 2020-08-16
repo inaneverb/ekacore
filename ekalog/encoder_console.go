@@ -977,7 +977,7 @@ func (ce *CI_ConsoleEncoder) encodeFields(
 		to = bufw(to, newLine)
 	}
 
-	unnamedFieldIdx := 1
+	unnamedFieldIdx := 0
 	writtenFieldIdx := int16(0)
 	for i, n := int16(0), int16(len(fields)); i < n; i++ {
 
@@ -1018,12 +1018,7 @@ func (ce *CI_ConsoleEncoder) encodeFields(
 		}
 
 		// write key
-		if fields[i].Key != "" {
-			to = bufw(to, fields[i].Key)
-		} else {
-			to = bufw(to, letter.UnnamedAsStr(unnamedFieldIdx))
-			unnamedFieldIdx++
-		}
+		to = bufw(to, fields[i].KeyOrUnnamed(&unnamedFieldIdx))
 
 		// before value (value identifier)
 		if ce.ff.afterKey != "" {

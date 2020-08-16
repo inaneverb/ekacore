@@ -12,8 +12,6 @@ import (
 	"github.com/qioalice/ekago/v2/internal/field"
 	"github.com/qioalice/ekago/v2/internal/letter"
 
-	"github.com/qioalice/ekago/v2/ekalog/internal/helpers"
-
 	"github.com/json-iterator/go"
 )
 
@@ -128,8 +126,8 @@ func (je *CI_JSONEncoder) encode(e *Entry) []byte {
 	je.encodeBase(s, e, allowEmpty)
 	s.WriteMore()
 
-	wasAdded := ekalog_helpers.
-		JsonEncodeFields(s, allowEmpty, e.LogLetter.Items.Fields)
+	wasAdded :=
+		je.encodeFields(s, allowEmpty, e.LogLetter.Items.Fields)
 	if wasAdded {
 		s.WriteMore()
 	}
@@ -305,9 +303,86 @@ func (je *CI_JSONEncoder) encodeStackFrame(
 		}
 		if len(letterItem.Fields) > 0 || allowEmpty {
 			s.WriteMore()
-			ekalog_helpers.
-				JsonEncodeFields(s, allowEmpty, letterItem.Fields)
+			je.encodeFields(s, allowEmpty, letterItem.Fields)
 		}
+	}
+
+	s.WriteObjectEnd()
+}
+
+// JsonEncodeFields is JSON encoding helper that encodes 'fields' as JSON array,
+// adding it to the JSON document's root with the key "fields".
+//
+// Puts JSON encoded data into 's' stream,
+// doing nothing if 'fields' is empty and 'allowEmpty' is false.
+
+//
+func (je *CI_JSONEncoder) encodeFields(
+
+	s *jsoniter.Stream,
+	allowEmpty bool,
+	fields []field.Field,
+
+) (wasAdded bool) {
+
+	emptySet := len(fields) == 0
+
+	if emptySet && !allowEmpty {
+		return false
+	}
+
+	s.WriteObjectField("fields")
+
+	if emptySet {
+		s.WriteEmptyArray()
+		return true
+	}
+
+	unnamedFieldIdx := 1
+
+	s.WriteArrayStart()
+
+	for i, n := int16(0), int16(len(fields)); i < n; i++ {
+		je.encodeField(s, fields[i], &unnamedFieldIdx)
+		s.WriteMore()
+	}
+
+	b := s.Buffer()
+	s.SetBuffer(b[:len(b)-1]) // remove last comma
+
+	s.WriteArrayEnd()
+
+	return true
+}
+
+// JsonEncodeField is JSON encoding helper that encodes 'f' field as JSON object
+// adding it to the JSON document. Uses 'unnamedFieldIdx' as a number
+// that will be transformed into string "unnamed_<number>" and that string will
+// be used as field's key if its key is empty.
+//
+// Puts JSON encoded data into 's' stream.
+
+//
+func (je *CI_JSONEncoder) encodeField(
+
+	s *jsoniter.Stream,
+	f field.Field,
+	unnamedFieldIdx *int,
+) {
+	s.WriteObjectStart()
+
+	s.WriteObjectField("key")
+	s.WriteString(f.KeyOrUnnamed(unnamedFieldIdx))
+	s.WriteMore()
+
+	// TODO: write kind if requested
+
+	s.WriteObjectField("value")
+
+	if !f.Kind.IsNil() {
+		_, _ = f.WriteTo(s)
+	} else {
+		s.WriteNil()
 	}
 
 	s.WriteObjectEnd()
