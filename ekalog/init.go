@@ -11,6 +11,9 @@ import (
 
 func init() {
 
+	// Init log levels.
+	initLevels()
+
 	// Create first N *Error objects and fill its pool by them.
 	initEntryPool()
 
