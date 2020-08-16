@@ -6,12 +6,13 @@
 package ekalog
 
 import (
-	"math"
 	"time"
 
 	"github.com/qioalice/ekago/v2/ekasys"
 	"github.com/qioalice/ekago/v2/internal/field"
 	"github.com/qioalice/ekago/v2/internal/letter"
+
+	"github.com/qioalice/ekago/v2/ekalog/internal/helpers"
 
 	"github.com/json-iterator/go"
 )
@@ -118,38 +119,40 @@ func (je *CI_JSONEncoder) encode(e *Entry) []byte {
 	s := je.api.BorrowStream(nil)
 	defer je.api.ReturnStream(s)
 
-	allowEmpty := e.LogLetter.Items.Flags.TestAll(FLAG_INTEGRATOR_IGNORE_EMPTY_PARTS)
-
-	removeLastChar := true
+	var (
+		allowEmpty = e.LogLetter.Items.Flags.TestAll(FLAG_INTEGRATOR_IGNORE_EMPTY_PARTS)
+	)
 
 	s.WriteObjectStart()
 
 	je.encodeBase(s, e, allowEmpty)
 	s.WriteMore()
 
-	fields := append(e.LogLetter.SystemFields[:0:0], e.LogLetter.SystemFields...)
-	fields = append(fields, e.LogLetter.Items.Fields...)
-
-	fieldsWasAdded := je.encodeFields(s, fields, allowEmpty)
-	if fieldsWasAdded {
+	wasAdded := ekalog_helpers.
+		JsonEncodeFields(s, allowEmpty, e.LogLetter.Items.Fields)
+	if wasAdded {
 		s.WriteMore()
 	}
 
-	stacktraceWasAdded := je.encodeStacktrace(s, e, allowEmpty)
-	if stacktraceWasAdded {
-		removeLastChar = false
+	wasAdded =
+		je.encodeStacktrace(s, e, allowEmpty)
+	if wasAdded {
+		s.WriteMore()
 	}
 
-	if removeLastChar {
-		b := s.Buffer()
-		s.SetBuffer(b[:len(b)-1])
-	}
+	// ------------ Add new sections here ------------ //
+
+	// We writing the JSON's comma at the each section, expecting that the next
+	// section will be written too. But it might be an empty.
+	// So, we need to remove the last comma. There is no more sections to be written.
+	b := s.Buffer()
+	s.SetBuffer(b[:len(b)-1])
 
 	s.WriteObjectEnd()
 
-	buf := s.Buffer()
-	copied := make([]byte, len(buf) +1)
-	copy(copied, buf)
+	b = s.Buffer()
+	copied := make([]byte, len(b) +1)
+	copy(copied, b)
 
 	copied[len(copied)-1] = '\n'
 	return copied
@@ -218,43 +221,6 @@ func (je *CI_JSONEncoder) encodeError(s *jsoniter.Stream, errLetter *letter.Lett
 }
 
 //
-func (je *CI_JSONEncoder) encodeFields(
-
-	s *jsoniter.Stream,
-	fields []field.Field,
-	allowEmpty bool,
-
-) (wasAdded bool) {
-
-	unnamedFieldIdx := 1
-
-	lFields := len(fields)
-
-	if lFields == 0 && !allowEmpty {
-		return false
-	}
-
-	s.WriteObjectField("fields")
-
-	if lFields > 0 {
-		s.WriteArrayStart()
-
-		for _, field_ := range fields[:lFields-1] {
-			je.encodeField(s, field_, &unnamedFieldIdx)
-			s.WriteMore()
-		}
-		je.encodeField(s, fields[lFields-1], &unnamedFieldIdx)
-
-		s.WriteArrayEnd()
-
-	} else {
-		s.WriteEmptyArray()
-	}
-
-	return true
-}
-
-//
 func (je *CI_JSONEncoder) encodeStacktrace(
 
 	s *jsoniter.Stream,
@@ -309,78 +275,6 @@ func (je *CI_JSONEncoder) encodeStacktrace(
 }
 
 //
-func (je *CI_JSONEncoder) encodeField(s *jsoniter.Stream, f field.Field, unnamedFieldIdx *int) {
-
-	s.WriteObjectStart()
-
-	s.WriteObjectField("key")
-	if f.Key != "" {
-		s.WriteString(f.Key)
-	} else {
-		s.WriteString(letter.UnnamedAsStr(*unnamedFieldIdx))
-		*unnamedFieldIdx++
-	}
-	s.WriteMore()
-
-	// TODO: write kind if requested
-
-	s.WriteObjectField("value")
-
-	if f.Kind.IsNil() {
-		s.WriteNil()
-		goto exit
-	}
-
-	switch f.Kind.BaseType() {
-
-	case field.KIND_TYPE_BOOL:
-		s.WriteBool(f.IValue != 0)
-
-	case field.KIND_TYPE_INT:
-		s.WriteInt(int(f.IValue))
-
-	case field.KIND_TYPE_INT_8:
-		s.WriteInt8(int8(f.IValue))
-
-	case field.KIND_TYPE_INT_16:
-		s.WriteInt16(int16(f.IValue))
-
-	case field.KIND_TYPE_INT_32:
-		s.WriteInt32(int32(f.IValue))
-
-	case field.KIND_TYPE_INT_64:
-		s.WriteInt64(f.IValue)
-
-	case field.KIND_TYPE_UINT:
-		s.WriteUint(uint(f.IValue))
-
-	case field.KIND_TYPE_UINT_8:
-		s.WriteUint8(uint8(f.IValue))
-
-	case field.KIND_TYPE_UINT_16:
-		s.WriteUint16(uint16(f.IValue))
-
-	case field.KIND_TYPE_UINT_32:
-		s.WriteUint32(uint32(f.IValue))
-
-	case field.KIND_TYPE_UINT_64:
-		s.WriteUint64(uint64(f.IValue))
-
-	case field.KIND_TYPE_FLOAT_32:
-		s.WriteFloat32(math.Float32frombits(uint32(f.IValue)))
-
-	case field.KIND_TYPE_FLOAT_64:
-		s.WriteFloat64(math.Float64frombits(uint64(f.IValue)))
-
-	case field.KIND_TYPE_STRING:
-		s.WriteString(f.SValue)
-	}
-
-exit:
-	s.WriteObjectEnd()
-}
-
-//
 func (je *CI_JSONEncoder) encodeStackFrame(
 
 	s *jsoniter.Stream,
@@ -411,7 +305,8 @@ func (je *CI_JSONEncoder) encodeStackFrame(
 		}
 		if len(letterItem.Fields) > 0 || allowEmpty {
 			s.WriteMore()
-			je.encodeFields(s, letterItem.Fields, allowEmpty)
+			ekalog_helpers.
+				JsonEncodeFields(s, allowEmpty, letterItem.Fields)
 		}
 	}
 
