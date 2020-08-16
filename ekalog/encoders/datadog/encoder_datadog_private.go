@@ -334,10 +334,13 @@ func (_ *CI_DatadogEncoder) encodeFields(
 	}
 
 	b := s.Buffer()
-	s.SetBuffer(b[:len(b)-1])
+	if b[len(b)-1] == ',' {
+		// emptySet might be false, but no one fields are written
+		// (all of them are "sys." prefixed and skipped
+		s.SetBuffer(b[:len(b)-1])
+	}
 
 	s.WriteArrayEnd()
-
 	return true
 }
 
