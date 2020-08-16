@@ -284,6 +284,8 @@ func (_ *CI_DatadogEncoder) encodeFields(
 
 ) (wasAdded bool) {
 
+	_ = allowEmpty
+
 	// TODO: Refactor for O(2N) -> O(N).
 
 	emptySet := true
@@ -295,27 +297,18 @@ func (_ *CI_DatadogEncoder) encodeFields(
 		}
 	}
 
-	if emptySet && !allowEmpty {
+	if emptySet {
 		return false
 	}
 
-	s.WriteObjectField("fields")
-
-	if emptySet {
-		s.WriteEmptyArray()
-		return true
-	}
-
 	unnamedFieldIdx := 1
-
-	s.WriteArrayStart()
 
 	for i, n := int16(0), int16(len(logFields)); i < n; i++ {
 		// all "sys." prefixed fields will be processed at the
 		// encodeSysPrefixedFields() method.
 		if !strings.HasPrefix(logFields[i].Key, "sys.") {
 			s.WriteObjectField(logFields[i].KeyOrUnnamed(&unnamedFieldIdx))
-			_, _ = logFields[i].WriteTo(s)
+			_, _ = logFields[i].ValueWriteTo(s)
 			s.WriteMore()
 		}
 	}
@@ -323,8 +316,8 @@ func (_ *CI_DatadogEncoder) encodeFields(
 	if errLetter != nil {
 		for letterItem := errLetter.Items; letterItem != nil; {
 			for i, n := int16(0), int16(len(letterItem.Fields)); i < n; i++ {
-				s.WriteObjectField(logFields[i].KeyOrUnnamed(&unnamedFieldIdx))
-				_, _ = logFields[i].WriteTo(s)
+				s.WriteObjectField(letterItem.Fields[i].KeyOrUnnamed(&unnamedFieldIdx))
+				_, _ = letterItem.Fields[i].ValueWriteTo(s)
 				s.WriteMore()
 			}
 			letterItem = letterItem.Next()
@@ -338,7 +331,6 @@ func (_ *CI_DatadogEncoder) encodeFields(
 		s.SetBuffer(b[:len(b)-1])
 	}
 
-	s.WriteArrayEnd()
 	return true
 }
 
