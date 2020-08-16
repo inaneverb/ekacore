@@ -142,10 +142,20 @@ func (de *CI_DatadogEncoder) encodeBase(
 		de.encodeError(s, e.ErrLetter)
 	}
 
-	if len(e.LogLetter.Items.Message) > 0 || allowEmpty {
+	message := e.LogLetter.Items.Message
+	if message == "" && e.ErrLetter != nil {
+		for letterItem := e.ErrLetter.Items; letterItem != nil && message == ""; {
+			if letterItem.Message != "" {
+				message = letterItem.Message
+			}
+			letterItem = letterItem.Next()
+		}
+	}
+
+	if message != "" || allowEmpty {
 		s.WriteMore()
 		s.WriteObjectField("message")
-		s.WriteString(e.LogLetter.Items.Message)
+		s.WriteString(message)
 	}
 }
 
