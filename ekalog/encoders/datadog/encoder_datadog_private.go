@@ -14,8 +14,6 @@ import (
 	"github.com/qioalice/ekago/v2/internal/field"
 	"github.com/qioalice/ekago/v2/internal/letter"
 
-	"github.com/qioalice/ekago/v2/ekalog/internal/helpers"
-
 	"github.com/json-iterator/go"
 )
 
@@ -316,8 +314,8 @@ func (_ *CI_DatadogEncoder) encodeFields(
 		// all "sys." prefixed fields will be processed at the
 		// encodeSysPrefixedFields() method.
 		if !strings.HasPrefix(logFields[i].Key, "sys.") {
-			ekalog_helpers.
-				JsonEncodeField(s, logFields[i], &unnamedFieldIdx)
+			s.WriteObjectField(logFields[i].KeyOrUnnamed(&unnamedFieldIdx))
+			_, _ = logFields[i].WriteTo(s)
 			s.WriteMore()
 		}
 	}
@@ -325,8 +323,8 @@ func (_ *CI_DatadogEncoder) encodeFields(
 	if errLetter != nil {
 		for letterItem := errLetter.Items; letterItem != nil; {
 			for i, n := int16(0), int16(len(letterItem.Fields)); i < n; i++ {
-				ekalog_helpers.
-					JsonEncodeField(s, letterItem.Fields[i], &unnamedFieldIdx)
+				s.WriteObjectField(logFields[i].KeyOrUnnamed(&unnamedFieldIdx))
+				_, _ = logFields[i].WriteTo(s)
 				s.WriteMore()
 			}
 			letterItem = letterItem.Next()
