@@ -204,11 +204,15 @@ func (dw *CI_WriterHttp) UseProviderManual(cb func(req *fasthttp.Request)) *CI_W
 //
 // Nil safe. There is no-op if CI_WriterHttp already initialized.
 func (dw *CI_WriterHttp) UseProviderDataDog(addr, token string) *CI_WriterHttp {
-	return dw.UseProviderManual(func(req *fasthttp.Request) {
-		req.Header.SetContentType("application/json")
-		req.SetRequestURI(addr)
-		req.Header.Set("DD-API-KEY", token)
-	})
+	return dw.
+		AddBefore([]byte("[")).
+		AddAfter([]byte("]")).
+		AddBetween([]byte(",")).
+		UseProviderManual(func(req *fasthttp.Request) {
+			req.Header.SetContentType("application/json")
+			req.SetRequestURI(addr)
+			req.Header.Set("DD-API-KEY", token)
+		})
 }
 
 //
