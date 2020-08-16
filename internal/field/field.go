@@ -112,8 +112,8 @@ const (
 
 	// --------------------------------------------------------------------- //
 	//                                WARNING                                //
-	// Keep in mind that max value of Kind base type is 31              //
-	// (because of KIND_MASK_BASE_TYPE == 0b00011111 == 0x1F == 31).       //
+	// Keep in mind that max value of Kind base type is 31                   //
+	// (because of KIND_MASK_BASE_TYPE == 0b00011111 == 0x1F == 31).         //
 	// DO NOT OVERFLOW THIS VALUE WHEN YOU WILL ADD A NEW CONSTANTS          //
 	// --------------------------------------------------------------------- //
 )
@@ -123,6 +123,11 @@ var (
 	ReflectedType            = reflect2.TypeOf(Field{})
 	ReflectedTypePtr         = reflect2.TypeOf((*Field)(nil))
 	ReflectedTypeFmtStringer = reflect2.TypeOfPtr((*fmt.Stringer)(nil)).Elem()
+)
+
+//noinspection GoErrorStringFormat
+var (
+	ErrUnsupportedKind = fmt.Errorf("Field: Unsupported kind of Field.")
 )
 
 // BaseType extracts only 5 lowest bits from fk and returns it (ignore flags).
@@ -438,7 +443,7 @@ func Addr(key string, value interface{}) Field {
 
 // Time constructs a field with the given time.Time and its key.
 func Time(key string, t time.Time) Field {
-	return String(key, t.String())
+	return String(key, t.Format("2006-01-02 15:04:05 -0700 MST"))
 }
 
 // Duration constructs a field with given time.Duration and its key.

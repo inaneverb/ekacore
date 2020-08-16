@@ -53,6 +53,11 @@ const (
 
 //noinspection GoUnusedGlobalVariable
 var (
+	ErrFieldUnsupportedKind = field.ErrUnsupportedKind
+)
+
+//noinspection GoUnusedGlobalVariable
+var (
 	FieldReset = field.Reset
 	FieldBool = field.Bool
 	FieldInt = field.Int
