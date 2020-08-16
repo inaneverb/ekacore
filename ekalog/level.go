@@ -17,7 +17,7 @@ type (
 	Level uint8
 )
 
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+//noinspection GoSnakeCaseUsage
 const (
 	// Levels represents the log message's levels.
 	// You can use these constants to determine which log entry will you receive
@@ -40,20 +40,6 @@ const (
 	/* 90 */ LEVEL_FATAL
 )
 
-var (
-	// TODO: Thread-safety and controlling it if it's not necessary
-	names       = make(map[Level]string)
-	fatalLevels = make([]Level, 0, 10)
-)
-
-func init() {
-	RegisterLevelName(LEVEL_DEBUG, "Debug")
-	RegisterLevelName(LEVEL_INFO, "Info")
-	RegisterLevelName(LEVEL_WARNING, "Warning")
-	RegisterLevelName(LEVEL_ERROR, "Error")
-	RegisterLevelName(LEVEL_FATAL, "Fatal")
-}
-
 // RegisterLevelName registers new log level's name that will be returned
 // by Level.String() method. Allows you to overwrite standard log level names
 // and name your own custom log levels. There is no-op if name is empty.
@@ -62,6 +48,12 @@ func RegisterLevelName(level Level, name string) {
 		return
 	}
 	names[level] = name
+	registeredNewLevels++
+}
+
+//
+func RegisteredCustomLevels() uint32 {
+	return registeredNewLevels
 }
 
 // MarkLevelAsFatal marks passed level as level when you write log with,
@@ -110,23 +102,3 @@ func (l Level) ToUpper() string { return strings.ToUpper(l.String()) }
 
 // ToLower returns an lowercase string representing the log level 'l'.
 func (l Level) ToLower() string { return strings.ToLower(l.String()) }
-
-// mustDie reports whether l shall cause death.Die() call.
-func (l Level) mustDie() bool {
-
-	switch l {
-	case LEVEL_DEBUG, LEVEL_INFO, LEVEL_WARNING, LEVEL_ERROR:
-		return false
-
-	case LEVEL_FATAL:
-		return true
-
-	default:
-		for _, fatalLevel := range fatalLevels {
-			if l == fatalLevel {
-				return true
-			}
-		}
-		return false
-	}
-}
