@@ -380,7 +380,11 @@ func (je *CI_JSONEncoder) encodeField(
 	s.WriteObjectField("value")
 
 	if !f.Kind.IsNil() {
-		_, _ = f.ValueWriteTo(s)
+		if f.SValue != "" {
+			s.WriteString(f.SValue)
+		} else {
+			_, _ = f.ValueWriteTo(s)
+		}
 	} else {
 		s.WriteNil()
 	}
