@@ -308,7 +308,11 @@ func (_ *CI_DatadogEncoder) encodeFields(
 		// encodeSysPrefixedFields() method.
 		if !strings.HasPrefix(logFields[i].Key, "sys.") {
 			s.WriteObjectField(logFields[i].KeyOrUnnamed(&unnamedFieldIdx))
-			_, _ = logFields[i].ValueWriteTo(s)
+			if logFields[i].SValue != "" {
+				s.WriteString(logFields[i].SValue)
+			} else {
+				_, _ = logFields[i].ValueWriteTo(s)
+			}
 			s.WriteMore()
 		}
 	}
@@ -317,7 +321,11 @@ func (_ *CI_DatadogEncoder) encodeFields(
 		for letterItem := errLetter.Items; letterItem != nil; {
 			for i, n := int16(0), int16(len(letterItem.Fields)); i < n; i++ {
 				s.WriteObjectField(letterItem.Fields[i].KeyOrUnnamed(&unnamedFieldIdx))
-				_, _ = letterItem.Fields[i].ValueWriteTo(s)
+				if letterItem.Fields[i].SValue != "" {
+					s.WriteString(letterItem.Fields[i].SValue)
+				} else {
+					_, _ = letterItem.Fields[i].ValueWriteTo(s)
+				}
 				s.WriteMore()
 			}
 			letterItem = letterItem.Next()
