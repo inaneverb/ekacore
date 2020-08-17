@@ -43,6 +43,20 @@ func (li *LetterItem) addImplicitField(name string, value interface{}, typ refle
 		li.Fields = append(li.Fields, field.NilValue(name, field.KIND_TYPE_INVALID))
 		return
 
+	case typ == reflectedTimeTime:
+		var timeVal time.Time
+		typ.UnsafeSet(unsafe.Pointer(&timeVal), reflect2.PtrOf(value))
+		f = field.Time(name, timeVal)
+		goto recognizer
+
+	case typ == reflectedTimeDuration:
+		var durationVal time.Duration
+		typ.UnsafeSet(unsafe.Pointer(&durationVal), reflect2.PtrOf(value))
+		f = field.Duration(name, durationVal)
+		goto recognizer
+
+	// PLACE TYPES ABOVE THAT HAS String() METHOD BUT YOU DON'T WANT TO USE IT.
+
 	case typ.Implements(field.ReflectedTypeFmtStringer):
 		f = field.Stringer(name, value.(fmt.Stringer))
 		goto recognizer
@@ -148,18 +162,9 @@ func (li *LetterItem) addImplicitField(name string, value interface{}, typ refle
 	case reflect.Uintptr, reflect.UnsafePointer:
 		f = field.Addr(name, value)
 
-	default:
-		switch typ {
-		case reflectedTimeTime:
-			var timeVal time.Time
-			typ.UnsafeSet(unsafe.Pointer(&timeVal), reflect2.PtrOf(value))
-			f = field.Time(name, timeVal)
+	// TODO: handle all structs, handle structs with Valid (bool) = false as null
 
-		case reflectedTimeDuration:
-			var durationVal time.Duration
-			typ.UnsafeSet(unsafe.Pointer(&durationVal), reflect2.PtrOf(value))
-			f = field.Duration(name, durationVal)
-		}
+	default:
 	}
 
 recognizer:
