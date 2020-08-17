@@ -150,6 +150,14 @@ func (de *CI_DatadogEncoder) encodeBase(
 		}
 	}
 
+	if message != "" && e.ErrLetter != nil {
+		for i, n := 0, len(e.ErrLetter.SystemFields); i < n; i++ {
+			if e.ErrLetter.SystemFields[i].BaseType() == field.KIND_SYS_TYPE_EKAERR_CLASS_NAME {
+				message = "(" + e.ErrLetter.SystemFields[i].SValue + "): " + message
+			}
+		}
+	}
+
 	if message != "" || allowEmpty {
 		s.WriteMore()
 		s.WriteObjectField("message")
@@ -167,11 +175,23 @@ func (de *CI_DatadogEncoder) encodeError(
 	errLetter *letter.Letter,
 ) {
 	for i, n := 0, len(errLetter.SystemFields); i < n; i++ {
-		if errLetter.SystemFields[i].BaseType() == field.KIND_SYS_TYPE_EKAERR_UUID {
+		switch errLetter.SystemFields[i].BaseType() {
+
+		case field.KIND_SYS_TYPE_EKAERR_UUID:
 			s.WriteObjectField("error_id")
 			s.WriteString(errLetter.SystemFields[i].SValue)
-			return
+			s.WriteMore()
+
+		case field.KIND_SYS_TYPE_EKAERR_CLASS_NAME:
+			s.WriteObjectField("error_class")
+			s.WriteString(errLetter.SystemFields[i].SValue)
+			s.WriteMore()
 		}
+	}
+
+	b := s.Buffer()
+	if b[len(b)-1] == ',' {
+		s.SetBuffer(b[:len(b)-1]) // remove last comma
 	}
 }
 
