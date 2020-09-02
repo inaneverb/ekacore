@@ -1,12 +1,10 @@
 package ekatime
 
-import (
-
-)
-
 type (
 	//
 	Today struct {
+
+		c                *Calendar   `json:"-"`
 
 		Timestamp        Timestamp   `json:"ts"`
 

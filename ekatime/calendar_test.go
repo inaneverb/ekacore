@@ -22,7 +22,7 @@ func TestCalendar_Today(t *testing.T) {
 			return data
 		})
 
+	c.EventAdd(ekatime.NewEvent(ekatime.NewDate(2020, 9, 1), 1, true))
 	c.Run()
-
 	fmt.Println(string(c.Today().AsJson))
 }

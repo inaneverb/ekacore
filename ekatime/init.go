@@ -13,5 +13,4 @@ func init() {
 	initTable5()
 	initOnceIn()
 	initWeekday()
-	initCal()
 }

@@ -182,4 +182,3 @@ func (ts Timestamp) String() string {
 	hh, mm, ss := timeFromUnix(ts)
 	return fmt.Sprintf("%04d/%02d/%02d %02d:%02d:%02d", y, m, d, hh, mm, ss)
 }
-
