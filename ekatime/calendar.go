@@ -196,6 +196,25 @@ func (c *Calendar) EventRemove(event Event) *Calendar {
 	return c
 }
 
+// EventRemoveAll removes all pending Event objects from the Calendar when new day
+// will come. If there is no events at all, does nothing.
+// Nil safe. Thread-safety.
+func (c *Calendar) EventRemoveAll() *Calendar {
+
+	if c == nil {
+		return nil
+	}
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if len(c.pendingEvents) > 0 {
+		c.pendingEvents = c.pendingEvents[:0]
+	}
+
+	return c
+}
+
 // WhenNewDay registers the 'cb' as callback that will be called when new day has come.
 // Keep in mind, you must call Run() method to start the internal goroutine of Calendar.
 // Does nothing if Run() has been called before.
