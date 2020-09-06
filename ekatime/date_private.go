@@ -28,9 +28,7 @@ const (
 // normalizeDate shifts Date, 'y', 'm', and 'd' represents which if they are not
 // in their valid ranges. Returns the fixed values (if they has been).
 func normalizeDate(y Year, m Month, d Day) (Year, Month, Day) {
-	invalid := y < 0 || y > 4095 || m < 1 || m > 12 || d < 1 ||
-		(IsLeap(y) && m == 2 && d > 29) || d > _Table0[m-1]
-	if invalid {
+	if !IsValidDate(y, m, d) {
 		t := time.Date(int(y), time.Month(m), int(d), 0, 0, 0, 0, time.UTC)
 		ty, tm, td := t.Date()
 		y, m, d = Year(ty), Month(tm), Day(td)

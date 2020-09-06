@@ -69,6 +69,13 @@ func (y Year) IsLeap() bool {
 	return IsLeap(y)
 }
 
+// IsValidDate reports whether 'y', 'm' and 'd' in their valid ranges.
+// Also checks leap year, february 28,29, correct day number for month.
+func IsValidDate(y Year, m Month, d Day) bool {
+	return !(y < 0 || y > 4095 || m < 1 || m > 12 || d < 1 ||
+		(IsLeap(y) && m == 2 && d > 29) || d > _Table0[m-1])
+}
+
 // ToCmp returns the current Date object ready for being compared using eq operator ==.
 // Yes you MUST NOT compare Date objects directly w/o call this method.
 // See Date's doc for more details.

@@ -29,6 +29,11 @@ type (
 	Time uint32
 )
 
+// IsValidTime reports whether 'h', 'm' and 's' in their valid ranges.
+func IsValidTime(h Hour, m Minute, s Second) bool {
+	return h >= 0 && h <= 23 && m >= 0 && m <= 59 && s >= 0 && s <= 59
+}
+
 // Hour returns the hour number the current Time includes which.
 //
 // It guarantees that Hour() returns the valid hour number Time is of,

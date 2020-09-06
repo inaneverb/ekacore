@@ -26,8 +26,7 @@ const (
 // normalizeTime shifts Time, 'h', 'm' and 's' represents which if they are not
 // in their valid ranges. Returns the fixed values (if they has been).
 func normalizeTime(h Hour, m Minute, s Second) (Hour, Minute, Second) {
-	invalid := !(h >= 0 && h <= 23 && m >= 0 && m <= 59 && s >= 0 && s <= 59)
-	if invalid {
+	if !IsValidTime(h, m, s) {
 		t := time.Date(0, 0, 0, int(h), int(m), int(s), 0, time.UTC)
 		th, tm, ts := t.Clock()
 		h, m, s = Hour(th), Minute(tm), Second(ts)
