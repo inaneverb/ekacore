@@ -215,6 +215,29 @@ func (c *Calendar) EventRemoveAll() *Calendar {
 	return c
 }
 
+// EventWalk calls eventWalker for each pending Event in the Calendar.
+// Reminder. Pending events are not the events that are used now but events
+// that will be applied at the next day.
+// There is no way to see an events that are used now.
+//
+// NOTE!
+// There is a lock so make sure your fn is not so slow.
+func (c *Calendar) EventWalk(eventWalker func(i int, event Event)) *Calendar {
+
+	if c == nil {
+		return nil
+	}
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	for i, n := 0, len(c.pendingEvents); i < n; i++ {
+		eventWalker(i, c.pendingEvents[i])
+	}
+
+	return c
+}
+
 // WhenNewDay registers the 'cb' as callback that will be called when new day has come.
 // Keep in mind, you must call Run() method to start the internal goroutine of Calendar.
 // Does nothing if Run() has been called before.
