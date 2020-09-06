@@ -16,11 +16,11 @@ type (
 	// - Month (use Month() method, values: 1-12),
 	// - Year (use Year() method, values: 0-4095),
 	// - Working? (use IsWorkday() or IsDayOff() method),
-	// - Event type's ID (use ID() method, values: 0-127).
+	// - Event type's ID (use ID() method, values: 0-65535).
 	//
 	// Supports up to 127 types you can bind an Event to. Hope it's enough.
-	// Takes just 4 byte. At all! Thanks to bitwise operations.
-	Event uint32
+	// Takes just 8 byte. At all! Thanks to bitwise operations.
+	Event uint64
 )
 
 //
@@ -59,12 +59,12 @@ func (e Event) IsDayOff() bool {
 }
 
 //
-func (e Event) ID() uint8 {
-	return uint8(e >> _EVENT_OFFSET_ID) & _EVENT_MASK_ID
+func (e Event) ID() uint16 {
+	return uint16(e >> _EVENT_OFFSET_ID) & _EVENT_MASK_ID
 }
 
 //
-func NewEvent(d Date, id uint8, isDayOff bool) Event {
+func NewEvent(d Date, id uint16, isDayOff bool) Event {
 
 	isDayOffBit := Event(0)
 	if isDayOff {
