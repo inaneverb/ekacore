@@ -7,6 +7,7 @@ package ekalog_encoder_datadog
 
 import (
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/qioalice/ekago/v2/ekaexp"
@@ -234,17 +235,27 @@ func (de *CI_DatadogEncoder) encodeStacktrace(
 
 	s.WriteArrayStart()
 
+	// Avoid usage of fmt.Sprintf
+	stringsBuilder := strings.Builder{}
+
 	for i := int16(0); i < lStacktrace; i++ {
-		s.WriteRaw("\"(")
-		de.encodeNumWithZeroes(s, i, lStacktrace)
-		s.WriteRaw("): ")
-		s.WriteRaw(stacktrace[i].Function)
-		s.WriteRaw("(")
-		s.WriteRaw(filepath.Base(stacktrace[i].File))
-		s.WriteRaw(":")
-		s.WriteInt(stacktrace[i].Line)
-		s.WriteRaw(")\"")
+
+		_ = stringsBuilder.WriteByte('(')
+		de.encodeNumWithZeroes(&stringsBuilder, i, lStacktrace)
+		_ = stringsBuilder.WriteByte(')')
+		_ = stringsBuilder.WriteByte(':')
+		_ = stringsBuilder.WriteByte(' ')
+		_, _ = stringsBuilder.WriteString(stacktrace[i].Function)
+		_ = stringsBuilder.WriteByte('(')
+		_, _ = stringsBuilder.WriteString(filepath.Base(stacktrace[i].File))
+		_ = stringsBuilder.WriteByte(':')
+		_, _ = stringsBuilder.WriteString(strconv.Itoa(stacktrace[i].Line))
+		_ = stringsBuilder.WriteByte(')')
+
+		s.WriteString(stringsBuilder.String())
 		s.WriteMore()
+
+		stringsBuilder.Reset()
 	}
 
 	b := s.Buffer()
@@ -270,12 +281,17 @@ func (de *CI_DatadogEncoder) encodeStacktrace(
 		if letterItem.Message != "" {
 			nonEmptyStackMessages = true
 
-			s.WriteRaw("\"(")
-			de.encodeNumWithZeroes(s, letterItem.StackFrameIdx(), lStacktrace)
-			s.WriteRaw("): ")
-			s.WriteRaw(letterItem.Message)
-			s.WriteRaw("\"")
+			_ = stringsBuilder.WriteByte('(')
+			de.encodeNumWithZeroes(&stringsBuilder, letterItem.StackFrameIdx(), lStacktrace)
+			_ = stringsBuilder.WriteByte(')')
+			_ = stringsBuilder.WriteByte(':')
+			_ = stringsBuilder.WriteByte(' ')
+			_, _ = stringsBuilder.WriteString(letterItem.Message)
+
+			s.WriteString(stringsBuilder.String())
 			s.WriteMore()
+
+			stringsBuilder.Reset()
 		}
 	}
 
@@ -415,7 +431,7 @@ func (de *CI_DatadogEncoder) encodeSysPrefixedFields(
 //
 // E.g: 'num' == 26, 'maxNum' = 12345.
 // Then this method will add a string "00026" to the 's'.
-func (_ *CI_DatadogEncoder) encodeNumWithZeroes(s *jsoniter.Stream, num, maxNum int16) {
+func (_ *CI_DatadogEncoder) encodeNumWithZeroes(s *strings.Builder, num, maxNum int16) {
 
 	var (
 		needSections = int16(0)
@@ -439,11 +455,11 @@ func (_ *CI_DatadogEncoder) encodeNumWithZeroes(s *jsoniter.Stream, num, maxNum 
 	}
 
 	switch maxSections - needSections {
-	case 1: s.WriteRaw("0")
-	case 2: s.WriteRaw("00")
-	case 3: s.WriteRaw("000")
-	case 4: s.WriteRaw("0000")
+	case 1: _, _ = s.WriteString("0")
+	case 2: _, _ = s.WriteString("00")
+	case 3: _, _ = s.WriteString("000")
+	case 4: _, _ = s.WriteString("0000")
 	}
 
-	s.WriteInt16(num)
+	s.WriteString(strconv.Itoa(int(num)))
 }
