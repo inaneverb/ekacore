@@ -116,6 +116,16 @@ func (dd Date) Day() Day {
 	return Day(dd >> _DATE_OFFSET_DAY) & _DATE_MASK_DAY
 }
 
+// DaysInMonth returns how much days the month contains the current Date includes which.
+func (dd Date) DaysInMonth() Day {
+	y, m, d := normalizeDate(dd.Split())
+	d = _Table0[m-1]
+	if m == MONTH_FEBRUARY && y.IsLeap() {
+		d++
+	}
+	return d
+}
+
 // Weekday returns the current Date's day of week.
 func (dd Date) Weekday() Weekday {
 	if w := Weekday(dd >> _DATE_OFFSET_WEEKDAY) & _DATE_MASK_WEEKDAY; w > 0 {
