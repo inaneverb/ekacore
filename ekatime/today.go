@@ -50,3 +50,8 @@ func (t *Today) CopyWithEncodedData() *Today {
 	cp.AsYourOwn1 = append(t.AsYourOwn1[:0:0], t.AsYourOwn1...)
 	return cp
 }
+
+// Cal returns the Calendar, the current Today is generated from.
+func (t *Today) Cal() *Calendar {
+	return t.c
+}
