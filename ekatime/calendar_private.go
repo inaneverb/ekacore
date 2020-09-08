@@ -144,15 +144,19 @@ func (c *Calendar) updateToday() *Today {
 				newToday.IsDayOff = c.confirmedEvents[i].IsDayOff()
 			}
 
-			if c.confirmedEvents[i].Day() <= newToday.Day &&
-				c.confirmedEvents[i].Weekday().IsDayOff() != c.confirmedEvents[i].IsDayOff() {
-
+			// If by default this day is the same as at the event, there is no need
+			// to change something.
+			if c.confirmedEvents[i].Weekday().IsDayOff() != c.confirmedEvents[i].IsDayOff() {
 				if c.confirmedEvents[i].IsDayOff() {
-					newToday.WorkDayCurrent--
 					newToday.WorkDayTotal--
+					if c.confirmedEvents[i].Day() <= newToday.Day {
+						newToday.WorkDayCurrent--
+					}
 				} else {
-					newToday.WorkDayCurrent++
 					newToday.WorkDayTotal++
+					if c.confirmedEvents[i].Day() <= newToday.Day {
+						newToday.WorkDayCurrent++
+					}
 				}
 			}
 		}
