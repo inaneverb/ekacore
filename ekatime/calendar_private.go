@@ -110,11 +110,7 @@ func (c *Calendar) updateToday() *Today {
 	// Calculate work days counters
 
 	_1stDayWeekday := newToday.Weekday
-
-	newToday.DaysInMonth = _Table0[newToday.Month-1]
-	if newToday.Month == MONTH_FEBRUARY && newToday.Year.IsLeap() {
-		newToday.DaysInMonth++
-	}
+	newToday.DaysInMonth = newToday.Date.DaysInMonth()
 
 	if newToday.Day > 1 {
 		_1stDayWeekday = NewDate(newToday.Year, newToday.Month, 1).Weekday()
@@ -136,28 +132,25 @@ func (c *Calendar) updateToday() *Today {
 	// Apply all events.
 	// Also correct counters of workdays.
 
-	for i, n := 0, len(c.confirmedEvents); i < n; i++ {
-		if c.confirmedEvents[i].Year() == newToday.Year &&
-			c.confirmedEvents[i].Month() == newToday.Month {
-
-			if c.confirmedEvents[i].Day() == newToday.Day {
-				newToday.IsDayOff = c.confirmedEvents[i].IsDayOff()
+	for _, ce := range c.confirmedEvents {
+		if ce.Year() != newToday.Year || ce.Month() != newToday.Month {
+			continue
+		}
+		if ce.Day() == newToday.Day {
+			newToday.IsDayOff = ce.IsDayOff()
+		}
+		if ce.Weekday().IsDayOff() == ce.IsDayOff() {
+			continue
+		}
+		if ce.IsDayOff() {
+			newToday.WorkDayTotal--
+			if ce.Day() <= newToday.Day {
+				newToday.WorkDayCurrent--
 			}
-
-			// If by default this day is the same as at the event, there is no need
-			// to change something.
-			if c.confirmedEvents[i].Weekday().IsDayOff() != c.confirmedEvents[i].IsDayOff() {
-				if c.confirmedEvents[i].IsDayOff() {
-					newToday.WorkDayTotal--
-					if c.confirmedEvents[i].Day() <= newToday.Day {
-						newToday.WorkDayCurrent--
-					}
-				} else {
-					newToday.WorkDayTotal++
-					if c.confirmedEvents[i].Day() <= newToday.Day {
-						newToday.WorkDayCurrent++
-					}
-				}
+		} else {
+			newToday.WorkDayTotal++
+			if ce.Day() <= newToday.Day {
+				newToday.WorkDayCurrent++
 			}
 		}
 	}

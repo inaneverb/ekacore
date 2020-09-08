@@ -349,3 +349,45 @@ func (c *Calendar) Run() {
 	ekadeath.Reg(c.destructor)
 	c.newDayTimer = time.AfterFunc(TillNextMidnight(), c.newDayHasCome)
 }
+
+// WorkdaysFor returns how much workdays in the month and year from presented Date
+// counting from the day from presented Date
+// according with confirmed (!!!, not pending) Event s.
+// Nil safe (return -1). Thread-safety.
+func (c *Calendar) WorkdaysFor(dd Date) Day {
+
+	if c == nil {
+		return -1
+	}
+
+	y, m, d := normalizeDate(dd.Split())
+	dd = NewDate(y, m, d)
+
+	ret := Day(0)
+
+	c.mu.Lock()
+	confirmedEvents := append(c.confirmedEvents[:0:0], c.confirmedEvents...)
+	c.mu.Unlock()
+
+	wd := dd.Weekday()
+	for d, daysInMonth := d, dd.DaysInMonth(); d <= daysInMonth; d++ {
+		if !wd.IsDayOff() {
+			ret++
+		}
+		wd = wd.Next()
+	}
+
+	for _, ce := range confirmedEvents {
+		if ce.Year() != y || ce.Month() != m || ce.Day() < d ||
+			ce.Weekday().IsDayOff() == ce.IsDayOff() {
+			continue
+		}
+		if ce.IsDayOff() {
+			ret--
+		} else {
+			ret++
+		}
+	}
+
+	return ret
+}
