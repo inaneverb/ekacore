@@ -12,6 +12,7 @@ import (
 	"github.com/qioalice/ekago/v2/ekatime"
 
 	"github.com/json-iterator/go"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCalendar_Today(t *testing.T) {
@@ -25,4 +26,20 @@ func TestCalendar_Today(t *testing.T) {
 	c.EventAdd(ekatime.NewEvent(ekatime.NewDate(2020, 9, 1), 1, true))
 	c.Run()
 	fmt.Println(string(c.Today().AsJson))
+}
+
+func TestCalendar_WorkdaysFor(t *testing.T) {
+
+	c := new(ekatime.Calendar).
+		EventAdd(ekatime.NewEvent(ekatime.NewDate(2020, 9, 15), 1, true)).
+		EventAdd(ekatime.NewEvent(ekatime.NewDate(2020, 9, 16), 1, true)).
+		EventAdd(ekatime.NewEvent(ekatime.NewDate(2020, 9, 20), 1, false))
+
+	c.Run()
+
+	current, total :=
+		c.WorkdaysFor(ekatime.NewDate(2020, 9, 12), 21)
+
+	require.EqualValues(t, 5, current)
+	require.EqualValues(t, 12, total)
 }

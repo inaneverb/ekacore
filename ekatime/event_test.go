@@ -6,12 +6,14 @@
 package ekatime_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/qioalice/ekago/v2/ekatime"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestEvent_String(t *testing.T) {
-	fmt.Println(ekatime.NewEvent(ekatime.NewDate(2020, 12, 31), 1, true).String())
+	e := ekatime.NewEvent(ekatime.NewDate(2020, 12, 31), 1, true)
+	require.EqualValues(t, "2020/12/31 [Dayoff] ID: 1", e.String())
 }

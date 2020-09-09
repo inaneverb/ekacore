@@ -100,60 +100,14 @@ func (c *Calendar) updateToday() *Today {
 
 	newToday.Timestamp = Now()
 
-	newToday.Date, newToday.Time = newToday.Timestamp.Split()
-	newToday.Year, newToday.Month, newToday.Day = newToday.Date.Split()
+	newToday.Date, newToday.Time                    = newToday.Timestamp.Split()
+	newToday.Year, newToday.Month, newToday.Day     = newToday.Date.Split()
 	newToday.Hour, newToday.Minute, newToday.Second = newToday.Time.Split()
+	newToday.Weekday                                = newToday.Date.Weekday()
+	newToday.DaysInMonth                            = newToday.Date.DaysInMonth()
 
-	newToday.Weekday = newToday.Date.Weekday()
-	newToday.IsDayOff = newToday.Weekday.IsDayOff() // may be overwritten later
-
-	// Calculate work days counters
-
-	_1stDayWeekday := newToday.Weekday
-	newToday.DaysInMonth = newToday.Date.DaysInMonth()
-
-	if newToday.Day > 1 {
-		_1stDayWeekday = NewDate(newToday.Year, newToday.Month, 1).Weekday()
-	}
-
-	for day := Day(1); day <= newToday.DaysInMonth; day++ {
-
-		if !_1stDayWeekday.IsDayOff() {
-			newToday.WorkDayTotal++
-
-			if day <= newToday.Day {
-				newToday.WorkDayCurrent++
-			}
-		}
-
-		_1stDayWeekday = _1stDayWeekday.Next()
-	}
-
-	// Apply all events.
-	// Also correct counters of workdays.
-
-	for _, ce := range c.confirmedEvents {
-		if ce.Year() != newToday.Year || ce.Month() != newToday.Month {
-			continue
-		}
-		if ce.Day() == newToday.Day {
-			newToday.IsDayOff = ce.IsDayOff()
-		}
-		if ce.Weekday().IsDayOff() == ce.IsDayOff() {
-			continue
-		}
-		if ce.IsDayOff() {
-			newToday.WorkDayTotal--
-			if ce.Day() <= newToday.Day {
-				newToday.WorkDayCurrent--
-			}
-		} else {
-			newToday.WorkDayTotal++
-			if ce.Day() <= newToday.Day {
-				newToday.WorkDayCurrent++
-			}
-		}
-	}
+	newToday.WorkDayTotal, newToday.WorkDayCurrent, newToday.IsDayOff =
+		workdaysFor(NewDate(newToday.Year, newToday.Month, 1), 1, c.confirmedEvents)
 
 	newToday.DayOffTotal = newToday.DaysInMonth - newToday.WorkDayTotal
 
@@ -189,4 +143,62 @@ func (c *Calendar) pendingEventIdx(event Event) int {
 		}
 	}
 	return -1
+}
+
+// See Calendar.WorkdaysFor docs.
+// isDayOff reports whether d1 is day off.
+func workdaysFor(dd Date, d1 Day, events []Event) (current, total Day, isDayOff bool) {
+
+	y, m, d := normalizeDate(dd.Split())
+	dd = NewDate(y, m, d)
+
+	daysInMonth := dd.DaysInMonth()
+
+	switch {
+	case d1 < d:
+		d1 = d
+	case d1 > daysInMonth:
+		d1 = daysInMonth
+	}
+
+	for d, wd := d, dd.Weekday(); d <= daysInMonth; d++ {
+		if !wd.IsDayOff() {
+			total++
+			if d <= d1 {
+				current++
+			}
+		}
+		wd = wd.Next()
+	}
+
+	if d1 != d {
+		isDayOff = NewDate(y, m, d1).Weekday().IsDayOff()
+	} else {
+		isDayOff = dd.Weekday().IsDayOff()
+	}
+
+	for _, ce := range events {
+		if ce.Year() != y || ce.Month() != m || ce.Day() < d {
+			continue
+		}
+		if ce.Day() == d1 {
+			isDayOff = ce.IsDayOff()
+		}
+		if ce.Weekday().IsDayOff() == ce.IsDayOff() {
+			continue
+		}
+		if ce.IsDayOff() {
+			total--
+			if ce.Day() <= d1 {
+				current--
+			}
+		} else {
+			total++
+			if ce.Day() <= d1 {
+				current++
+			}
+		}
+	}
+
+	return current, total, isDayOff
 }

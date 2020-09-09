@@ -350,44 +350,50 @@ func (c *Calendar) Run() {
 	c.newDayTimer = time.AfterFunc(TillNextMidnight(), c.newDayHasCome)
 }
 
-// WorkdaysFor returns how much workdays in the month and year from presented Date
-// counting from the day from presented Date
-// according with confirmed (!!!, not pending) Event s.
-// Nil safe (return -1). Thread-safety.
-func (c *Calendar) WorkdaysFor(dd Date) Day {
+// WorkdaysFor normalizes the passed dd Date, splitting it to the Year, Month, Day
+// (name them y, m, d):
+//
+// 1. Counting the number of workdays for the month m in the year y
+//    starting from the d (not from 1st day of month),
+//    returning as total (2nd arg),
+//
+// 2. Counting the current workday's number in the month m in the year y
+//    assuming that d1 is the today's day,
+//    returning as current (1st arg).
+//
+// Applies all confirmed (!!!, not pending) events from the current Calendar.
+//
+// Example:
+//            September 2020                    Calendar's Events:
+//     Mo   Tu   We   Th   Fr   Sa   Su
+//          1    2    3    4    5    6        - 2020/09/15: Day off
+//     7    8    9    10   11   12   13       - 2020/09/16: Day off
+//     14   15   16   17   18   19   20       - 2020/09/20: Workday
+//     21   22   23   24   25   26   27
+//     28   29   30                           dd = 2020/09/12, d1 = 21
+//
+// So:
+//
+//     Workdays: 14, 17, 18, 20, 21, 22, 23, 24, 25, 28, 29, 30
+//     Day offs: 12, 13, 15, 16, 19, 26, 27
+//
+//     Total: 12 workdays.
+//     Current (since 21, including): 5 (were before: 14, 17, 18, 20).
+//
+// If d1 < d, d1 overwrites by d.
+// If d1 > days in m, d1 overwrites by last day in m.
+//
+// Nil safe (return -1, -1). Thread-safety.
+func (c *Calendar) WorkdaysFor(dd Date, d1 Day) (current, total Day) {
 
 	if c == nil {
-		return -1
+		return -1, -1
 	}
-
-	y, m, d := normalizeDate(dd.Split())
-	dd = NewDate(y, m, d)
-
-	ret := Day(0)
 
 	c.mu.Lock()
 	confirmedEvents := append(c.confirmedEvents[:0:0], c.confirmedEvents...)
 	c.mu.Unlock()
 
-	wd := dd.Weekday()
-	for d, daysInMonth := d, dd.DaysInMonth(); d <= daysInMonth; d++ {
-		if !wd.IsDayOff() {
-			ret++
-		}
-		wd = wd.Next()
-	}
-
-	for _, ce := range confirmedEvents {
-		if ce.Year() != y || ce.Month() != m || ce.Day() < d ||
-			ce.Weekday().IsDayOff() == ce.IsDayOff() {
-			continue
-		}
-		if ce.IsDayOff() {
-			ret--
-		} else {
-			ret++
-		}
-	}
-
-	return ret
+	current, total, _ = workdaysFor(dd, d1, confirmedEvents)
+	return current, total
 }
