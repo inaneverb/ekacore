@@ -90,6 +90,12 @@ func NewTime(h Hour, m Minute, s Second) Time {
 		(Time(s) << _TIME_OFFSET_SECOND)
 }
 
+// WithDate returns the current Time with the presented Date's year, month, day
+// as a new Timestamp object.
+func (t Time) WithDate(y Year, m Month, d Day) Timestamp {
+	return UnixFrom(NewDate(y, m, d), t)
+}
+
 // String returns the current Time's string representation in the following format:
 // "hh:mm:ss".
 func (t Time) String() string {

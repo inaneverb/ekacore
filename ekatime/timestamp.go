@@ -20,9 +20,15 @@ type (
 	TimestampPair [2]Timestamp
 )
 
-// I64() returns int64 representation of the current Timestamp 'ts.
+// I64 returns int64 representation of the current Timestamp 'ts.
 func (ts Timestamp) I64() int64 {
 	return int64(ts)
+}
+
+// Std returns standard Golang's time.Time object with the same values
+// as current Timestamp have.
+func (ts Timestamp) Std() time.Time {
+	return time.Unix(ts.I64(), 0)
 }
 
 // Split splits the current TimestampPair 'tsp' into two separate Timestamps.
@@ -30,7 +36,7 @@ func (tsp TimestampPair) Split() (Timestamp, Timestamp) {
 	return tsp[0], tsp[1]
 }
 
-// I64() returns two int64 values which are int64 representation of each value
+// I64 returns two int64 values which are int64 representation of each value
 // in the current TimestampPair 'tsp'.
 func (tsp TimestampPair) I64() (int64, int64) {
 	return int64(tsp[0]), int64(tsp[1])
@@ -108,7 +114,7 @@ func (ts Timestamp) Split() (d Date, t Time) {
 
 // Now() is just the same as time.Now() but always returns UTC.
 func Now() Timestamp {
-	return Timestamp(time.Now().UTC().Unix())
+	return UnixFromStd(time.Now())
 }
 
 // UnixFrom creates and returns Timestamp object from the presented Date 'd'
@@ -118,6 +124,12 @@ func UnixFrom(d Date, t Time) Timestamp {
 	hh, mm, ss := t.Split()
 	tt := time.Date(int(y), time.Month(m), int(dd), int(hh), int(mm), int(ss), 0, time.UTC)
 	return Timestamp(tt.Unix())
+}
+
+// UnixFromStd creates and returns Timestamp object from the standard Golang's
+// time.Time object (UTC time).
+func UnixFromStd(t time.Time) Timestamp {
+	return Timestamp(t.UTC().Unix())
 }
 
 // BeginningOfDay returns the day beginning of the current timestamp 'ts'.

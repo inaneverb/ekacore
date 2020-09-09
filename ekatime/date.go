@@ -169,6 +169,12 @@ func NewDate(y Year, m Month, d Day) Date {
 		(Date(d) << _DATE_OFFSET_DAY)
 }
 
+// WithTime returns the current Date with the presented Time's hour, minute, second
+// as a new Timestamp object.
+func (dd Date) WithTime(hh Hour, mm Minute, ss Second) Timestamp {
+	return UnixFrom(dd, NewTime(hh, mm, ss))
+}
+
 // String returns the current Date's string representation in the following format:
 // "YYYY/MM/DD".
 func (dd Date) String() string {
