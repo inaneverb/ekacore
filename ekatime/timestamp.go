@@ -28,7 +28,7 @@ func (ts Timestamp) I64() int64 {
 // Std returns standard Golang's time.Time object with the same values
 // as current Timestamp have.
 func (ts Timestamp) Std() time.Time {
-	return time.Unix(ts.I64(), 0)
+	return time.Unix(ts.I64(), 0).UTC()
 }
 
 // Split splits the current TimestampPair 'tsp' into two separate Timestamps.
