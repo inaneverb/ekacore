@@ -30,6 +30,9 @@ func getBeginningOfMonth(y Year, m Month) Timestamp {
 // dateFromUnix returns an Year, Month and Day from the current timestamp 'ts'.
 func dateFromUnix(t Timestamp) (y Year, m Month, d Day) {
 	ty, tm, td := time.Unix(t.I64(), 0).UTC().Date()
+	if ty > 4095 {
+		ty = 4095
+	}
 	return Year(ty), Month(tm), Day(td)
 }
 
