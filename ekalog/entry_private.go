@@ -9,8 +9,8 @@ import (
 	"runtime"
 
 	"github.com/qioalice/ekago/v2/ekasys"
-	"github.com/qioalice/ekago/v2/internal/field"
-	"github.com/qioalice/ekago/v2/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/ekafield"
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
 )
 
 // prepare prepares current Entry for being used assuming that Entry has been
@@ -37,7 +37,7 @@ func (e *Entry) cleanup() (this *Entry) {
 	e.l = nil
 	e.LogLetter.StackTrace = nil
 	e.ErrLetter = nil
-	letter.LI_ResetItem(e.LogLetter.Items)
+	ekaletter.ResetItem(e.LogLetter.Items)
 
 	return e
 }
@@ -54,7 +54,7 @@ func (e *Entry) clone() *Entry {
 	// Do not allocate RAM if it's already allocated (but nulled).
 	if lFrom := len(e.LogLetter.Items.Fields); lFrom > 0 {
 		if cTo := cap(clonedEntry.LogLetter.Items.Fields); cTo < lFrom {
-			clonedEntry.LogLetter.Items.Fields = make([]field.Field, lFrom)
+			clonedEntry.LogLetter.Items.Fields = make([]ekafield.Field, lFrom)
 		} else {
 			// lFrom <= cTo, it's ok to do that
 			clonedEntry.LogLetter.Items.Fields =
@@ -76,13 +76,13 @@ func (e *Entry) clone() *Entry {
 //
 // Requirements:
 // 'e' != nil. Otherwise UB (may panic).
-func (e *Entry) addFields(args []interface{}, explicitFields []field.Field) *Entry {
+func (e *Entry) addFields(args []interface{}, explicitFields []ekafield.Field) *Entry {
 
 	// REMINDER!
 	// IT IS STRONGLY GUARANTEES THAT BOTH OF 'args' AND 'explicitFields'
 	// CAN NOT BE AN EMPTY (OR SET) AT THE SAME TIME!
 
-	letter.ParseTo(e.LogLetter.Items, args, explicitFields, true)
+	ekaletter.ParseTo(e.LogLetter.Items, args, explicitFields, true)
 	return e
 }
 

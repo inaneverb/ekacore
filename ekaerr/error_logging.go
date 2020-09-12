@@ -10,8 +10,8 @@ import (
 	"unsafe"
 
 	"github.com/qioalice/ekago/v2/ekalog"
-	"github.com/qioalice/ekago/v2/internal/field"
-	"github.com/qioalice/ekago/v2/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/ekafield"
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
 )
 
 // ---------------------------------------------------------------------------- //
@@ -51,12 +51,12 @@ func (e *Error) Logf(level ekalog.Level, format string, args ...interface{}) {
 }
 
 //
-func (e *Error) Logw(level ekalog.Level, message string, fields ...field.Field) {
+func (e *Error) Logw(level ekalog.Level, message string, fields ...ekafield.Field) {
 	e.logw(nil, level, message, fields)
 }
 
 //
-func (e *Error) Logww(level ekalog.Level, message string, fields []field.Field) {
+func (e *Error) Logww(level ekalog.Level, message string, fields []ekafield.Field) {
 	e.logw(nil, level, message, fields)
 }
 
@@ -71,12 +71,12 @@ func (e *Error) LogAsWarnf(format string, args ...interface{}) {
 }
 
 //
-func (e *Error) LogAsWarnw(message string, fields ...field.Field) {
+func (e *Error) LogAsWarnw(message string, fields ...ekafield.Field) {
 	e.logw(nil, ekalog.LEVEL_WARNING, message, fields)
 }
 
 //
-func (e *Error) LogAsWarnww(message string, fields []field.Field) {
+func (e *Error) LogAsWarnww(message string, fields []ekafield.Field) {
 	e.logw(nil, ekalog.LEVEL_WARNING, message, fields)
 }
 
@@ -91,12 +91,12 @@ func (e *Error) LogAsErrorf(format string, args ...interface{}) {
 }
 
 //
-func (e *Error) LogAsErrorw(message string, fields ...field.Field) {
+func (e *Error) LogAsErrorw(message string, fields ...ekafield.Field) {
 	e.logw(nil, ekalog.LEVEL_ERROR, message, fields)
 }
 
 //
-func (e *Error) LogAsErrorww(message string, fields []field.Field) {
+func (e *Error) LogAsErrorww(message string, fields []ekafield.Field) {
 	e.logw(nil, ekalog.LEVEL_ERROR, message, fields)
 }
 
@@ -111,12 +111,12 @@ func (e *Error) LogAsFatalf(format string, args ...interface{}) {
 }
 
 //
-func (e *Error) LogAsFatalw(message string, fields ...field.Field) {
+func (e *Error) LogAsFatalw(message string, fields ...ekafield.Field) {
 	e.logw(nil, ekalog.LEVEL_FATAL, message, fields)
 }
 
 //
-func (e *Error) LogAsFatalww(message string, fields []field.Field) {
+func (e *Error) LogAsFatalww(message string, fields []ekafield.Field) {
 	e.logw(nil, ekalog.LEVEL_FATAL, message, fields)
 }
 
@@ -131,12 +131,12 @@ func (e *Error) LogfUsing(logger *ekalog.Logger, level ekalog.Level, format stri
 }
 
 //
-func (e *Error) LogwUsing(logger *ekalog.Logger, level ekalog.Level, message string, fields ...field.Field) {
+func (e *Error) LogwUsing(logger *ekalog.Logger, level ekalog.Level, message string, fields ...ekafield.Field) {
 	e.logw(logger, level, message, fields)
 }
 
 //
-func (e *Error) LogwwUsing(logger *ekalog.Logger, level ekalog.Level, message string, fields []field.Field) {
+func (e *Error) LogwwUsing(logger *ekalog.Logger, level ekalog.Level, message string, fields []ekafield.Field) {
 	e.logw(logger, level, message, fields)
 }
 
@@ -151,12 +151,12 @@ func (e *Error) LogAsWarnfUsing(logger *ekalog.Logger, format string, args ...in
 }
 
 //
-func (e *Error) LogAsWarnwUsing(logger *ekalog.Logger, message string, fields ...field.Field) {
+func (e *Error) LogAsWarnwUsing(logger *ekalog.Logger, message string, fields ...ekafield.Field) {
 	e.logw(logger, ekalog.LEVEL_WARNING, message, fields)
 }
 
 //
-func (e *Error) LogAsWarnwwUsing(logger *ekalog.Logger, message string, fields []field.Field) {
+func (e *Error) LogAsWarnwwUsing(logger *ekalog.Logger, message string, fields []ekafield.Field) {
 	e.logw(logger, ekalog.LEVEL_WARNING, message, fields)
 }
 
@@ -171,12 +171,12 @@ func (e *Error) LogAsErrorfUsing(logger *ekalog.Logger, format string, args ...i
 }
 
 //
-func (e *Error) LogAsErrorwUsing(logger *ekalog.Logger, message string, fields ...field.Field) {
+func (e *Error) LogAsErrorwUsing(logger *ekalog.Logger, message string, fields ...ekafield.Field) {
 	e.logw(logger, ekalog.LEVEL_ERROR, message, fields)
 }
 
 //
-func (e *Error) LogAsErrorwwUsing(logger *ekalog.Logger, message string, fields []field.Field) {
+func (e *Error) LogAsErrorwwUsing(logger *ekalog.Logger, message string, fields []ekafield.Field) {
 	e.logw(logger, ekalog.LEVEL_ERROR, message, fields)
 }
 
@@ -191,12 +191,12 @@ func (e *Error) LogAsFatalfUsing(logger *ekalog.Logger, format string, args ...i
 }
 
 //
-func (e *Error) LogAsFatalwUsing(logger *ekalog.Logger, message string, fields ...field.Field) {
+func (e *Error) LogAsFatalwUsing(logger *ekalog.Logger, message string, fields ...ekafield.Field) {
 	e.logw(logger, ekalog.LEVEL_FATAL, message, fields)
 }
 
 //
-func (e *Error) LogAsFatalwwUsing(logger *ekalog.Logger, message string, fields []field.Field) {
+func (e *Error) LogAsFatalwwUsing(logger *ekalog.Logger, message string, fields []ekafield.Field) {
 	e.logw(logger, ekalog.LEVEL_FATAL, message, fields)
 }
 
@@ -250,7 +250,7 @@ func (e *Error) LogAsFatalwwUsing(logger *ekalog.Logger, message string, fields 
 func (e *Error) log(logger *ekalog.Logger, level ekalog.Level, args []interface{}) {
 	if e.IsNotNil() && (logger == nil || logger.IsValid()) {
 		level, errLetter := e.logPreparations(level)
-		letter.BridgeLogErr2(unsafe.Pointer(logger), uint8(level), errLetter, args)
+		ekaletter.BridgeLogErr2(unsafe.Pointer(logger), uint8(level), errLetter, args)
 	}
 }
 
@@ -258,20 +258,20 @@ func (e *Error) log(logger *ekalog.Logger, level ekalog.Level, args []interface{
 func (e *Error) logf(logger *ekalog.Logger, level ekalog.Level, format string, args []interface{}) {
 	if e.IsNotNil() && (logger == nil || logger.IsValid()) {
 		level, errLetter := e.logPreparations(level)
-		letter.BridgeLogwErr2(unsafe.Pointer(logger), uint8(level), errLetter, fmt.Sprintf(format, args...), nil)
+		ekaletter.BridgeLogwErr2(unsafe.Pointer(logger), uint8(level), errLetter, fmt.Sprintf(format, args...), nil)
 	}
 }
 
 //
-func (e *Error) logw(logger *ekalog.Logger, level ekalog.Level, message string, fields []field.Field) {
+func (e *Error) logw(logger *ekalog.Logger, level ekalog.Level, message string, fields []ekafield.Field) {
 	if e.IsNotNil() && (logger == nil || logger.IsValid()) {
 		level, errLetter := e.logPreparations(level)
-		letter.BridgeLogwErr2(unsafe.Pointer(logger), uint8(level), errLetter, message, fields)
+		ekaletter.BridgeLogwErr2(unsafe.Pointer(logger), uint8(level), errLetter, message, fields)
 	}
 }
 
 //
-func (e *Error) logPreparations(level ekalog.Level) (newLevel ekalog.Level, errLetter *letter.Letter) {
+func (e *Error) logPreparations(level ekalog.Level) (newLevel ekalog.Level, errLetter *ekaletter.Letter) {
 	
 	if level < ekalog.LEVEL_WARNING {
 		level = ekalog.LEVEL_ERROR

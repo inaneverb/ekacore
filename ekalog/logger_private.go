@@ -12,8 +12,8 @@ import (
 	"unsafe"
 
 	"github.com/qioalice/ekago/v2/ekadeath"
-	"github.com/qioalice/ekago/v2/internal/field"
-	"github.com/qioalice/ekago/v2/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/ekafield"
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
 )
 
 var (
@@ -94,9 +94,9 @@ func (l *Logger) log(
 
 	lvl Level,
 	format string,
-	errLetter *letter.Letter,
+	errLetter *ekaletter.Letter,
 	args []interface{},
-	explicitFields []field.Field,
+	explicitFields []ekafield.Field,
 
 ) *Logger {
 
@@ -153,14 +153,14 @@ func (l *Logger) log(
 	// Try to extract message from 'args' if 'errLetter' == nil ('onlyFields' == false),
 	// but if 'errLetter' is set, it's OK to log w/o message.
 	if len(args) > 0 || len(explicitFields) > 0 {
-		letter.ParseTo(workTempEntry.LogLetter.Items, args, explicitFields, onlyFields)
+		ekaletter.ParseTo(workTempEntry.LogLetter.Items, args, explicitFields, onlyFields)
 	}
 
 	l.integrator.Write(workTempEntry)
 
 	if !l.integrator.IsAsync() {
 		if errLetter != nil {
-			letter.GErrRelease(errLetter)
+			ekaletter.GErrRelease(errLetter)
 		}
 		releaseEntry(workTempEntry)
 	}
@@ -178,7 +178,7 @@ func (l *Logger) log(
 //
 // Requirements:
 // 'logger'.IsValid() == true. Otherwise UB (may panic).
-func logErr(logger unsafe.Pointer, level uint8, errLetter *letter.Letter, args []interface{}) {
+func logErr(logger unsafe.Pointer, level uint8, errLetter *ekaletter.Letter, args []interface{}) {
 
 	loggerTyped := (*Logger)(logger)
 	if loggerTyped == nil {
@@ -190,7 +190,7 @@ func logErr(logger unsafe.Pointer, level uint8, errLetter *letter.Letter, args [
 
 // logErrThroughDefaultLogger is just the same as baseLogger.log() but only for
 // *Error's *Letter 'errLetter'.
-func logErrw(logger unsafe.Pointer, level uint8, errLetter *letter.Letter, message string, fields []field.Field) {
+func logErrw(logger unsafe.Pointer, level uint8, errLetter *ekaletter.Letter, message string, fields []ekafield.Field) {
 
 	loggerTyped := (*Logger)(logger)
 	if loggerTyped == nil {

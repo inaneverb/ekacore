@@ -3,12 +3,12 @@
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package letter
+package ekaletter
 
 import (
 	"unsafe"
 
-	"github.com/qioalice/ekago/v2/internal/field"
+	"github.com/qioalice/ekago/v2/internal/ekafield"
 )
 
 // It's a special file that contains gate functions.
@@ -44,7 +44,7 @@ var (
 	// (or keep it nil if standard package's level logger must be used).
 
 	BridgeLogErr2 func(logger unsafe.Pointer, level uint8, errLetter *Letter, errArgs []interface{})
-	BridgeLogwErr2 func(logger unsafe.Pointer, level uint8, errLetter *Letter, errMessage string, errFields []field.Field)
+	BridgeLogwErr2 func(logger unsafe.Pointer, level uint8, errLetter *Letter, errMessage string, errFields []ekafield.Field)
 
 	// GErrRelease is a function that is initialized in the ekaerr package
 	// and used in the ekalog package.

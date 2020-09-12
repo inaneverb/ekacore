@@ -11,7 +11,7 @@ import (
 	"github.com/qioalice/ekago/v2/ekaerr"
 	"github.com/qioalice/ekago/v2/ekasys"
 
-	"github.com/qioalice/ekago/v2/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
 )
 
 type (
@@ -20,8 +20,8 @@ type (
 )
 
 //
-func ErrorGetLetter(err *ekaerr.Error) *letter.Letter {
-	return letter.BridgeErrorGetLetter(unsafe.Pointer(err))
+func ErrorGetLetter(err *ekaerr.Error) *ekaletter.Letter {
+	return ekaletter.BridgeErrorGetLetter(unsafe.Pointer(err))
 }
 
 //
@@ -41,10 +41,10 @@ func ErrorUpdateStacktrace(err *ekaerr.Error, cb CbErrorUpdateStacktrace) {
 		return
 	}
 
-	errStackIdx := letter.BridgeErrorGetStackIdx(unsafe.Pointer(err))
+	errStackIdx := ekaletter.BridgeErrorGetStackIdx(unsafe.Pointer(err))
 	if errStackIdx < newStacktraceLen {
 		return
 	}
 
-	letter.BridgeErrorSetStackIdx(unsafe.Pointer(err), newStacktraceLen-1)
+	ekaletter.BridgeErrorSetStackIdx(unsafe.Pointer(err), newStacktraceLen-1)
 }

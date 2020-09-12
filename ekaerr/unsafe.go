@@ -8,7 +8,7 @@ package ekaerr
 import (
 	"unsafe"
 
-	"github.com/qioalice/ekago/v2/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
 )
 
 // -----
@@ -19,10 +19,10 @@ import (
 // ( https://github.com/qioalice/ekago/ekaunsafe/ekaerr.go )
 // -----
 
-// bridgeGetLetter return *letter.Letter object from the *ekaerr.Error object
+// bridgeGetLetter return *ekaletter.Letter object from the *ekaerr.Error object
 // assuming that 'err' is an untyped pointer to the ekaerr.Error.
 // Returns nil if 'err' == nil.
-func bridgeGetLetter(err unsafe.Pointer) *letter.Letter {
+func bridgeGetLetter(err unsafe.Pointer) *ekaletter.Letter {
 	if err := (*Error)(err); err.IsValid() {
 		return err.letter
 	} else {

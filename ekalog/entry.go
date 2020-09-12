@@ -8,7 +8,7 @@ package ekalog
 import (
 	"time"
 
-	"github.com/qioalice/ekago/v2/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
 )
 
 //
@@ -34,11 +34,11 @@ type (
 
 		// TODO
 		// Public because of providing access from the user's Integrator.
-		LogLetter *letter.Letter
+		LogLetter *ekaletter.Letter
 
 		// TODO
 		// Public because of providing access from the user's Integrator.
-		ErrLetter *letter.Letter
+		ErrLetter *ekaletter.Letter
 
 		// Level indicates how important occurred event (this log entry represents) is.
 		// Assigned in log finisher.

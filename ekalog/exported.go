@@ -7,7 +7,7 @@ package ekalog
 
 import (
 	"github.com/qioalice/ekago/v2/ekadanger"
-	"github.com/qioalice/ekago/v2/internal/field"
+	"github.com/qioalice/ekago/v2/internal/ekafield"
 )
 
 // -----
@@ -122,7 +122,7 @@ func WithThis(fields ...interface{}) (defaultLogger *Logger) {
 }
 
 // WithStrict adds an explicit fields to the default package logger's copy.
-func WithStrict(fields ...field.Field) (copy *Logger) {
+func WithStrict(fields ...ekafield.Field) (copy *Logger) {
 
 	if len(fields) == 0 {
 		return baseLogger // avoid unnecessary copy
@@ -132,7 +132,7 @@ func WithStrict(fields ...field.Field) (copy *Logger) {
 
 // WithStrictThis is the same as WithStrict but doesn't create a copy of default
 // package logger. Modifies it in-place and returns then.
-func WithStrictThis(fields ...field.Field) (defaultLogger *Logger) {
+func WithStrictThis(fields ...ekafield.Field) (defaultLogger *Logger) {
 
 	defaultLogger = baseLogger
 

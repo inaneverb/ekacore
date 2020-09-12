@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/qioalice/ekago/v2/ekasys"
-	"github.com/qioalice/ekago/v2/internal/field"
-	"github.com/qioalice/ekago/v2/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/ekafield"
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
 )
 
 //noinspection GoSnakeCaseUsage
@@ -955,7 +955,7 @@ func (ce *CI_ConsoleEncoder) encodeCaller(to []byte, e *Entry) []byte {
 func (ce *CI_ConsoleEncoder) encodeFields(
 
 	to []byte,
-	fields []field.Field,
+	fields []ekafield.Field,
 	allowEmpty,
 	isErrors bool,
 
@@ -1032,13 +1032,13 @@ func (ce *CI_ConsoleEncoder) encodeFields(
 		if fields[i].Kind.IsSystem() {
 			switch fields[i].Kind.BaseType() {
 
-			case field.KIND_SYS_TYPE_EKAERR_UUID, field.KIND_SYS_TYPE_EKAERR_CLASS_NAME,
-			field.KIND_SYS_TYPE_EKAERR_PUBLIC_MESSAGE:
+			case ekafield.KIND_SYS_TYPE_EKAERR_UUID, ekafield.KIND_SYS_TYPE_EKAERR_CLASS_NAME,
+			ekafield.KIND_SYS_TYPE_EKAERR_PUBLIC_MESSAGE:
 				to = bufw(to, `"`)
 				to = bufw(to, fields[i].SValue)
 				to = bufw(to, `"`)
 
-			case field.KIND_SYS_TYPE_EKAERR_CLASS_ID:
+			case ekafield.KIND_SYS_TYPE_EKAERR_CLASS_ID:
 				to = bufw(to, strconv.FormatInt(fields[i].IValue, 10))
 
 			default:
@@ -1061,32 +1061,32 @@ func (ce *CI_ConsoleEncoder) encodeFields(
 
 		switch fields[i].Kind.BaseType() {
 
-		case field.KIND_TYPE_BOOL:
+		case ekafield.KIND_TYPE_BOOL:
 			if fields[i].IValue != 0 {
 				to = bufw(to, "true")
 			} else {
 				to = bufw(to, "false")
 			}
 
-		case field.KIND_TYPE_INT,
-		field.KIND_TYPE_INT_8, field.KIND_TYPE_INT_16,
-		field.KIND_TYPE_INT_32, field.KIND_TYPE_INT_64:
+		case ekafield.KIND_TYPE_INT,
+		ekafield.KIND_TYPE_INT_8, ekafield.KIND_TYPE_INT_16,
+		ekafield.KIND_TYPE_INT_32, ekafield.KIND_TYPE_INT_64:
 			to = bufw(to, strconv.FormatInt(fields[i].IValue, 10))
 
-		case field.KIND_TYPE_UINT,
-		field.KIND_TYPE_UINT_8, field.KIND_TYPE_UINT_16,
-		field.KIND_TYPE_UINT_32, field.KIND_TYPE_UINT_64:
+		case ekafield.KIND_TYPE_UINT,
+		ekafield.KIND_TYPE_UINT_8, ekafield.KIND_TYPE_UINT_16,
+		ekafield.KIND_TYPE_UINT_32, ekafield.KIND_TYPE_UINT_64:
 			to = bufw(to, strconv.FormatUint(uint64(fields[i].IValue), 10))
 
-		case field.KIND_TYPE_FLOAT_32:
+		case ekafield.KIND_TYPE_FLOAT_32:
 			f := float64(math.Float32frombits(uint32(fields[i].IValue)))
 			to = bufw(to, strconv.FormatFloat(f, 'f', 2, 32))
 
-		case field.KIND_TYPE_FLOAT_64:
+		case ekafield.KIND_TYPE_FLOAT_64:
 			f := float64(math.Float32frombits(uint32(fields[i].IValue)))
 			to = bufw(to, strconv.FormatFloat(f, 'f', 2, 64))
 
-		case field.KIND_TYPE_STRING:
+		case ekafield.KIND_TYPE_STRING:
 			to = bufw(to, `"`)
 			to = bufw(to, fields[i].SValue)
 			to = bufw(to, `"`)
@@ -1132,7 +1132,7 @@ func (ce *CI_ConsoleEncoder) encodeStacktrace(to []byte, e *Entry, allowEmpty bo
 		to = bufw(to, ce.sf.beforeStack)
 	}
 
-	letterItem := (*letter.LetterItem)(nil)
+	letterItem := (*ekaletter.LetterItem)(nil)
 	letterItemIdx := int16(0)
 	if e.ErrLetter != nil {
 		letterItem = e.ErrLetter.Items
@@ -1140,7 +1140,7 @@ func (ce *CI_ConsoleEncoder) encodeStacktrace(to []byte, e *Entry, allowEmpty bo
 	}
 
 	for i := int16(0); i < lStacktrace; i++ {
-		letterItemPassed := (*letter.LetterItem)(nil)
+		letterItemPassed := (*ekaletter.LetterItem)(nil)
 		if letterItem != nil && letterItemIdx == i {
 			letterItemPassed = letterItem
 			letterItem = letterItem.Next()
@@ -1164,7 +1164,7 @@ func (ce *CI_ConsoleEncoder) encodeStackFrame(
 
 	to []byte,
 	frame ekasys.StackFrame,
-	letterItem *letter.LetterItem,
+	letterItem *ekaletter.LetterItem,
 	allowEmpty bool,
 
 ) []byte {
@@ -1212,7 +1212,7 @@ func (ce *CI_ConsoleEncoder) encodeStackFrame(
 			to = bufw(to, ce.ff.afterNewLineForError)
 		}
 
-		if letterItem.Flags.TestAll(letter.FLAG_MARKED_LETTER_ITEM) {
+		if letterItem.Flags.TestAll(ekaletter.FLAG_MARKED_LETTER_ITEM) {
 			to = bufw(to, `(*) `)
 		}
 

@@ -3,7 +3,7 @@
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package letter
+package ekaletter
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"unsafe"
 
 	"github.com/qioalice/ekago/v2/ekadanger"
-	"github.com/qioalice/ekago/v2/internal/field"
+	"github.com/qioalice/ekago/v2/internal/ekafield"
 
 	"github.com/modern-go/reflect2"
 )
@@ -32,7 +32,7 @@ func (li *LetterItem) addImplicitField(name string, value interface{}, typ refle
 		name = name[:len(name)-1]
 	}
 
-	var f field.Field
+	var f ekafield.Field
 
 	switch {
 	case value == nil && varyField:
@@ -40,25 +40,25 @@ func (li *LetterItem) addImplicitField(name string, value interface{}, typ refle
 		return
 
 	case value == nil:
-		li.Fields = append(li.Fields, field.NilValue(name, field.KIND_TYPE_INVALID))
+		li.Fields = append(li.Fields, ekafield.NilValue(name, ekafield.KIND_TYPE_INVALID))
 		return
 
 	case typ == reflectedTimeTime:
 		var timeVal time.Time
 		typ.UnsafeSet(unsafe.Pointer(&timeVal), reflect2.PtrOf(value))
-		f = field.Time(name, timeVal)
+		f = ekafield.Time(name, timeVal)
 		goto recognizer
 
 	case typ == reflectedTimeDuration:
 		var durationVal time.Duration
 		typ.UnsafeSet(unsafe.Pointer(&durationVal), reflect2.PtrOf(value))
-		f = field.Duration(name, durationVal)
+		f = ekafield.Duration(name, durationVal)
 		goto recognizer
 
 	// PLACE TYPES ABOVE THAT HAS String() METHOD BUT YOU DON'T WANT TO USE IT.
 
-	case typ.Implements(field.ReflectedTypeFmtStringer):
-		f = field.Stringer(name, value.(fmt.Stringer))
+	case typ.Implements(ekafield.ReflectedTypeFmtStringer):
+		f = ekafield.Stringer(name, value.(fmt.Stringer))
 		goto recognizer
 	}
 
@@ -73,7 +73,7 @@ func (li *LetterItem) addImplicitField(name string, value interface{}, typ refle
 				ekadanger.TakeRealAddr(value) == nil
 
 		if logPtrAsIs {
-			f = field.Addr(name, value)
+			f = ekafield.Addr(name, value)
 		} else {
 			value = typ.Indirect(value)
 			li.addImplicitField(name, value, reflect2.TypeOf(value))
@@ -82,85 +82,85 @@ func (li *LetterItem) addImplicitField(name string, value interface{}, typ refle
 	case reflect.Bool:
 		var boolVal bool
 		typ.UnsafeSet(unsafe.Pointer(&boolVal), reflect2.PtrOf(value))
-		f = field.Bool(name, boolVal)
+		f = ekafield.Bool(name, boolVal)
 
 	case reflect.Int:
 		var intVal int
 		typ.UnsafeSet(unsafe.Pointer(&intVal), reflect2.PtrOf(value))
-		f = field.Int(name, intVal)
+		f = ekafield.Int(name, intVal)
 
 	case reflect.Int8:
 		var int8Val int8
 		typ.UnsafeSet(unsafe.Pointer(&int8Val), reflect2.PtrOf(value))
-		f = field.Int8(name, int8Val)
+		f = ekafield.Int8(name, int8Val)
 
 	case reflect.Int16:
 		var int16Val int16
 		typ.UnsafeSet(unsafe.Pointer(&int16Val), reflect2.PtrOf(value))
-		f = field.Int16(name, int16Val)
+		f = ekafield.Int16(name, int16Val)
 
 	case reflect.Int32:
 		var int32Val int32
 		typ.UnsafeSet(unsafe.Pointer(&int32Val), reflect2.PtrOf(value))
-		f = field.Int32(name, int32Val)
+		f = ekafield.Int32(name, int32Val)
 
 	case reflect.Int64:
 		var int64Val int64
 		typ.UnsafeSet(unsafe.Pointer(&int64Val), reflect2.PtrOf(value))
-		f = field.Int64(name, int64Val)
+		f = ekafield.Int64(name, int64Val)
 
 	case reflect.Uint:
 		var uintVal uint64
 		typ.UnsafeSet(unsafe.Pointer(&uintVal), reflect2.PtrOf(value))
-		f = field.Uint64(name, uintVal)
+		f = ekafield.Uint64(name, uintVal)
 
 	case reflect.Uint8:
 		var uint8Val uint8
 		typ.UnsafeSet(unsafe.Pointer(&uint8Val), reflect2.PtrOf(value))
-		f = field.Uint8(name, uint8Val)
+		f = ekafield.Uint8(name, uint8Val)
 
 	case reflect.Uint16:
 		var uint16Val uint16
 		typ.UnsafeSet(unsafe.Pointer(&uint16Val), reflect2.PtrOf(value))
-		f = field.Uint16(name, uint16Val)
+		f = ekafield.Uint16(name, uint16Val)
 
 	case reflect.Uint32:
 		var uint32Val uint32
 		typ.UnsafeSet(unsafe.Pointer(&uint32Val), reflect2.PtrOf(value))
-		f = field.Uint32(name, uint32Val)
+		f = ekafield.Uint32(name, uint32Val)
 
 	case reflect.Uint64:
 		var uint64Val uint64
 		typ.UnsafeSet(unsafe.Pointer(&uint64Val), reflect2.PtrOf(value))
-		f = field.Uint64(name, uint64Val)
+		f = ekafield.Uint64(name, uint64Val)
 
 	case reflect.Float32:
 		var float32Val float32
 		typ.UnsafeSet(unsafe.Pointer(&float32Val), reflect2.PtrOf(value))
-		f = field.Float32(name, float32Val)
+		f = ekafield.Float32(name, float32Val)
 
 	case reflect.Float64:
 		var float64Val float64
 		typ.UnsafeSet(unsafe.Pointer(&float64Val), reflect2.PtrOf(value))
-		f = field.Float64(name, float64Val)
+		f = ekafield.Float64(name, float64Val)
 
 	case reflect.Complex64:
 		var complex64Val complex64
 		typ.UnsafeSet(unsafe.Pointer(&complex64Val), reflect2.PtrOf(value))
-		f = field.Complex64(name, complex64Val)
+		f = ekafield.Complex64(name, complex64Val)
 
 	case reflect.Complex128:
 		var complex128Val complex128
 		typ.UnsafeSet(unsafe.Pointer(&complex128Val), reflect2.PtrOf(value))
-		f = field.Complex128(name, complex128Val)
+		f = ekafield.Complex128(name, complex128Val)
 
 	case reflect.String:
 		var stringVal string
 		typ.UnsafeSet(unsafe.Pointer(&stringVal), reflect2.PtrOf(value))
-		f = field.String(name, stringVal)
+		f = ekafield.String(name, stringVal)
 
 	case reflect.Uintptr, reflect.UnsafePointer:
-		f = field.Addr(name, value)
+		f = ekafield.Addr(name, value)
 
 	// TODO: handle all structs, handle structs with Valid (bool) = false as null
 
@@ -175,14 +175,14 @@ recognizer:
 
 // addExplicitFieldByPtr adds 'f' to the l.Fields only if it's not nil and
 // if it's not a vary-zero field.
-func (li *LetterItem) addExplicitFieldByPtr(f *field.Field) {
+func (li *LetterItem) addExplicitFieldByPtr(f *ekafield.Field) {
 	if f != nil {
 		li.addExplicitField2(*f)
 	}
 }
 
 // addExplicitField2 adds 'f' to the l.Fields only if it's not vary-zero field.
-func (li *LetterItem) addExplicitField2(f field.Field) {
+func (li *LetterItem) addExplicitField2(f ekafield.Field) {
 	varyField := f.Key != "" && f.Key[len(f.Key)-1] == '?'
 	if varyField {
 		f.Key = f.Key[:len(f.Key)-1]

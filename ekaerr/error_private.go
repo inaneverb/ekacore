@@ -12,7 +12,7 @@ import (
 
 	"github.com/qioalice/ekago/v2/ekasys"
 	"github.com/qioalice/ekago/v2/ekatyp"
-	"github.com/qioalice/ekago/v2/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
 )
 
 //noinspection GoSnakeCaseUsage
@@ -32,7 +32,7 @@ const (
 func (e *Error) prepare() *Error {
 
 	// We need to set flags to the defaults anyway, cause *LetterItem may be marked.
-	for item := e.letter.Items; item != nil; item = letter.LI_GetNextItem(item) {
+	for item := e.letter.Items; item != nil; item = ekaletter.GetNextItem(item) {
 		item.Flags = DefaultFlags
 	}
 
@@ -64,16 +64,16 @@ func (e *Error) cleanup() *Error {
 	for i := int16(0); i < _LETTER_REUSE_MAX_LETTER_ITEMS && item != nil; i++ {
 
 		for j := int16(0); j < _LETTER_ITEM_ALLOC_CHUNK_SIZE-1; j++ {
-			letter.LI_ResetItem(item)
-			item = letter.LI_GetNextItem(letter.LI_ResetItem(item))
+			ekaletter.ResetItem(item)
+			item = ekaletter.GetNextItem(ekaletter.ResetItem(item))
 		}
 
-		next := letter.LI_GetNextItem(item)
+		next := ekaletter.GetNextItem(item)
 
 		if i == _LETTER_REUSE_MAX_LETTER_ITEMS-1 {
 			if next != nil {
 				pruneLetterItemsChunk(next)
-				letter.LI_SetNextItem(item, nil)
+				ekaletter.SetNextItem(item, nil)
 			}
 		} else {
 			item = next
@@ -88,7 +88,7 @@ func (e *Error) cleanup() *Error {
 
 	e.letter.StackTrace = nil
 	e.stackIdx = 0
-	letter.L_SetLastItem(e.letter, e.letter.Items)
+	ekaletter.SetLastItem(e.letter, e.letter.Items)
 
 	return e
 }
@@ -143,25 +143,25 @@ func (e *Error) of(nss []Namespace) bool {
 }
 
 // getCurrentLetterItem returns a *LetterItem from e's *Letter for e's.stackIdx.
-func (e *Error) getCurrentLetterItem() *letter.LetterItem {
+func (e *Error) getCurrentLetterItem() *ekaletter.LetterItem {
 
-	lastItem := letter.L_GetLastItem(e.letter)
+	lastItem := ekaletter.GetLastItem(e.letter)
 	if e.stackIdx > -1 && lastItem.StackFrameIdx() == -1 {
-		letter.LI_SetStackFrameIdx(lastItem, e.stackIdx)
+		ekaletter.SetStackFrameIdx(lastItem, e.stackIdx)
 	}
 
 	if e.stackIdx > lastItem.StackFrameIdx() {
 		// We need another *LetterItem,because now 'stackIdx' > last *LetterItem's idx.
 		// Are preallocated *LetterItem s over?
-		nextItem := letter.LI_GetNextItem(lastItem)
+		nextItem := ekaletter.GetNextItem(lastItem)
 
 		if nextItem == nil {
 			nextItem, _ = allocLetterItemsChunk()
-			letter.LI_SetNextItem(lastItem, nextItem)
+			ekaletter.SetNextItem(lastItem, nextItem)
 		}
 
-		letter.L_SetLastItem(e.letter, nextItem)
-		letter.LI_SetStackFrameIdx(nextItem, e.stackIdx)
+		ekaletter.SetLastItem(e.letter, nextItem)
+		ekaletter.SetStackFrameIdx(nextItem, e.stackIdx)
 		lastItem = nextItem
 	}
 
@@ -195,7 +195,7 @@ func (e *Error) addMessage(message string) *Error {
 func (e *Error) addFields(args []interface{}) *Error {
 
 	if e.IsValid() && len(args) > 0 {
-		letter.ParseTo(e.getCurrentLetterItem(), args, nil, true)
+		ekaletter.ParseTo(e.getCurrentLetterItem(), args, nil, true)
 		if e.stackIdx == 0 {
 			e.mark()
 		}

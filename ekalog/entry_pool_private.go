@@ -10,7 +10,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/qioalice/ekago/v2/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
 )
 
 type (
@@ -49,14 +49,14 @@ func EPS() (eps entryPoolStat) {
 func allocEntry() interface{} {
 
 	e := new(Entry)
-	e.LogLetter = new(letter.Letter)
+	e.LogLetter = new(ekaletter.Letter)
 
 	runtime.SetFinalizer(e, releaseEntryForFinalizer)
 	e.needSetFinalizer = false
 
 	// Alloc exactly one *LetterItem. We don't need more.
-	e.LogLetter.Items = new(letter.LetterItem)
-	letter.L_SetLastItem(e.LogLetter, e.LogLetter.Items)
+	e.LogLetter.Items = new(ekaletter.LetterItem)
+	ekaletter.SetLastItem(e.LogLetter, e.LogLetter.Items)
 
 	// SystemFields is used for saving Entry's meta data.
 	// https://github.com/qioalice/ekago/internal/letter/letter.go

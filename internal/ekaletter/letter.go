@@ -3,13 +3,13 @@
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package letter
+package ekaletter
 
 import (
 	"unsafe"
 
 	"github.com/qioalice/ekago/v2/ekasys"
-	"github.com/qioalice/ekago/v2/internal/field"
+	"github.com/qioalice/ekago/v2/internal/ekafield"
 
 	"github.com/modern-go/reflect2"
 )
@@ -44,7 +44,7 @@ type (
 		// See https://github.com/qioalice/ekago/internal/field/field.go ,
 		// https://github.com/qioalice/ekago/ekaerr/error_pool_private ,
 		// https://github.com/qioalice/ekago/ekalog/entry_pool_private .
-		SystemFields []field.Field
+		SystemFields []ekafield.Field
 
 		// something is a special field where any user of that internal package
 		// may use for its own needs.
@@ -59,7 +59,7 @@ var (
 	TypesBeingIgnoredForParsing []reflect2.Type
 )
 
-// L_SetLastItem is just 'l'.lastItem = 'item'. Returns modified 'l'.
+// SetLastItem is just 'l'.lastItem = 'item'. Returns modified 'l'.
 //
 // It's a function, not a method, because it's a part of internal package and
 // I want to use this inside other ekago's packages (can't make it private method),
@@ -67,14 +67,12 @@ var (
 //
 // Requirements:
 // 'l' != nil. Otherwise UB (may panic).
-//
-//noinspection GoSnakeCaseUsage
-func L_SetLastItem(l *Letter, item *LetterItem) *Letter {
+func SetLastItem(l *Letter, item *LetterItem) *Letter {
 	l.lastItem = item
 	return l
 }
 
-// L_GetLastItem just returns 'l'.lastItem.
+// GetLastItem just returns 'l'.lastItem.
 //
 // It's a function, not a method, because it's a part of internal package and
 // I want to use this inside other ekago's packages (can't make it private method),
@@ -82,13 +80,11 @@ func L_SetLastItem(l *Letter, item *LetterItem) *Letter {
 //
 // Requirements:
 // 'l' != nil. Otherwise UB (may panic).
-//
-//noinspection GoSnakeCaseUsage
-func L_GetLastItem(l *Letter) *LetterItem {
+func GetLastItem(l *Letter) *LetterItem {
 	return l.lastItem
 }
 
-// L_SetSomething is just 'l'.something = 'ptr'. Returns modified 'l'.
+// SetSomething is just 'l'.something = 'ptr'. Returns modified 'l'.
 //
 // It's a function, not a method, because it's a part of internal package and
 // I want to use this inside other ekago's packages (can't make it private method),
@@ -96,14 +92,12 @@ func L_GetLastItem(l *Letter) *LetterItem {
 //
 // Requirements:
 // 'l' != nil. Otherwise UB (may panic).
-//
-//noinspection GoSnakeCaseUsage
-func L_SetSomething(l *Letter, ptr unsafe.Pointer) *Letter {
+func SetSomething(l *Letter, ptr unsafe.Pointer) *Letter {
 	l.something = ptr
 	return l
 }
 
-// L_GetSomething just returns 'l'.something.
+// GetSomething just returns 'l'.something.
 //
 // It's a function, not a method, because it's a part of internal package and
 // I want to use this inside other ekago's packages (can't make it private method),
@@ -111,8 +105,6 @@ func L_SetSomething(l *Letter, ptr unsafe.Pointer) *Letter {
 //
 // Requirements:
 // 'l' != nil. Otherwise UB (may panic).
-//
-//noinspection GoSnakeCaseUsage
-func L_GetSomething(l *Letter) unsafe.Pointer {
+func GetSomething(l *Letter) unsafe.Pointer {
 	return l.something
 }

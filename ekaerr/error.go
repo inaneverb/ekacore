@@ -6,7 +6,7 @@
 package ekaerr
 
 import (
-	"github.com/qioalice/ekago/v2/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
 )
 
 type (
@@ -64,7 +64,7 @@ type (
 		// Breaks after Error's logging. Under pool reusing (RAM optimisation).
 		//
 		// See https://github.com/qioalice/ekago/internal/letter/letter.go .
-		letter *letter.Letter
+		letter *ekaletter.Letter
 
 		// classID is just an ID of Class what has been used to create this object.
 		classID ClassID

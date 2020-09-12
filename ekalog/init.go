@@ -6,7 +6,7 @@
 package ekalog
 
 import (
-	"github.com/qioalice/ekago/v2/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
 )
 
 func init() {
@@ -21,6 +21,6 @@ func init() {
 	initBaseLogger()
 
 	// Initialize the gate's functions to link ekalog <-> ekaerr packages.
-	letter.BridgeLogErr2 = logErr
-	letter.BridgeLogwErr2 = logErrw
+	ekaletter.BridgeLogErr2 = logErr
+	ekaletter.BridgeLogwErr2 = logErrw
 }

@@ -8,7 +8,7 @@ package ekalog
 import (
 	"fmt"
 
-	"github.com/qioalice/ekago/v2/internal/field"
+	"github.com/qioalice/ekago/v2/internal/ekafield"
 )
 
 // -----
@@ -70,11 +70,11 @@ func (l *Logger) Logf(level Level, format string, args ...interface{}) (this *Lo
 }
 
 // Logw writes log message 'msg' with desired 'level', and passed implicit fields.
-func (l *Logger) Logw(level Level, msg string, fields ...field.Field) (this *Logger) {
+func (l *Logger) Logw(level Level, msg string, fields ...ekafield.Field) (this *Logger) {
 	return l.log(level, msg, nil, nil, fields)
 }
 
-func (l *Logger) Logww(level Level, msg string, fields []field.Field) (this *Logger) {
+func (l *Logger) Logww(level Level, msg string, fields []ekafield.Field) (this *Logger) {
 	return l.log(level, msg, nil, nil, fields)
 }
 
@@ -92,11 +92,11 @@ func (l *Logger) Debugf(format string, args ...interface{}) (this *Logger) {
 
 // Debugw is the same as Logw(Level.Debug, msg, fields...).
 // Read more: Entry.Logw.
-func (l *Logger) Debugw(msg string, fields ...field.Field) (this *Logger) {
+func (l *Logger) Debugw(msg string, fields ...ekafield.Field) (this *Logger) {
 	return l.log(LEVEL_DEBUG, msg, nil, nil, fields)
 }
 
-func (l *Logger) Debugww(msg string, fields []field.Field) (this *Logger) {
+func (l *Logger) Debugww(msg string, fields []ekafield.Field) (this *Logger) {
 	return l.log(LEVEL_DEBUG, msg, nil, nil, fields)
 }
 
@@ -114,11 +114,11 @@ func (l *Logger) Infof(format string, args ...interface{}) (this *Logger) {
 
 // Infow is the same as Logw(Level.Info, msg, fields...).
 // Read more: Entry.Logw.
-func (l *Logger) Infow(msg string, fields ...field.Field) (this *Logger) {
+func (l *Logger) Infow(msg string, fields ...ekafield.Field) (this *Logger) {
 	return l.log(LEVEL_INFO, msg, nil, nil, fields)
 }
 
-func (l *Logger) Infoww(msg string, fields []field.Field) (this *Logger) {
+func (l *Logger) Infoww(msg string, fields []ekafield.Field) (this *Logger) {
 	return l.log(LEVEL_INFO, msg, nil, nil, fields)
 }
 
@@ -136,11 +136,11 @@ func (l *Logger) Warnf(format string, args ...interface{}) (this *Logger) {
 
 // Warnw is the same as Logw(Level.Warn, msg, fields...).
 // Read more: Entry.Logw.
-func (l *Logger) Warnw(msg string, fields ...field.Field) (this *Logger) {
+func (l *Logger) Warnw(msg string, fields ...ekafield.Field) (this *Logger) {
 	return l.log(LEVEL_WARNING, msg, nil, nil, fields)
 }
 
-func (l *Logger) Warnww(msg string, fields []field.Field) (this *Logger) {
+func (l *Logger) Warnww(msg string, fields []ekafield.Field) (this *Logger) {
 	return l.log(LEVEL_WARNING, msg, nil, nil, fields)
 }
 
@@ -158,11 +158,11 @@ func (l *Logger) Errorf(format string, args ...interface{}) (this *Logger) {
 
 // Errorw is the same as Logw(Level.Error, msg, fields...).
 // Read more: Entry.Logw.
-func (l *Logger) Errorw(msg string, fields ...field.Field) (this *Logger) {
+func (l *Logger) Errorw(msg string, fields ...ekafield.Field) (this *Logger) {
 	return l.log(LEVEL_ERROR, msg, nil, nil, fields)
 }
 
-func (l *Logger) Errorww(msg string, fields []field.Field) (this *Logger) {
+func (l *Logger) Errorww(msg string, fields []ekafield.Field) (this *Logger) {
 	return l.log(LEVEL_ERROR, msg, nil, nil, fields)
 }
 
@@ -183,10 +183,10 @@ func (l *Logger) Fatalf(format string, args ...interface{}) (this *Logger) {
 // Fatalw is the same as Logw(Level.Fatal, msg, fields...),
 // but also then calls death.Die(1).
 // Read more: Entry.Logw.
-func (l *Logger) Fatalw(msg string, fields ...field.Field) (this *Logger) {
+func (l *Logger) Fatalw(msg string, fields ...ekafield.Field) (this *Logger) {
 	return l.log(LEVEL_FATAL, msg, nil, nil, fields)
 }
 
-func (l *Logger) Fatalww(msg string, fields []field.Field) (this *Logger) {
+func (l *Logger) Fatalww(msg string, fields []ekafield.Field) (this *Logger) {
 	return l.log(LEVEL_FATAL, msg, nil, nil, fields)
 }

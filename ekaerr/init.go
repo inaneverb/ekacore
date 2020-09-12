@@ -6,7 +6,7 @@
 package ekaerr
 
 import (
-	"github.com/qioalice/ekago/v2/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
 
 	"github.com/modern-go/reflect2"
 )
@@ -15,26 +15,26 @@ func init() {
 	// Create first N *Error objects and fill its pool by them.
 	initErrorPool()
 
-	letter.BridgeErrorGetLetter = bridgeGetLetter
+	ekaletter.BridgeErrorGetLetter = bridgeGetLetter
 
-	letter.BridgeErrorGetStackIdx = bridgeGetStackIdx
-	letter.BridgeErrorSetStackIdx = bridgeSetStackIdx
+	ekaletter.BridgeErrorGetStackIdx = bridgeGetStackIdx
+	ekaletter.BridgeErrorSetStackIdx = bridgeSetStackIdx
 
 	// Initialize the gate's functions to link ekalog <-> ekaerr packages.
-	letter.GErrRelease = releaseErrorForGate
+	ekaletter.GErrRelease = releaseErrorForGate
 
 	// It's prohibited to use some types as Error's fields.
 	//
 	// See letter.ParseTo() for more details at the
 	// https://github.com/qioalice/ekago/internal/letter/letter.go
-	letter.TypesBeingIgnoredForParsing = append(
-		letter.TypesBeingIgnoredForParsing,
+	ekaletter.TypesBeingIgnoredForParsing = append(
+		ekaletter.TypesBeingIgnoredForParsing,
 
-		reflect2.TypeOf(letter.Letter{}),
-		reflect2.TypeOf((*letter.Letter)(nil)),
+		reflect2.TypeOf(ekaletter.Letter{}),
+		reflect2.TypeOf((*ekaletter.Letter)(nil)),
 
-		reflect2.TypeOf(letter.LetterItem{}),
-		reflect2.TypeOf((*letter.LetterItem)(nil)),
+		reflect2.TypeOf(ekaletter.LetterItem{}),
+		reflect2.TypeOf((*ekaletter.LetterItem)(nil)),
 
 		reflect2.TypeOf(Error{}),
 		reflect2.TypeOf((*Error)(nil)),

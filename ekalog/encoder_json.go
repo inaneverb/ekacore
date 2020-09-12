@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/qioalice/ekago/v2/ekasys"
-	"github.com/qioalice/ekago/v2/internal/field"
-	"github.com/qioalice/ekago/v2/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/ekafield"
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
 
 	"github.com/json-iterator/go"
 )
@@ -184,24 +184,24 @@ func (je *CI_JSONEncoder) encodeBase(s *jsoniter.Stream, e *Entry, allowEmpty bo
 }
 
 //
-func (je *CI_JSONEncoder) encodeError(s *jsoniter.Stream, errLetter *letter.Letter, allowEmpty bool) {
+func (je *CI_JSONEncoder) encodeError(s *jsoniter.Stream, errLetter *ekaletter.Letter, allowEmpty bool) {
 
 	for i, n := 0, len(errLetter.SystemFields); i < n; i++ {
 		switch errLetter.SystemFields[i].BaseType() {
 
-		case field.KIND_SYS_TYPE_EKAERR_UUID:
+		case ekafield.KIND_SYS_TYPE_EKAERR_UUID:
 			s.WriteObjectField("error_id")
 			s.WriteString(errLetter.SystemFields[i].SValue)
 
-		case field.KIND_SYS_TYPE_EKAERR_CLASS_ID:
+		case ekafield.KIND_SYS_TYPE_EKAERR_CLASS_ID:
 			s.WriteObjectField("error_class_id")
 			s.WriteInt64(errLetter.SystemFields[i].IValue)
 
-		case field.KIND_SYS_TYPE_EKAERR_CLASS_NAME:
+		case ekafield.KIND_SYS_TYPE_EKAERR_CLASS_NAME:
 			s.WriteObjectField("error_class_name")
 			s.WriteString(errLetter.SystemFields[i].SValue)
 
-		case field.KIND_SYS_TYPE_EKAERR_PUBLIC_MESSAGE:
+		case ekafield.KIND_SYS_TYPE_EKAERR_PUBLIC_MESSAGE:
 			if publicMessage := errLetter.SystemFields[i].SValue; len(publicMessage) > 0 || allowEmpty {
 				s.WriteObjectField("error_public_message")
 				s.WriteString(publicMessage)
@@ -239,7 +239,7 @@ func (je *CI_JSONEncoder) encodeStacktrace(
 
 	s.WriteObjectField("stacktrace")
 
-	letterItem := (*letter.LetterItem)(nil)
+	letterItem := (*ekaletter.LetterItem)(nil)
 	letterItemIdx := int16(0)
 	if e.ErrLetter != nil {
 		letterItem = e.ErrLetter.Items
@@ -251,7 +251,7 @@ func (je *CI_JSONEncoder) encodeStacktrace(
 
 		for i := int16(0); i < lStacktrace; i++ {
 
-			letterItemPassed := (*letter.LetterItem)(nil)
+			letterItemPassed := (*ekaletter.LetterItem)(nil)
 			if letterItem != nil && letterItemIdx == i {
 				letterItemPassed = letterItem
 				letterItem = letterItem.Next()
@@ -277,7 +277,7 @@ func (je *CI_JSONEncoder) encodeStackFrame(
 
 	s *jsoniter.Stream,
 	frame ekasys.StackFrame,
-	letterItem *letter.LetterItem,
+	letterItem *ekaletter.LetterItem,
 	allowEmpty bool,
 ) {
 	frame.DoFormat()
@@ -321,7 +321,7 @@ func (je *CI_JSONEncoder) encodeFields(
 
 	s *jsoniter.Stream,
 	allowEmpty bool,
-	fields []field.Field,
+	fields []ekafield.Field,
 
 ) (wasAdded bool) {
 
@@ -366,7 +366,7 @@ func (je *CI_JSONEncoder) encodeFields(
 func (je *CI_JSONEncoder) encodeField(
 
 	s *jsoniter.Stream,
-	f field.Field,
+	f ekafield.Field,
 	unnamedFieldIdx *int,
 ) {
 	s.WriteObjectStart()

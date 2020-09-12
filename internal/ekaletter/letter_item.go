@@ -3,14 +3,14 @@
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package letter
+package ekaletter
 
 import (
 	"fmt"
 	"reflect"
 	"unsafe"
 
-	"github.com/qioalice/ekago/v2/internal/field"
+	"github.com/qioalice/ekago/v2/internal/ekafield"
 
 	"github.com/modern-go/reflect2"
 )
@@ -45,7 +45,7 @@ type (
 		//
 		// Even if you did use implicit arguments as fields, they were converted
 		// to explicit and saved here.
-		Fields []field.Field
+		Fields []ekafield.Field
 
 		// Flags describes how should the parsing process being proceed.
 		// Inherited from parent *Letter object, overwrites in the prepare() call.
@@ -87,7 +87,7 @@ type (
 // Used to:
 // - Add fields (explicit/implicit) into *Error,
 // - Add fields (explicit/implicit) or/and message to *Logger's *Entry.
-func ParseTo(li *LetterItem, args []interface{}, explicitFields []field.Field, onlyFields bool) {
+func ParseTo(li *LetterItem, args []interface{}, explicitFields []ekafield.Field, onlyFields bool) {
 
 	// REMINDER!
 	// IT IS STRONGLY GUARANTEES THAT BOTH OF 'args' AND 'explicitFields'
@@ -140,11 +140,11 @@ func ParseTo(li *LetterItem, args []interface{}, explicitFields []field.Field, o
 		// let's recognize what kind of arg we have
 		switch argType := reflect2.TypeOf(args[i]); {
 
-		case argType == field.ReflectedType:
-			li.addExplicitField2(args[i].(field.Field))
+		case argType == ekafield.ReflectedType:
+			li.addExplicitField2(args[i].(ekafield.Field))
 
-		case argType == field.ReflectedTypePtr:
-			li.addExplicitFieldByPtr(args[i].(*field.Field))
+		case argType == ekafield.ReflectedTypePtr:
+			li.addExplicitFieldByPtr(args[i].(*ekafield.Field))
 
 		case isRestrictedType(argType, TypesBeingIgnoredForParsing):
 			// DO NOTHING
@@ -199,7 +199,7 @@ func ParseTo(li *LetterItem, args []interface{}, explicitFields []field.Field, o
 
 	// if after loop 'fieldKey' != "", it's the last unnamed field
 	if fieldKey != "" {
-		li.Fields = append(li.Fields, field.String("", fieldKey))
+		li.Fields = append(li.Fields, ekafield.String("", fieldKey))
 	}
 
 	// TODO: What do we have to do if we had printf verbs < than required ones?
@@ -248,14 +248,12 @@ func (li *LetterItem) Next() *LetterItem {
 //
 // Requirements:
 // 'current' != nil. Otherwise UB (may panic).
-//
-//noinspection GoSnakeCaseUsage
-func LI_SetNextItem(current, next *LetterItem) *LetterItem {
+func SetNextItem(current, next *LetterItem) *LetterItem {
 	current.next = next
 	return current
 }
 
-// LI_GetNextItem just returns 'current'.next. It's the same as 'current'.Next()
+// GetNextItem just returns 'current'.next. It's the same as 'current'.Next()
 // but it will return a valid *LetterItem even is returned item is broken or invalid.
 //
 // It's a function, not a method, because it's a part of internal package and
@@ -264,13 +262,11 @@ func LI_SetNextItem(current, next *LetterItem) *LetterItem {
 //
 // Requirements:
 // 'current' != nil. Otherwise UB (may panic).
-//
-//noinspection GoSnakeCaseUsage
-func LI_GetNextItem(current *LetterItem) *LetterItem {
+func GetNextItem(current *LetterItem) *LetterItem {
 	return current.next
 }
 
-// LI_SetStackFrameIdx is just 'current'.stackFrameIdx = 'stackFrameIdx'.
+// SetStackFrameIdx is just 'current'.stackFrameIdx = 'stackFrameIdx'.
 // Returns modified 'current'.
 //
 // It's a function, not a method, because it's a part of internal package and
@@ -279,14 +275,12 @@ func LI_GetNextItem(current *LetterItem) *LetterItem {
 //
 // Requirements:
 // 'current' != nil. Otherwise UB (may panic).
-//
-//noinspection GoSnakeCaseUsage
-func LI_SetStackFrameIdx(current *LetterItem, stackFrameIdx int16) *LetterItem {
+func SetStackFrameIdx(current *LetterItem, stackFrameIdx int16) *LetterItem {
 	current.stackFrameIdx = stackFrameIdx
 	return current
 }
 
-// LI_ResetItem resets all internal fields, frees unnecessary RAM, preparing
+// ResetItem resets all internal fields, frees unnecessary RAM, preparing
 // it for being returned to the pool (as a part of *Letter)
 // and being reused in the future.
 // DOES NOT CHANGE LINKED LIST LINKING! It means that 'current'.next won't be changed!
@@ -297,14 +291,12 @@ func LI_SetStackFrameIdx(current *LetterItem, stackFrameIdx int16) *LetterItem {
 //
 // Requirements:
 // 'current' != nil. Otherwise UB (may panic).
-//
-//noinspection GoSnakeCaseUsage
-func LI_ResetItem(current *LetterItem) *LetterItem {
+func ResetItem(current *LetterItem) *LetterItem {
 
 	// Flags will be restored manually
 
 	for i, n := 0, len(current.Fields); i < n; i++ {
-		field.Reset(&current.Fields[i])
+		ekafield.Reset(&current.Fields[i])
 	}
 
 	current.stackFrameIdx = -1

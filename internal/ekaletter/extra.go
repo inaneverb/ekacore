@@ -3,10 +3,7 @@
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package letter
-
-import (
-)
+package ekaletter
 
 // PrintfVerbsCount reports how much printf verbs 'format' has.
 //

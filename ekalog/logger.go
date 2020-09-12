@@ -8,7 +8,7 @@ package ekalog
 import (
 	"fmt"
 
-	"github.com/qioalice/ekago/v2/internal/field"
+	"github.com/qioalice/ekago/v2/internal/ekafield"
 )
 
 type (
@@ -134,7 +134,7 @@ func (l *Logger) With(fields ...interface{}) (copy *Logger) {
 // Requirements:
 // 'l' != nil. Otherwise no-op, nil is returned.
 // len('fields') > 0. Otherwise no-op, 'l' is returned.
-func (l *Logger) WithStrict(fields ...field.Field) (copy *Logger) {
+func (l *Logger) WithStrict(fields ...ekafield.Field) (copy *Logger) {
 	if len(fields) == 0 || !l.IsValid() {
 		return l
 	}

@@ -6,8 +6,8 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"github.com/qioalice/ekago/v2/internal/field"
-	"github.com/qioalice/ekago/v2/internal/letter"
+	"github.com/qioalice/ekago/v2/internal/ekafield"
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
 )
 
 type (
@@ -54,46 +54,46 @@ func EPS() (eps errorPoolStat) {
 func allocError() interface{} {
 
 	e := new(Error)
-	e.letter = new(letter.Letter)
+	e.letter = new(ekaletter.Letter)
 
 	runtime.SetFinalizer(e.letter, releaseErrorForFinalizer)
 	e.needSetFinalizer = false
 
-	tail := (*letter.LetterItem)(nil) // last allocated item from linked list
+	tail := (*ekaletter.LetterItem)(nil) // last allocated item from linked list
 
 	e.letter.Items, tail = allocLetterItemsChunk()
-	letter.L_SetLastItem(e.letter, e.letter.Items)
+	ekaletter.SetLastItem(e.letter, e.letter.Items)
 
 	for i := int16(0); i < _LETTER_REUSE_MAX_LETTER_ITEMS-1; i++ {
 		newHead, newTail := allocLetterItemsChunk()
-		letter.LI_SetNextItem(tail, newHead)
+		ekaletter.SetNextItem(tail, newHead)
 		tail = newTail
 	}
 
 	// SystemFields is used for saving Entry's meta data.
 	// https://github.com/qioalice/ekago/internal/letter/letter.go
 
-	e.letter.SystemFields = make([]field.Field, 4)
+	e.letter.SystemFields = make([]ekafield.Field, 4)
 
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_ID].Key = "class_id"
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_ID].Kind |=
-		field.KIND_FLAG_SYSTEM | field.KIND_SYS_TYPE_EKAERR_CLASS_ID
+		ekafield.KIND_FLAG_SYSTEM | ekafield.KIND_SYS_TYPE_EKAERR_CLASS_ID
 
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_NAME].Key = "class_name"
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_NAME].Kind |=
-		field.KIND_FLAG_SYSTEM | field.KIND_SYS_TYPE_EKAERR_CLASS_NAME
+		ekafield.KIND_FLAG_SYSTEM | ekafield.KIND_SYS_TYPE_EKAERR_CLASS_NAME
 
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_PUBLIC_MESSAGE].Key = "public_message"
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_PUBLIC_MESSAGE].Kind |=
-		field.KIND_FLAG_SYSTEM | field.KIND_SYS_TYPE_EKAERR_PUBLIC_MESSAGE
+		ekafield.KIND_FLAG_SYSTEM | ekafield.KIND_SYS_TYPE_EKAERR_PUBLIC_MESSAGE
 
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_ERROR_ID].Key = "error_id"
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_ERROR_ID].Kind |=
-		field.KIND_FLAG_SYSTEM | field.KIND_SYS_TYPE_EKAERR_UUID
+		ekafield.KIND_FLAG_SYSTEM | ekafield.KIND_SYS_TYPE_EKAERR_UUID
 
 	// We saving current e's ptr as *Letter's something for able to get an *Error
 	// addr using its *Letter (used at the releaseErrorForGate()).
-	letter.L_SetSomething(e.letter, unsafe.Pointer(e))
+	ekaletter.SetSomething(e.letter, unsafe.Pointer(e))
 
 	atomic.AddUint64(&eps_.AllocCalls, 1)
 	return e
@@ -123,9 +123,9 @@ func releaseError(e *Error) {
 
 // releaseErrorForGate is just the same as releaseError but it tries to extract
 // *Error addr assuming that 'errLetter' is the Error's one.
-func releaseErrorForGate(errLetter *letter.Letter) {
+func releaseErrorForGate(errLetter *ekaletter.Letter) {
 	if errLetter != nil {
-		if e := (*Error)(letter.L_GetSomething(errLetter)); e != nil {
+		if e := (*Error)(ekaletter.GetSomething(errLetter)); e != nil {
 			e.letter = errLetter
 			releaseError(e)
 		}
@@ -133,9 +133,9 @@ func releaseErrorForGate(errLetter *letter.Letter) {
 }
 
 //
-func releaseErrorForFinalizer(errLetter *letter.Letter) {
+func releaseErrorForFinalizer(errLetter *ekaletter.Letter) {
 	if errLetter != nil {
-		if e := (*Error)(letter.L_GetSomething(errLetter)); e != nil {
+		if e := (*Error)(ekaletter.GetSomething(errLetter)); e != nil {
 			e.letter = errLetter
 			e.needSetFinalizer = true
 			releaseError(e)
@@ -146,16 +146,16 @@ func releaseErrorForFinalizer(errLetter *letter.Letter) {
 // allocLetterItems allocates *LetterItem linked list that contains exactly
 // _LETTER_ITEM_ALLOC_CHUNK_SIZE preallocated *LetterItem items.
 // Returns the first and the last item of that list.
-func allocLetterItemsChunk() (head, tail *letter.LetterItem) {
+func allocLetterItemsChunk() (head, tail *ekaletter.LetterItem) {
 
 	// preallocate as array to avoid RAM fragmentation
-	pool := make([]letter.LetterItem, _LETTER_ITEM_ALLOC_CHUNK_SIZE)
+	pool := make([]ekaletter.LetterItem, _LETTER_ITEM_ALLOC_CHUNK_SIZE)
 	num := _LETTER_ITEM_ALLOC_CHUNK_SIZE - 1
-	ret := (*letter.LetterItem)(nil)
+	ret := (*ekaletter.LetterItem)(nil)
 
 	for ; num >= 0; num-- {
-		ret = letter.LI_SetNextItem(&pool[num], ret)
-		letter.LI_SetStackFrameIdx(ret, -1)
+		ret = ekaletter.SetNextItem(&pool[num], ret)
+		ekaletter.SetStackFrameIdx(ret, -1)
 	}
 
 	return ret, &pool[_LETTER_ITEM_ALLOC_CHUNK_SIZE-1]
@@ -163,19 +163,19 @@ func allocLetterItemsChunk() (head, tail *letter.LetterItem) {
 
 // pruneLetterItemsChunk recursively removes a link in *LetterItem linked list
 // starting from 'head', also frees all allocated resources.
-func pruneLetterItemsChunk(head *letter.LetterItem) {
+func pruneLetterItemsChunk(head *ekaletter.LetterItem) {
 
 	for head != nil {
 
 		for i, n := 0, len(head.Fields); i < n; i++ {
-			field.Reset(&head.Fields[i])
+			ekafield.Reset(&head.Fields[i])
 		}
 
 		head.Fields = nil
 		head.Message = ""
 
-		next := letter.LI_GetNextItem(head)
-		letter.LI_SetNextItem(head, nil)
+		next := ekaletter.GetNextItem(head)
+		ekaletter.SetNextItem(head, nil)
 		head = next
 	}
 }
