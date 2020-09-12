@@ -8,9 +8,18 @@ package ekatime
 func init() {
 
 	// WARNING!
-	// DO NOT CHANGE THE ORDER!
+	// CHANGE THE ORDER CAREFULLY!
 
-	initTable5()
-	initOnceIn()
+	initTable5() // must be first always!
+
+	// ---------
+
+	initDateNumStr()
+	initTimeNumStr()
+
 	initWeekday()
+
+	// ---------
+
+	initOnceIn() // must be last always!
 }
