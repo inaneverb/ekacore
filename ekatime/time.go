@@ -5,8 +5,6 @@
 
 package ekatime
 
-import "fmt"
-
 type (
 	// Hour is a special type that has enough space to store Hour's number.
 	// Useless just by yourself but is a part of Time object.
@@ -93,11 +91,6 @@ func NewTime(h Hour, m Minute, s Second) Time {
 // WithDate returns the current Time with the presented Date's year, month, day
 // as a new Timestamp object.
 func (t Time) WithDate(y Year, m Month, d Day) Timestamp {
-	return UnixFrom(NewDate(y, m, d), t)
-}
-
-// String returns the current Time's string representation in the following format:
-// "hh:mm:ss".
-func (t Time) String() string {
-	return fmt.Sprintf("%02d:%02d:%02d", t.Hour(), t.Minute(), t.Second())
+	hh, mm, ss := t.Split()
+	return UnixFrom(y, m, d, hh, mm, ss)
 }
