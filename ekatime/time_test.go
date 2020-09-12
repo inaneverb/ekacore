@@ -6,6 +6,7 @@
 package ekatime_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -58,11 +59,11 @@ func TestTime_ParseFrom(t *testing.T) {
 	require.Equal(t, ekatime.NewTime(0, 0, 0), t1)
 	require.Equal(t, ekatime.NewTime(23, 59, 59), t2)
 
-	require.Nil(t, err1)
-	require.Nil(t, err2)
-	require.NotNil(t, err3)
-	require.NotNil(t, err4)
-	require.NotNil(t, err5)
+	require.NoError(t, err1)
+	require.NoError(t, err2)
+	require.Error(t, err3)
+	require.Error(t, err4)
+	require.Error(t, err5)
 }
 
 func BenchmarkTime_ParseFrom(b *testing.B) {
@@ -75,5 +76,13 @@ func BenchmarkTime_ParseFrom(b *testing.B) {
 }
 
 func TestTime_MarshalJSON(t *testing.T) {
+	var tt = struct {
+		T ekatime.Time `json:"t"`
+	}{
+		T: ekatime.NewTime(13, 14, 15),
+	}
+	d, err := json.Marshal(&tt)
 
+	require.NoError(t, err)
+	require.EqualValues(t, string(d), `{"t":"13:14:15"}`)
 }

@@ -6,6 +6,7 @@
 package ekatime_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -203,11 +204,11 @@ func TestTimestamp_ParseFrom(t *testing.T) {
 	require.Equal(t, ts3, orig3)
 	require.Equal(t, ts4, orig4)
 
-	require.Nil(t, err1)
-	require.Nil(t, err2)
-	require.Nil(t, err3)
-	require.Nil(t, err4)
-	require.NotNil(t, err5)
+	require.NoError(t, err1)
+	require.NoError(t, err2)
+	require.NoError(t, err3)
+	require.NoError(t, err4)
+	require.Error(t, err5)
 }
 
 func BenchmarkTimestamp_ParseFrom(b *testing.B) {
@@ -217,4 +218,16 @@ func BenchmarkTimestamp_ParseFrom(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_ = ts.ParseFrom(bd0)
 	}
+}
+
+func TestTimestamp_MarshalJSON(t *testing.T) {
+	var ts = struct {
+		TS ekatime.Timestamp `json:"ts"`
+	}{
+		TS: ekatime.UnixFrom(2020, 9, 12, 13, 14, 15),
+	}
+	d, err := json.Marshal(&ts)
+
+	require.NoError(t, err)
+	require.EqualValues(t, string(d), `{"ts":"2020-09-12T13:14:15"}`)
 }

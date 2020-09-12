@@ -153,7 +153,7 @@ func (t *Time) MarshalJSON() ([]byte, error) {
 	}
 
 	b := make([]byte, 10)
-	_ = t.AppendTo(b[1:9], ':')
+	_ = t.AppendTo(b[1:1:10], ':')
 
 	b[0] = '"'
 	b[9] = '"'

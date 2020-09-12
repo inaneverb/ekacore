@@ -6,6 +6,7 @@
 package ekatime_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -66,11 +67,11 @@ func TestDate_ParseFrom(t *testing.T) {
 	require.Equal(t, ekatime.NewDate(1814, 5, 12).ToCmp(), d1.ToCmp())
 	require.Equal(t, ekatime.NewDate(2020, 9, 1).ToCmp(), d2.ToCmp())
 
-	require.Nil(t, err1)
-	require.Nil(t, err2)
-	require.NotNil(t, err3)
-	require.NotNil(t, err4)
-	require.NotNil(t, err5)
+	require.NoError(t, err1)
+	require.NoError(t, err2)
+	require.Error(t, err3)
+	require.Error(t, err4)
+	require.Error(t, err5)
 }
 
 func BenchmarkDate_ParseFrom(b *testing.B) {
@@ -80,4 +81,16 @@ func BenchmarkDate_ParseFrom(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_ = d.ParseFrom(bd0)
 	}
+}
+
+func TestDate_MarshalJSON(t *testing.T) {
+	var dt = struct {
+		D ekatime.Date `json:"d"`
+	}{
+		D: ekatime.NewDate(2020, 9, 12),
+	}
+	d, err := json.Marshal(&dt)
+
+	require.NoError(t, err)
+	require.EqualValues(t, string(d), `{"d":"2020-09-12"}`)
 }

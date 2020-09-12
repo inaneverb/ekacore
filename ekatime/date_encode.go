@@ -158,7 +158,7 @@ func (dd *Date) MarshalJSON() ([]byte, error) {
 	}
 
 	b := make([]byte, 12)
-	_ = dd.AppendTo(b[1:11], '-')
+	_ = dd.AppendTo(b[1:1:12], '-')
 
 	b[0] = '"'
 	b[11] = '"'

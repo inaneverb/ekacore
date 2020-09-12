@@ -142,8 +142,8 @@ func (ts *Timestamp) MarshalJSON() ([]byte, error) {
 	// Summary: 21 char.
 	b := make([]byte, 21)
 
-	_ = ts.Date().AppendTo(b[1:11], '-')
-	_ = ts.Time().AppendTo(b[12:20], ':')
+	_ = ts.Date().AppendTo(b[1:1:20], '-')
+	_ = ts.Time().AppendTo(b[12:12:20], ':')
 
 	b[0] = '"'
 	b[11] = 'T'
