@@ -6,7 +6,6 @@
 package ekatime
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -43,12 +42,19 @@ func (tsp TimestampPair) I64() (int64, int64) {
 }
 
 // Date returns the Date object, the current Timestamp includes which.
+// Returns 0/0/0 Date if Timestamp is 0 (01 Jan 1970 00:00:00).
 func (ts Timestamp) Date() Date {
+	if ts == 0 {
+		return 0
+	}
 	return NewDate(dateFromUnix(ts)) | ts.weekday().asPartOfDate()
 }
 
 // Time returns the Time object, the current Timestamp includes which.
 func (ts Timestamp) Time() Time {
+	if ts == 0 {
+		return 0
+	}
 	return NewTime(timeFromUnix(ts))
 }
 
@@ -119,10 +125,17 @@ func Now() Timestamp {
 
 // UnixFrom creates and returns Timestamp object from the presented Date 'd'
 // and Time 't'.
-func UnixFrom(d Date, t Time) Timestamp {
-	y, m, dd := d.Split()
-	hh, mm, ss := t.Split()
-	tt := time.Date(int(y), time.Month(m), int(dd), int(hh), int(mm), int(ss), 0, time.UTC)
+//
+// WARNING!
+// It's 0 value Timestamp if you use 01 Jan 1970 00:00:00,
+// and Timestamp.MarshalJSON() will return JSON null for that value,
+// and Timestamp.Date() will return 0/0/0 Date, NOT 01 Jan 1970!
+// To avoid it, use 00:00:01 as Time.
+func UnixFrom(y Year, m Month, d Day, hh Hour, mm Minute, ss Second) Timestamp {
+	if y > 4095 {
+		y = 4095
+	}
+	tt := time.Date(int(y), time.Month(m), int(d), int(hh), int(mm), int(ss), 0, time.UTC)
 	return Timestamp(tt.Unix())
 }
 
@@ -184,13 +197,4 @@ func (ts Timestamp) EndOfYear() Timestamp {
 // BeginningAndEndOfYear is the same as BeginningOfYear() and EndOfYear() calls.
 func (ts Timestamp) BeginningAndEndOfYear() TimestampPair {
 	return ts.beginningAndEndOf(InYear(ts.Year()))
-}
-
-// String returns the current Timestamp's human-readable string representation
-// in the following format:
-// "YYYY/MM/DD hh:mm:ss".
-func (ts Timestamp) String() string {
-	y, m, d := dateFromUnix(ts)
-	hh, mm, ss := timeFromUnix(ts)
-	return fmt.Sprintf("%04d/%02d/%02d %02d:%02d:%02d", y, m, d, hh, mm, ss)
 }

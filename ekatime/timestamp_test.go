@@ -6,6 +6,7 @@
 package ekatime_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/qioalice/ekago/v2/ekatime"
@@ -19,7 +20,7 @@ import (
 
 func TestDate_Equal(t *testing.T) {
 	d1 := ekatime.NewDate(2020, 9, 9)
-	d2 := ekatime.UnixFrom(d1, 0).Date()
+	d2 := d1.WithTime(0, 0, 0).Date()
 	require.False(t, d1 == d2)
 	require.True(t, d1.ToCmp() == d2.ToCmp())
 	require.True(t, d1.Equal(d2))
@@ -144,3 +145,76 @@ func Benchmark_BeginningAndEndOfMonth_NonCachedYear(b *testing.B) {
 // =========================================================================== //
 // =========================================================================== //
 // =========================================================================== //
+
+func TestTimestamp_String(t *testing.T) {
+	ts1 := ekatime.UnixFrom(2020, 9, 1,14, 2, 13)
+	ts2 := ekatime.UnixFrom(1812, 11, 24, 23, 59, 59)
+	ts3 := ekatime.UnixFrom(2100, 2, 15, 0, 0, 0)
+
+	require.EqualValues(t, "2020/09/01 14:02:13", ts1.String())
+	require.EqualValues(t, "1812/11/24 23:59:59", ts2.String())
+	require.EqualValues(t, "2100/02/15 00:00:00", ts3.String())
+}
+
+func BenchmarkTimestamp_String_Cached(b *testing.B) {
+	ts0 := ekatime.UnixFrom(2020, 9, 1,14, 2, 13)
+	b.ResetTimer(); b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = ts0.String()
+	}
+}
+
+func BenchmarkTimestamp_String_FmtSprintf(b *testing.B) {
+	dd, tt := ekatime.UnixFrom(2020, 9, 1,14, 2, 13).Split()
+	y, m, d := dd.Split()
+	hh, mm, ss := tt.Split()
+	b.ResetTimer(); b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = fmt.Sprintf("%04d/%02d/%02d %02d:%02d:%02d",y, m, d, hh, mm, ss)
+	}
+}
+
+// =========================================================================== //
+// =========================================================================== //
+// =========================================================================== //
+
+func TestTimestamp_ParseFrom(t *testing.T) {
+	bd1 := []byte("1814/05/12 000000")   // valid
+	bd2 := []byte("20200901")            // valid
+	bd3 := []byte("20200901T23:59:59")   // valid
+	bd4 := []byte("2020-09-01t12:13:14") // valid
+	bd5 := []byte("2020-09-0112:13:14")  // invalid (w/o T)
+
+	orig1 := ekatime.UnixFrom(1814, 5, 12, 0, 0, 0)
+	orig2 := ekatime.UnixFrom(2020, 9, 1, 0, 0, 0)
+	orig3 := ekatime.UnixFrom(2020, 9, 1, 23, 59, 59)
+	orig4 := ekatime.UnixFrom(2020, 9, 1, 12, 13, 14)
+
+	var (ts1, ts2, ts3, ts4, ts5 ekatime.Timestamp)
+
+	err1 := ts1.ParseFrom(bd1)
+	err2 := ts2.ParseFrom(bd2)
+	err3 := ts3.ParseFrom(bd3)
+	err4 := ts4.ParseFrom(bd4)
+	err5 := ts5.ParseFrom(bd5)
+
+	require.Equal(t, ts1, orig1)
+	require.Equal(t, ts2, orig2)
+	require.Equal(t, ts3, orig3)
+	require.Equal(t, ts4, orig4)
+
+	require.Nil(t, err1)
+	require.Nil(t, err2)
+	require.Nil(t, err3)
+	require.Nil(t, err4)
+	require.NotNil(t, err5)
+}
+
+func BenchmarkTimestamp_ParseFrom(b *testing.B) {
+	bd0 := []byte("2020-09-01T12:13:14")
+	var ts ekatime.Timestamp
+	b.ResetTimer(); b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = ts.ParseFrom(bd0)
+	}
+}
