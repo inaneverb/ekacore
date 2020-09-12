@@ -5,8 +5,6 @@
 
 package ekatime
 
-import "fmt"
-
 type (
 	// Day is a special type that has enough space to store Day's number.
 	// Useless just by yourself but is a part of Date object.
@@ -131,7 +129,7 @@ func (dd Date) Weekday() Weekday {
 	if w := Weekday(dd >> _DATE_OFFSET_WEEKDAY) & _DATE_MASK_WEEKDAY; w > 0 {
 		return w-1
 	} else {
-		return UnixFrom(dd, 0).weekday()
+		return dd.WithTime(0, 0, 0).weekday()
 	}
 }
 
@@ -172,13 +170,8 @@ func NewDate(y Year, m Month, d Day) Date {
 // WithTime returns the current Date with the presented Time's hour, minute, second
 // as a new Timestamp object.
 func (dd Date) WithTime(hh Hour, mm Minute, ss Second) Timestamp {
-	return UnixFrom(dd, NewTime(hh, mm, ss))
-}
-
-// String returns the current Date's string representation in the following format:
-// "YYYY/MM/DD".
-func (dd Date) String() string {
-	return fmt.Sprintf("%04d/%02d/%02d", dd.Year(), dd.Month(), dd.Day())
+	y, m, d := dd.Split()
+	return UnixFrom(y, m, d, hh, mm,ss)
 }
 
 // IsLeap returns true if 'y' Year is leap (e.g. 1992, 1996, 2000, 2004, etc).
