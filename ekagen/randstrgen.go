@@ -1,24 +1,15 @@
-package ekagen
+// Copyright © 2020. All rights reserved.
+// Author: Ilya Stroy.
+// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// License: https://opensource.org/licenses/MIT
 
-import (
-	"math/rand"
-	"time"
-)
+package ekagen
 
 const (
 	charSetLetters = `abcdefghijklmnopqrstuvwxyz`
 	charSetDigits  = `1234567890`
 	charSetAll     = charSetLetters + charSetDigits
 )
-
-//
-var r *rand.Rand
-
-//
-func init() {
-	r = rand.New(rand.New(rand.NewSource(99)))
-	r.Seed(time.Now().UTC().Unix())
-}
 
 //
 func genWithLenFrom(charSet string, n int) string {

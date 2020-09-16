@@ -1,17 +1,19 @@
+// Copyright © 2020. All rights reserved.
+// Author: Ilya Stroy.
+// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// License: https://opensource.org/licenses/MIT
+
 package ekagen
 
 // Ruby original: https://github.com/usmanbashir/haikunator
 // Go ver of Ruby original: https://github.com/yelinaung/go-haikunator
-// Not as package to easily add a new words.
-
-// TODO: Add more words.
-// ATM its ~ 400k-4kk diff variants with 4-digits tail.
 
 import (
 	"fmt"
-	"math/rand"
-	"time"
 )
+
+// TODO: Add more words.
+// ATM its ~ 400k-4kk diff variants with 4-digits tail.
 
 var (
 	adjectives = []string{
@@ -39,15 +41,6 @@ var (
 		"voice", "paper", "frog", "smoke", "star",
 	}
 )
-
-//
-var r *rand.Rand
-
-//
-func init() {
-	r = rand.New(rand.New(rand.NewSource(99)))
-	r.Seed(time.Now().UTC().Unix())
-}
 
 //
 func Haikunate() string {
