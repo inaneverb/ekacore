@@ -168,41 +168,6 @@ func (e *Error) getCurrentLetterItem() *ekaletter.LetterItem {
 	return lastItem
 }
 
-// mark marks current e's stack frame as important using predefined bit flag.
-func (e *Error) mark() *Error {
-
-	if e.IsValid() {
-		e.getCurrentLetterItem().Flags.SetAll(FLAG_MARKED_LETTER_ITEM)
-	}
-	return e
-}
-
-// addMessage adds a 'message' to the current e's stack frame,
-// marking it if it's first stack frame.
-func (e *Error) addMessage(message string) *Error {
-
-	if e.IsValid() {
-		e.getCurrentLetterItem().Message = message
-		if e.stackIdx == 0 {
-			e.mark()
-		}
-	}
-	return e
-}
-
-// addFields extract key-value pairs from 'args' and adds it to the current e's stack frame,
-// marking it if it's first stack frame.
-func (e *Error) addFields(args []interface{}) *Error {
-
-	if e.IsValid() && len(args) > 0 {
-		ekaletter.ParseTo(e.getCurrentLetterItem(), args, nil, true)
-		if e.stackIdx == 0 {
-			e.mark()
-		}
-	}
-	return e
-}
-
 // init is a part of newError() func (Error's constructor).
 // Generates the stacktrace and an unique error's ID (UUID) saving it along with
 // 'classID' and 'namespaceID' to the e and then returns it.
@@ -330,9 +295,9 @@ func (e *Error) construct(baseMessage string, legacyErr error) *Error {
 // 6. Done.
 func newError(classID ClassID, namespaceID NamespaceID, legacyErr error, message string, args []interface{}) *Error {
 
-	err := acquireError().init(classID, namespaceID).construct(message, legacyErr).addFields(args)
+	err := acquireError().init(classID, namespaceID).construct(message, legacyErr).AddFields(args)
 	if err.letter.Items.Message != "" || len(err.letter.Items.Fields) > 0 {
-		err.mark()
+		err.Mark()
 	}
 
 	return err

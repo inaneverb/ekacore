@@ -20,7 +20,7 @@ type (
 	//
 	// TLDR:
 	// - DO NOT CREATE ERROR OBJECTS MANUALLY, USE Class's CONSTRUCTORS INSTEAD.
-	// - DO NOT FORGOT TO USE Throw() or/and Up() (does the same thing).
+	// - DO NOT FORGOT TO USE Throw().
 	// - IF YOU WANT TO DO SOMETHING WITH YOUR ERROR, DO IT BEFORE LOGGING.
 	// - ALL ERROR OBJECTS ARE THREAD-UNSAFE. AVOID POTENTIAL DATA RACES!
 	// - NEVER USE ERROR OBJECT AS VALUE, ALWAYS USE AS ITS REFERENCE.
@@ -73,7 +73,7 @@ type (
 		// the Class that has been used to create this object, belongs to.
 		namespaceID NamespaceID
 
-		// stackIdx is an internal counter that is increased by Throw() and Up() methods.
+		// stackIdx is an internal counter that is increased by Throw().
 		// Allows to specify to which stack frame fields or message will be attached.
 		stackIdx int16
 
@@ -136,12 +136,6 @@ func (e *Error) Throw() *Error {
 	return e
 }
 
-// Up is just Throw's alias.
-// Introduced to increase your code's cleaning (sometimes the less words the better).
-func (e *Error) Up() *Error {
-	return e.Throw()
-}
-
 // Mark marks your current e's stack frame as important.
 // Nil safe. Returns this.
 //
@@ -151,13 +145,10 @@ func (e *Error) Up() *Error {
 //
 // See https://github.com/qioalice/ekago/ekaerr/README.md for more details.
 func (e *Error) Mark() *Error {
-	return e.mark()
-}
-
-// M is just Mark's  alias.
-// Introduced to increase your code's cleaning (sometimes the less words the better).
-func (e *Error) M() *Error {
-	return e.mark()
+	if e.IsValid() {
+		e.getCurrentLetterItem().Flags.SetAll(FLAG_MARKED_LETTER_ITEM)
+	}
+	return e
 }
 
 // AddMessage adds a 'message' to your current e's stack frame.
@@ -165,13 +156,13 @@ func (e *Error) M() *Error {
 //
 // See https://github.com/qioalice/ekago/ekaerr/README.md for more details.
 func (e *Error) AddMessage(message string) *Error {
-	return e.addMessage(message)
-}
-
-// S is just AddMessage's alias.
-// Introduced to increase your code's cleaning (sometimes the less words the better).
-func (e *Error) S(message string) *Error {
-	return e.addMessage(message)
+	if e.IsValid() {
+		e.getCurrentLetterItem().Message = message
+		if e.stackIdx == 0 {
+			e.Mark()
+		}
+	}
+	return e
 }
 
 // AddFields extract key-value pairs from 'args' and adds it to your current e's stack frame.
@@ -189,13 +180,40 @@ func (e *Error) S(message string) *Error {
 // It's private parts of ekago, but you can access them using ekaexp package.
 // See https://github.com/qioalice/ekago/ekaexp/README.md for more details.
 func (e *Error) AddFields(args ...interface{}) *Error {
-	return e.addFields(args)
+	if e.IsValid() && len(args) > 0 {
+		ekaletter.ParseTo(e.getCurrentLetterItem(), args, nil, true)
+		if e.stackIdx == 0 {
+			e.Mark()
+		}
+	}
+	return e
 }
 
-// W is just AddFields' alias.
-// Introduced to increase your code's cleaning (sometimes the less words the better).
-func (e *Error) W(args ...interface{}) *Error {
-	return e.addFields(args)
+// ModifyBy calls f callback passing the current Error object into and returning
+// the Error object, callback is return what.
+// Nil safe.
+//
+// Does nothing if f == nil.
+//
+// Why?
+// You can write your own fields appender like:
+//     func (this *YourType) errAddIdentifiers(err *ekaerr.Error) *ekaerr.Error {
+//         return err.AddFields("id", this.ID, "date", this.Date)
+//     }
+//
+// And then use it like:
+//     yt := new(YourType)
+//     return ekaerr.IllegalState.
+//         New("Unexpected state of world").
+//         ModifyBy(yt.errAddIdentifiers).
+//         Throw()
+//
+// Brilliant, isn't? And that most important it's so clean.
+func (e *Error) ModifyBy(f func(err *Error) *Error) *Error {
+	if e.IsValid() && f != nil {
+		return f(e)
+	}
+	return e
 }
 
 // Is reports whether e has been instantiated by 'cls' Class's constructors.
