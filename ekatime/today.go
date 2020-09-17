@@ -28,6 +28,9 @@ type (
 		WorkDayTotal     Day         `json:"work_day_total"`
 		DayOffTotal      Day         `json:"dayoff_total"`
 
+		WorkDays         []Day       `json:"work_days"`
+		DayOffs          []Day       `json:"dayoffs"`
+
 		AsJson           []byte      `json:"-"`
 		AsYourOwn1       []byte      `json:"-"`
 	}

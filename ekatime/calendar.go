@@ -394,6 +394,6 @@ func (c *Calendar) WorkdaysFor(dd Date, d1 Day) (current, total Day) {
 	confirmedEvents := append(c.confirmedEvents[:0:0], c.confirmedEvents...)
 	c.mu.Unlock()
 
-	current, total, _ = workdaysFor(dd, d1, confirmedEvents)
+	current, total, _ = workdaysFor(dd, d1, confirmedEvents, nil)
 	return current, total
 }

@@ -11,6 +11,7 @@ import (
 	"unsafe"
 
 	"github.com/qioalice/ekago/v2/ekalog"
+	"github.com/qioalice/ekago/v2/ekamath"
 )
 
 //noinspection GoSnakeCaseUsage
@@ -106,8 +107,29 @@ func (c *Calendar) updateToday() *Today {
 	newToday.Weekday                                = newToday.Date.Weekday()
 	newToday.DaysInMonth                            = newToday.Date.DaysInMonth()
 
+	newToday.WorkDays = make([]Day, 0, 31)
+	newToday.DayOffs = make([]Day, 0, 31)
+
 	newToday.WorkDayTotal, newToday.WorkDayCurrent, newToday.IsDayOff =
-		workdaysFor(NewDate(newToday.Year, newToday.Month, 1), 1, c.confirmedEvents)
+		workdaysFor(
+			NewDate(newToday.Year, newToday.Month, 1),
+			1,
+			c.confirmedEvents,
+			&newToday.WorkDays,
+		)
+
+	// newToday.WorkDays already filled. Fill newToday.DayOffs.
+	var daysBitSet ekamath.Flags32
+	for _, d := range newToday.WorkDays {
+		daysBitSet |= 1 << (d-1)
+	}
+	// Wanna day offs? No problem. XOR is your friend.
+	daysBitSet ^= 0xFF_FF_FF_FF
+	for i := Day(0); i < newToday.DaysInMonth; i++ {
+		if daysBitSet & (1 << i) != 0 {
+			newToday.DayOffs = append(newToday.DayOffs, i+1)
+		}
+	}
 
 	newToday.DayOffTotal = newToday.DaysInMonth - newToday.WorkDayTotal
 
@@ -147,7 +169,8 @@ func (c *Calendar) pendingEventIdx(event Event) int {
 
 // See Calendar.WorkdaysFor docs.
 // isDayOff reports whether d1 is day off.
-func workdaysFor(dd Date, d1 Day, events []Event) (current, total Day, isDayOff bool) {
+// workDaysOut will contain working days if it's not nil.
+func workdaysFor(dd Date, d1 Day, events []Event, workDaysOut *[]Day) (current, total Day, isDayOff bool) {
 
 	y, m, d := normalizeDate(dd.Split())
 	dd = NewDate(y, m, d)
@@ -161,9 +184,12 @@ func workdaysFor(dd Date, d1 Day, events []Event) (current, total Day, isDayOff 
 		d1 = daysInMonth
 	}
 
+	var workDaysBitSet ekamath.Flags32
+
 	for d, wd := d, dd.Weekday(); d <= daysInMonth; d++ {
 		if !wd.IsDayOff() {
 			total++
+			workDaysBitSet |= 1 << (d-1)
 			if d <= d1 {
 				current++
 			}
@@ -189,13 +215,24 @@ func workdaysFor(dd Date, d1 Day, events []Event) (current, total Day, isDayOff 
 		}
 		if ce.IsDayOff() {
 			total--
+			workDaysBitSet &^= 1 << (d-1)
 			if ce.Day() <= d1 {
 				current--
 			}
 		} else {
 			total++
+			workDaysBitSet |= 1 << (d-1)
 			if ce.Day() <= d1 {
 				current++
+			}
+		}
+	}
+
+	if workDaysOut != nil {
+		// Represent bit set as array
+		for i := Day(0); i < 31; i++ {
+			if workDaysBitSet & (1 << i) != 0 {
+				*workDaysOut = append(*workDaysOut, i+1)
 			}
 		}
 	}
