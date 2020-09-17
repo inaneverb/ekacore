@@ -110,10 +110,10 @@ func (c *Calendar) updateToday() *Today {
 	newToday.WorkDays = make([]Day, 0, 31)
 	newToday.DayOffs = make([]Day, 0, 31)
 
-	newToday.WorkDayTotal, newToday.WorkDayCurrent, newToday.IsDayOff =
+	newToday.WorkDayCurrent, newToday.WorkDayTotal, newToday.IsDayOff =
 		workdaysFor(
 			NewDate(newToday.Year, newToday.Month, 1),
-			1,
+			newToday.Day,
 			c.confirmedEvents,
 			&newToday.WorkDays,
 		)
