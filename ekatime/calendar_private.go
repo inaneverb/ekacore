@@ -34,7 +34,7 @@ func (c *Calendar) confirmPending() *Calendar {
 
 	c.confirmedNewDayCallback = c.pendingNewDayCallback
 	c.confirmedTodayEncoderJson = c.pendingTodayEncoderJson
-	c.confirmedTodayEncoderUsers1 = c.pendingTodayEncoderUsers1
+	c.confirmedTodayEncoderCustom1 = c.pendingTodayEncoderCustom1
 
 	return c
 }
@@ -134,10 +134,12 @@ func (c *Calendar) updateToday() *Today {
 	newToday.DayOffTotal = newToday.DaysInMonth - newToday.WorkDayTotal
 
 	if c.confirmedTodayEncoderJson != nil {
-		newToday.AsJson = c.confirmedTodayEncoderJson(newToday)
+		newToday.AsJson, newToday.AsJsonErr =
+			c.confirmedTodayEncoderJson(newToday)
 	}
-	if c.confirmedTodayEncoderUsers1 != nil {
-		newToday.AsYourOwn1 = c.confirmedTodayEncoderUsers1(newToday)
+	if c.confirmedTodayEncoderCustom1 != nil {
+		newToday.AsYourOwn1, newToday.AsYourOwn1Err =
+			c.confirmedTodayEncoderCustom1(newToday)
 	}
 
 	old := atomic.SwapPointer(&c.today, unsafe.Pointer(newToday))

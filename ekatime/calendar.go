@@ -12,7 +12,6 @@ import (
 	"unsafe"
 
 	"github.com/qioalice/ekago/v2/ekadeath"
-
 )
 
 type (
@@ -89,11 +88,11 @@ type (
 		confirmedEvents []Event // user defined events that may change month counters
 		pendingEvents []Event
 
-		confirmedTodayEncoderJson func(*Today) []byte
-		pendingTodayEncoderJson func(*Today) []byte
+		confirmedTodayEncoderJson TodayEncoder
+		pendingTodayEncoderJson TodayEncoder
 
-		confirmedTodayEncoderUsers1 func(*Today) []byte
-		pendingTodayEncoderUsers1 func(*Today) []byte
+		confirmedTodayEncoderCustom1 TodayEncoder
+		pendingTodayEncoderCustom1 TodayEncoder
 
 		// -----
 
@@ -267,7 +266,7 @@ func (c *Calendar) WhenNewDay(cb func(*Today)) *Calendar {
 //
 // YOU MUST NOT HOLD THE Today's POINTER INSIDE ENCODER!
 // DATA RACE AND MEMORY LEAKS OTHERWISE!
-func (c *Calendar) RegJsonEncoder(encoder func(*Today) []byte) *Calendar {
+func (c *Calendar) RegJsonEncoder(encoder TodayEncoder) *Calendar {
 
 	if c == nil || encoder == nil {
 		return c
@@ -289,7 +288,7 @@ func (c *Calendar) RegJsonEncoder(encoder func(*Today) []byte) *Calendar {
 //
 // YOU MUST NOT HOLD THE Today's POINTER INSIDE ENCODER!
 // DATA RACE AND MEMORY LEAKS OTHERWISE!
-func (c *Calendar) RegYourOwnEncoder(number int, encoder func(*Today) []byte) *Calendar {
+func (c *Calendar) RegYourOwnEncoder(number int, encoder TodayEncoder) *Calendar {
 
 	if c == nil || encoder == nil {
 		return c
@@ -298,7 +297,7 @@ func (c *Calendar) RegYourOwnEncoder(number int, encoder func(*Today) []byte) *C
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.pendingTodayEncoderUsers1 = encoder // just overwrite
+	c.pendingTodayEncoderCustom1 = encoder // just overwrite
 	return c
 }
 
