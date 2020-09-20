@@ -60,46 +60,46 @@ type (
 		//    If Calendar is not presented, does the same thing as ApplyEvents().
 
 		// Parent Calendar object. Could be nil if Today is instantiated manually.
-		c                *Calendar   `json:"-"`
+		c                *Calendar     `json:"-"`
 
 		// Deprecated: Does not represent an actual Time.
-		Timestamp        Timestamp   `json:"ts"`
+		Timestamp        Timestamp     `json:"ts"`
 
 		// Deprecated: Does not represent an actual Time.
-		Time             Time        `json:"-"`
+		Time             Time          `json:"-"`
 
-		Date             Date        `json:"-"`
+		Date             Date          `json:"-"`
 
-		Year             Year        `json:"year"`
-		Month            Month       `json:"month"`
-		Day              Day         `json:"day"`
+		Year             Year          `json:"year"`
+		Month            Month         `json:"month"`
+		Day              Day           `json:"day"`
 
-		Weekday          Weekday     `json:"weekday"`
+		Weekday          Weekday       `json:"weekday"`
 
 		// Deprecated: Does not represent an actual Hour
-		Hour             Hour        `json:"-"`
+		Hour             Hour          `json:"-"`
 
 		// Deprecated: Does not represent an actual Minute
-		Minute           Minute      `json:"-"`
+		Minute           Minute        `json:"-"`
 
 		// Deprecated: Does not represent an actual Second
-		Second           Second      `json:"-"`
+		Second           Second        `json:"-"`
 
-		WorkDayCurrent   Day         `json:"work_day_current"`
-		IsDayOff         bool        `json:"is_dayoff"`
+		WorkDayCurrent   Day           `json:"work_day_current"`
+		IsDayOff         bool          `json:"is_dayoff"`
 
-		DaysInMonth      Day         `json:"days_in_month"`
-		WorkDayTotal     Day         `json:"work_day_total"` // in month
-		DayOffTotal      Day         `json:"dayoff_total"` // in month
+		DaysInMonth      Day           `json:"days_in_month"`
+		WorkDayTotal     Day           `json:"work_day_total"` // in month
+		DayOffTotal      Day           `json:"dayoff_total"` // in month
 
-		WorkDays         []Day       `json:"work_days"` // days in month
-		DayOffs          []Day       `json:"dayoffs"` // days in month
+		WorkDays         []Day         `json:"work_days"` // days in month
+		DayOffs          []Day         `json:"dayoffs"` // days in month
 
-		AsJson           []byte      `json:"-"`
-		AsJsonErr        *ekaerr.Error
+		AsJson           []byte        `json:"-"`
+		AsJsonErr        *ekaerr.Error `json:"-"`
 
-		AsYourOwn1       []byte      `json:"-"`
-		AsYourOwn1Err    *ekaerr.Error
+		AsYourOwn1       []byte        `json:"-"`
+		AsYourOwn1Err    *ekaerr.Error `json:"-"`
 	}
 
 	// TodayEncoder is a function alias that represents a function that
