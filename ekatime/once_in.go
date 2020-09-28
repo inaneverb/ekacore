@@ -62,3 +62,38 @@ func (oiu *onceInUpdater) Date() Date {
 func (oiu *onceInUpdater) Time() Time {
 	return Time(atomic.LoadUint32((*uint32)(&oiu.t)))
 }
+
+// Call calls cb every time when associated onceIn updater's time has come.
+// So, it means that
+//
+//     ekatime.OnceInHour.Call(func(ts Timestamp, _ Date, _ Time){
+//         fmt.Println(ts)
+//     })
+//
+// will call provided callback every hour, printing the UNIX timestamp of the time
+// when that hour has come.
+//
+// Does nothing if you pass a nil cb.
+// That callback will be rejected with no-op.
+//
+// WARNING! IMPOSSIBLE TO STOP!
+// YOU CAN NOT "CANCEL" A CALLBACK YOU ONCE ADDED TO PLANNER.
+// IT WILL BE CALLED EVERY TIME UNTIL THE END.
+// If you need to stop, handle it manually!
+//
+// WARNING! ONE THREAD!
+// All callbacks associated with the same onceIn delayer (e.g. "once in hour",
+// "once in day", etc) are called consistently one by one, AT THE SAME goroutine!
+// So, if there is some "big" work, wrap your callback manually to the closure with
+// "go callback(ts, dd, t)" call (spawn a separate goroutine).
+func (oiu *onceInUpdater) Call(cb onceInCallback) {
+
+	if cb == nil {
+		return
+	}
+
+	oiu.cbsMutex.Lock()
+	defer oiu.cbsMutex.Unlock()
+
+	oiu.cbs = append(oiu.cbs, cb)
+}
