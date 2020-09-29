@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/qioalice/ekago/v2/ekaerr"
 	"github.com/qioalice/ekago/v2/ekatime"
 
 	"github.com/json-iterator/go"
@@ -18,9 +19,9 @@ import (
 func TestCalendar_Today(t *testing.T) {
 
 	c := new(ekatime.Calendar).
-		RegJsonEncoder(func(today *ekatime.Today) []byte {
+		RegJsonEncoder(func(today *ekatime.Today) ([]byte, *ekaerr.Error) {
 			data, _ := jsoniter.Marshal(today)
-			return data
+			return data, nil
 		})
 
 	c.EventAdd(ekatime.NewEvent(ekatime.NewDate(2020, 9, 1), 1, true))

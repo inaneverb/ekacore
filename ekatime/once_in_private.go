@@ -24,13 +24,27 @@ type (
 	// onceInUpdater is a special internal struct that gets the current timestamp
 	// once in some period and caching it allowing to get the cached data by getters.
 	onceInUpdater struct {
-		cbs []onceInCallback // callbacks that must be called when time has come
-		cbsMutex sync.Mutex
-		ts Timestamp // cached current Timestamp
-		d Date // cached current Date
-		t Time // cached current Time
-		tm *time.Timer // timer that allows to update the cached data
-		updateDelayInSec Timestamp // timer delay
+
+		// WARNING!
+		// DO NOT CHANGE THE ORDER OF FIELDS!
+		// https://golang.org/pkg/sync/atomic/#pkg-note-BUG :
+		//
+		//   > On ARM, x86-32, and 32-bit MIPS,
+		//   > it is the caller's responsibility to arrange for 64-bit alignment
+		//   > of 64-bit words accessed atomically.
+		//   > The first word in a variable or in an allocated struct, array,
+		//   > or slice can be relied upon to be 64-bit aligned.
+		//
+		// Also:
+		// https://stackoverflow.com/questions/28670232/atomic-addint64-causes-invalid-memory-address-or-nil-pointer-dereference/51012703#51012703
+
+		/* 8b */ ts Timestamp // cached current Timestamp
+		/* 4b */ d Date // cached current Date
+		/* 4b */ t Time // cached current Time
+		/* -- */ cbs []onceInCallback // callbacks that must be called when time has come
+		/* -- */ cbsMutex sync.Mutex
+		/* -- */ tm *time.Timer // timer that allows to update the cached data
+		/* -- */ updateDelayInSec Timestamp // timer delay
 	}
 )
 
