@@ -38,6 +38,15 @@ var (
 	// OnceInHour allows you to get an actual time once in 60 minutes (1 hour).
 	OnceInHour onceInUpdater
 
+	// OnceIn2Hour allows you to get an actual time once in 120 minutes (2 hours).
+	OnceIn2Hour onceInUpdater
+
+	// OnceIn3Hour allows you to get an actual time once in 180 minutes (3 hours).
+	OnceIn3Hour onceInUpdater
+
+	// OnceInHour allows you to get an actual time once in 1440 minutes (6 hours).
+	OnceIn6Hour onceInUpdater
+
 	// OnceIn12Hours allows you to get an actual time once in 12 hours.
 	OnceIn12Hours onceInUpdater
 

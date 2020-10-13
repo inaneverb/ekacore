@@ -110,6 +110,9 @@ func initOnceIn() {
 	OnceIn15Minutes.run(SECONDS_IN_MINUTE * 15)
 	OnceIn30Minutes.run(SECONDS_IN_MINUTE * 30)
 	OnceInHour.run(SECONDS_IN_HOUR)
+	OnceIn2Hour.run(SECONDS_IN_HOUR * 2)
+	OnceIn3Hour.run(SECONDS_IN_HOUR * 3)
+	OnceIn6Hour.run(SECONDS_IN_HOUR * 6)
 	OnceIn12Hours.run(SECONDS_IN_HOUR * 12)
 	OnceInDay.run(SECONDS_IN_DAY)
 }
