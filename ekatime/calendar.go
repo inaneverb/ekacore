@@ -30,8 +30,8 @@ type (
 	// your service. Trust me, it's enough, even in some cases when you need
 	// different events.
 	//
-	// Create a Calendar object, configure it (add events, encoders), and call Run().
-	// IT IS IMPORTANT! THE CALENDAR WON'T WORK CORRECTLY IF Run() WOULD NOT BE CALLED!
+	// Create a Calendar object, configure it (add events, encoders), and call RunAsync().
+	// IT IS IMPORTANT! THE CALENDAR WON'T WORK CORRECTLY IF RunAsync() WOULD NOT BE CALLED!
 	//
 	// -----
 	//
@@ -69,7 +69,7 @@ type (
 		mu sync.Mutex // all fields named "pending..." protector
 		wg sync.WaitGroup // graceful shutdown for user's callback and ekadeath
 
-		isStarted bool // flag: Run() must be called only once
+		isStarted bool      // flag: RunAsync() must be called only once
 		disableLogging bool // flag: whether logging must be disabled
 
 		// All next fields (except counters) has 2 variants: pending and confirmed.
@@ -120,9 +120,9 @@ type (
 // Nil safe. Thread-safety.
 //
 // DOES NOTHING IF CALENDAR ALREADY RUNNING.
-// CALL THIS METHOD BEFORE Run() IS CALLED!
+// CALL THIS METHOD BEFORE RunAsync() IS CALLED!
 //
-// By default after Run() is called, if you call any Calendar's setter,
+// By default after RunAsync() is called, if you call any Calendar's setter,
 // sometime the info messages will be logged about Calendar's update processing.
 // You may disable it using this method.
 func (c *Calendar) DisableLogging() *Calendar {
@@ -238,8 +238,8 @@ func (c *Calendar) EventWalk(eventWalker func(i int, event Event)) *Calendar {
 }
 
 // WhenNewDay registers the 'cb' as callback that will be called when new day has come.
-// Keep in mind, you must call Run() method to start the internal goroutine of Calendar.
-// Does nothing if Run() has been called before.
+// Keep in mind, you must call RunAsync() method to start the internal goroutine of Calendar.
+// Does nothing if RunAsync() has been called before.
 // Nil safe. Thread-safety.
 //
 // It's guaranteed that the service won't be stopped from the ekadeath's package
@@ -302,7 +302,7 @@ func (c *Calendar) RegYourOwnEncoder(number int, encoder TodayEncoder) *Calendar
 }
 
 // Today returns the cached Today's pointer. It's blazing fast access.
-// You must call Run() before, otherwise nil is returned.
+// You must call RunAsync() before, otherwise nil is returned.
 // Nil safe. Thread-safety.
 func (c *Calendar) Today() *Today {
 
@@ -313,11 +313,14 @@ func (c *Calendar) Today() *Today {
 	return (*Today)(atomic.LoadPointer(&c.today))
 }
 
-// Run starts the Calendar's internal timers, goroutines, etc, allowing you
+// Deprecated: Renamed to be more clear. Use RunAsync instead.
+func (c *Calendar) Run() { c.RunAsync() }
+
+// RunAsync starts the Calendar's internal timers, goroutines, etc, allowing you
 // to use Today() method and getting an actual Today object in your registered
 // callback (by WhenNewDay()) when new day has come.
 // Nil safe. Thread-safety.
-func (c *Calendar) Run() {
+func (c *Calendar) RunAsync() {
 
 	if c == nil {
 		return

@@ -25,7 +25,7 @@ func TestCalendar_Today(t *testing.T) {
 		})
 
 	c.EventAdd(ekatime.NewEvent(ekatime.NewDate(2020, 9, 1), 1, true))
-	c.Run()
+	c.RunAsync()
 	fmt.Println(string(c.Today().AsJson))
 }
 
@@ -36,7 +36,7 @@ func TestCalendar_WorkdaysFor(t *testing.T) {
 		EventAdd(ekatime.NewEvent(ekatime.NewDate(2020, 9, 16), 1, true)).
 		EventAdd(ekatime.NewEvent(ekatime.NewDate(2020, 9, 20), 1, false))
 
-	c.Run()
+	c.RunAsync()
 
 	current, total :=
 		c.WorkdaysFor(ekatime.NewDate(2020, 9, 12), 21)

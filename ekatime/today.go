@@ -13,7 +13,7 @@ type (
 	// Today is a very useful part of Calendar.
 	// Honestly, it's a main feature and power of Calendar.
 	//
-	// When you call Calendar.Run(), the Calendar allows you to use Calendar.Today()
+	// When you call Calendar.RunAsync(), the Calendar allows you to use Calendar.Today()
 	// method that returns cached Today object. This object.
 	// The Today object updates only once in day (at the midnight), and then
 	// you will always get a cached pointer of that object.
