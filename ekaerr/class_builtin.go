@@ -6,6 +6,12 @@
 package ekaerr
 
 var (
+	// NotFound is a class for not found error
+	NotFound = CommonErrors.NewClass("NotFound")
+
+	// AlreadyExist is a class for an entity already exist error
+	AlreadyExist = CommonErrors.NewClass("AlreadyExist")
+
 	// IllegalArgument is a class for invalid argument error
 	IllegalArgument = CommonErrors.NewClass("IllegalArgument")
 
