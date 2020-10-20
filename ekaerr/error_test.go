@@ -13,6 +13,8 @@ import (
 
 	"github.com/qioalice/ekago/v2/ekaerr"
 	"github.com/qioalice/ekago/v2/ekalog"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type T struct{}
@@ -74,4 +76,62 @@ func BenchmarkError(b *testing.B) {
 		fmt.Printf("EKALOG: %+v\n", ekalog.EPS())
 		fmt.Println()
 	}()
+}
+
+func BenchmarkErrorCreation(b *testing.B) {
+	b.StopTimer()
+	b.ReportAllocs()
+
+	defer func() {
+		runtime.GC()
+		fmt.Printf("EKAERR: %+v\n", ekaerr.EPS())
+		fmt.Println()
+	}()
+
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		_ = ekaerr.NotImplemented.New("An error")
+	}
+}
+
+func BenchmarkErrorCreationReusing(b *testing.B) {
+	b.StopTimer()
+	b.ReportAllocs()
+
+	defer func() {
+		runtime.GC()
+		fmt.Printf("EKAERR: %+v\n", ekaerr.EPS())
+		fmt.Println()
+	}()
+
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		err := ekaerr.NotImplemented.New("An error")
+		ekaerr.ReleaseError(&err)
+	}
+}
+
+func BenchmarkErrorAddFieldNilError(b *testing.B) {
+	b.StopTimer()
+	b.ReportAllocs()
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		var err *ekaerr.Error
+		//goland:noinspection GoNilness
+		//err.Throw()
+		if err.IsNotNil() {
+			err.Throw()
+		}
+	}
+}
+
+func TestError_IsAnyDeep(t *testing.T) {
+	cls := ekaerr.AlreadyExist.NewSubClass("Derived")
+	err := cls.New("Error")
+
+	assert.True(t, err.Is(cls))
+	assert.False(t, err.Is(ekaerr.AlreadyExist))
+
+	assert.True(t, err.IsAnyDeep(ekaerr.AlreadyExist))
+	assert.False(t, err.IsAnyDeep(ekaerr.NotFound))
 }

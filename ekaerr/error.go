@@ -247,7 +247,7 @@ func (e *Error) OfAny(nss ...Namespace) bool {
 }
 
 // IsAnuDeep reports whether e belongs to at least one of passed 'cls' Classes
-// or to any of their parent (base) Classes (has been instantiated using one of them).
+// or any of its parent (base) Classes is the same as one of passed 'cls'
 // Returns false if e is not valid Error or no one class has been passed.
 // Nil-safe.
 //
@@ -261,7 +261,7 @@ func (e *Error) IsAnyDeep(cls ...Class) bool {
 // or has been manually instantiated instead of constructor using.
 // Nil safe.
 func (e *Error) Class() Class {
-	if e.IsValid() {
+	if !e.IsValid() {
 		return invalidClass
 	}
 	return classByID(e.classID, true)

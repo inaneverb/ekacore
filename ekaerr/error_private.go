@@ -94,7 +94,7 @@ func (e *Error) cleanup() *Error {
 }
 
 // is reports whether e belongs to at least one of passed 'cls' Classes
-// or to any of their parents (base) Classes (if 'deep' is true).
+// or any of e's parent (base) Class is the same as one of passed (if 'deep' is true).
 func (e *Error) is(cls []Class, deep bool) bool {
 
 	if !e.IsValid() || len(cls) == 0 {
@@ -107,19 +107,20 @@ func (e *Error) is(cls []Class, deep bool) bool {
 		defer registeredClassesMap.RUnlock()
 	}
 
-	for i, n := 0, len(cls); i < n; i++ {
-		if isValidClassID(cls[i].id) && e.classID == cls[i].id {
-			return true
-		}
-		if deep {
-			classID := cls[i].parentID
-			for isValidClassID(classID) {
-				if e.classID == classID {
-					return true
-				}
-				// do not lock, already locked
-				classID = classByID(classID, false).parentID
+	n := len(cls)
+	for classID := e.classID; isValidClassID(classID); {
+
+		for i := 0; i < n; i++ {
+			if cls[i].id == classID {
+				return true
 			}
+		}
+
+		if deep {
+			// do not lock, already locked
+			classID = classByID(classID, false).parentID
+		} else {
+			classID = _ERR_INVALID_CLASS_ID
 		}
 	}
 
