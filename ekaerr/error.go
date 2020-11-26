@@ -180,13 +180,7 @@ func (e *Error) AddMessage(message string) *Error {
 // It's private parts of ekago, but you can access them using ekaexp package.
 // See https://github.com/qioalice/ekago/ekaexp/README.md for more details.
 func (e *Error) AddFields(args ...interface{}) *Error {
-	if e.IsValid() && len(args) > 0 {
-		ekaletter.ParseTo(e.getCurrentLetterItem(), args, nil, true)
-		if e.stackIdx == 0 {
-			e.Mark()
-		}
-	}
-	return e
+	return e.addFields(args)
 }
 
 // ModifyBy calls f callback passing the current Error object into and returning

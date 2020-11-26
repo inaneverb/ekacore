@@ -93,6 +93,22 @@ func (e *Error) cleanup() *Error {
 	return e
 }
 
+// addFields does the things described at the Error.AddFields() method.
+// This function accepts []interface instead of ...interface{} as argument.
+// And because also AddFields() must be called at the newError() constructor,
+// using this method with []interface{} argument's type we're avoiding
+// unpacking arguments call like AddFields(args...) in the newError(),
+// avoiding unnecessary copying.
+func (e *Error) addFields(args []interface{}) *Error {
+	if e.IsValid() && len(args) > 0 {
+		ekaletter.ParseTo(e.getCurrentLetterItem(), args, nil, true)
+		if e.stackIdx == 0 {
+			e.Mark()
+		}
+	}
+	return e
+}
+
 // is reports whether e belongs to at least one of passed 'cls' Classes
 // or any of e's parent (base) Class is the same as one of passed (if 'deep' is true).
 func (e *Error) is(cls []Class, deep bool) bool {
@@ -296,7 +312,7 @@ func (e *Error) construct(baseMessage string, legacyErr error) *Error {
 // 6. Done.
 func newError(classID ClassID, namespaceID NamespaceID, legacyErr error, message string, args []interface{}) *Error {
 
-	err := acquireError().init(classID, namespaceID).construct(message, legacyErr).AddFields(args)
+	err := acquireError().init(classID, namespaceID).construct(message, legacyErr).addFields(args)
 	if err.letter.Items.Message != "" || len(err.letter.Items.Fields) > 0 {
 		err.Mark()
 	}
