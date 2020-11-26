@@ -19,12 +19,15 @@ import (
 )
 
 func foo() *ekaerr.Error {
-	return ekaerr.Interrupted.New("fwefwf").W("test", 42).Throw()
+	return ekaerr.Interrupted.
+		New("fwefwf").
+		AddFields("test", 42).
+		Throw()
 }
 
 func TestLog(t *testing.T) {
 
-	consoleEncoder := new(ekalog.CI_ConsoleEncoder)
+	consoleEncoder := new(ekalog.CI_JSONEncoder)
 	b := bytes.NewBuffer(nil)
 
 	stdoutConsoleIntegrator := new(ekalog.CommonIntegrator).
@@ -53,12 +56,6 @@ func TestLog(t *testing.T) {
 	foo().LogAsFatal()
 }
 
-//
-func TestFoo2(t *testing.T) {
-
-}
-
-//
 func BenchmarkLog(b *testing.B) {
 	b.StopTimer()
 	b.ReportAllocs()
