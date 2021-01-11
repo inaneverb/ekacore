@@ -11,25 +11,27 @@ import (
 
 //goland:noinspection GoVarAndConstTypeMayBeOmitted,GoRedundantConversion,GoBoolExpressions
 var (
-	rtypeBool        uintptr = reflect2.RTypeOf(bool(0 == 0))
-	rtypeByte        uintptr = reflect2.RTypeOf(byte(0))
-	rtypeRune        uintptr = reflect2.RTypeOf(rune(0))
-	rtypeInt         uintptr = reflect2.RTypeOf(int(0))
-	rtypeInt8        uintptr = reflect2.RTypeOf(int8(0))
-	rtypeInt16       uintptr = reflect2.RTypeOf(int16(0))
-	rtypeInt32       uintptr = reflect2.RTypeOf(int32(0))
-	rtypeInt64       uintptr = reflect2.RTypeOf(int64(0))
-	rtypeUint        uintptr = reflect2.RTypeOf(uint(0))
-	rtypeUint8       uintptr = reflect2.RTypeOf(uint8(0))
-	rtypeUint16      uintptr = reflect2.RTypeOf(uint16(0))
-	rtypeUint32      uintptr = reflect2.RTypeOf(uint32(0))
-	rtypeUint64      uintptr = reflect2.RTypeOf(uint64(0))
-	rtypeFloat32     uintptr = reflect2.RTypeOf(float32(0))
-	rtypeFloat64     uintptr = reflect2.RTypeOf(float64(0))
-	rtypeString      uintptr = reflect2.RTypeOf(string(""))
-	rtypeStringArray uintptr = reflect2.RTypeOf([]string(nil))
-	rtypeBytes       uintptr = reflect2.RTypeOf([]byte(nil))
-	rtypeBytesArray  uintptr = reflect2.RTypeOf([][]byte(nil))
+	rtypeBool                uintptr = reflect2.RTypeOf(bool(0 == 0))
+	rtypeByte                uintptr = reflect2.RTypeOf(byte(0))
+	rtypeRune                uintptr = reflect2.RTypeOf(rune(0))
+	rtypeInt                 uintptr = reflect2.RTypeOf(int(0))
+	rtypeInt8                uintptr = reflect2.RTypeOf(int8(0))
+	rtypeInt16               uintptr = reflect2.RTypeOf(int16(0))
+	rtypeInt32               uintptr = reflect2.RTypeOf(int32(0))
+	rtypeInt64               uintptr = reflect2.RTypeOf(int64(0))
+	rtypeUint                uintptr = reflect2.RTypeOf(uint(0))
+	rtypeUint8               uintptr = reflect2.RTypeOf(uint8(0))
+	rtypeUint16              uintptr = reflect2.RTypeOf(uint16(0))
+	rtypeUint32              uintptr = reflect2.RTypeOf(uint32(0))
+	rtypeUint64              uintptr = reflect2.RTypeOf(uint64(0))
+	rtypeFloat32             uintptr = reflect2.RTypeOf(float32(0))
+	rtypeFloat64             uintptr = reflect2.RTypeOf(float64(0))
+	rtypeString              uintptr = reflect2.RTypeOf(string(""))
+	rtypeStringArray         uintptr = reflect2.RTypeOf([]string(nil))
+	rtypeBytes               uintptr = reflect2.RTypeOf([]byte(nil))
+	rtypeBytesArray          uintptr = reflect2.RTypeOf([][]byte(nil))
+	rtypeMapStringString     uintptr = reflect2.RTypeOf(map[string]string(nil))
+	rtypeMapStringInterface  uintptr = reflect2.RTypeOf(map[string]interface{}(nil))
 )
 
 /*
@@ -229,7 +231,7 @@ RTypeStringArray is a "constant" function.
 Always returns the same value.
 
 Returns an integer representation of pointer to the type that describes
-builtin Golang "[]string" type.
+complex Golang "[]string" type.
 
 Useful along with reflect2.RTypeOf() function.
 */
@@ -241,7 +243,7 @@ RTypeBytes is a "constant" function.
 Always returns the same value.
 
 Returns an integer representation of pointer to the type that describes
-builtin Golang "[]byte" type.
+complex Golang "[]byte" type.
 
 Useful along with reflect2.RTypeOf() function.
 */
@@ -253,12 +255,36 @@ RTypeBytesArray is a "constant" function.
 Always returns the same value.
 
 Returns an integer representation of pointer to the type that describes
-builtin Golang "[][]byte" type.
+complex Golang "[][]byte" type.
 
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
 func RTypeBytesArray() uintptr { return rtypeBytesArray }
+
+/*
+RTypeMapStringString is a "constant" function.
+Always returns the same value.
+
+Returns an integer representation of pointer to the type that describes
+complex Golang "map[string]string" type.
+
+Useful along with reflect2.RTypeOf() function.
+*/
+//go:inline
+func RTypeMapStringString() uintptr { return rtypeMapStringString }
+
+/*
+RTypeMapStringInterface is a "constant" function.
+Always returns the same value.
+
+Returns an integer representation of pointer to the type that describes
+complex Golang "map[string]interface{}" type.
+
+Useful along with reflect2.RTypeOf() function.
+*/
+//go:inline
+func RTypeMapStringInterface() uintptr { return rtypeMapStringInterface }
 
 /*
 RTypeIsAnyNumeric returns true if passed rtype is any of signed or unsigned integers.
