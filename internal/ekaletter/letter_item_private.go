@@ -11,7 +11,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/qioalice/ekago/v2/ekadanger"
+	"github.com/qioalice/ekago/v2/internal/ekaclike"
 	"github.com/qioalice/ekago/v2/internal/ekafield"
 
 	"github.com/modern-go/reflect2"
@@ -70,7 +70,7 @@ func (li *LetterItem) addImplicitField(name string, value interface{}, typ refle
 		// FLAG_ALLOW_IMPLICIT_POINTERS is not set (because what can we do otherwise?)
 		logPtrAsIs :=
 			li.Flags.TestAll(FLAG_ALLOW_IMPLICIT_POINTERS) ||
-				ekadanger.TakeRealAddr(value) == nil
+				ekaclike.TakeRealAddr(value) == nil
 
 		if logPtrAsIs {
 			f = ekafield.Addr(name, value)
