@@ -8,8 +8,9 @@ package ekalog
 import (
 	"io"
 
-	"github.com/qioalice/ekago/v2/ekadanger"
 	"github.com/qioalice/ekago/v2/ekatyp"
+
+	"github.com/qioalice/ekago/v2/internal/ekaclike"
 )
 
 //noinspection GoSnakeCaseUsage
@@ -175,7 +176,7 @@ func (bi *CommonIntegrator) WithEncoder(enc CI_Encoder) *CommonIntegrator {
 	}
 
 	// encAddr == nil if enc == nil
-	switch encAddr := ekadanger.TakeRealAddr(enc); {
+	switch encAddr := ekaclike.TakeRealAddr(enc); {
 
 	case encAddr == nil && len(bi.output) == 0:
 		bi.output = append(bi.output, _CI_Output{

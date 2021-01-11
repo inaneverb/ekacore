@@ -5,9 +5,10 @@
 
 package ekalog
 
+//goland:noinspection GoUnsortedImport
 import (
-	"github.com/qioalice/ekago/v2/ekadanger"
 	"github.com/qioalice/ekago/v2/internal/ekafield"
+	"github.com/qioalice/ekago/v2/internal/ekaclike"
 )
 
 // -----
@@ -52,7 +53,7 @@ import (
 //
 func ReplaceIntegrator(newIntegrator Integrator) {
 
-	if ekadanger.TakeRealAddr(newIntegrator) == nil {
+	if ekaclike.TakeRealAddr(newIntegrator) == nil {
 		return
 	}
 	if ci, ok := newIntegrator.(*CommonIntegrator); !(ok && ci != nil && ci.tryToBuild()) {
