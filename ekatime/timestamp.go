@@ -142,7 +142,7 @@ func UnixFrom(y Year, m Month, d Day, hh Hour, mm Minute, ss Second) Timestamp {
 // UnixFromStd creates and returns Timestamp object from the standard Golang's
 // time.Time object (UTC time).
 func UnixFromStd(t time.Time) Timestamp {
-	return Timestamp(t.UTC().Unix())
+	return Timestamp(t.Unix())
 }
 
 // BeginningOfDay returns the day beginning of the current timestamp 'ts'.
