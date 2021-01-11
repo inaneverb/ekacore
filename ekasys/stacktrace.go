@@ -10,6 +10,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"sync"
 )
 
 // StackTrace is the slice of StackFrames, nothing more.
@@ -44,7 +45,7 @@ func getStackFramePoints(skip, count int) (framePoints []uintptr) {
 
 	const (
 		// how much frame points requested first time
-		baseFullStackFramePointsLen int = 16
+		baseFullStackFramePointsLen int = 32
 
 		// maximum requested frame points
 		maxFullStackFramePointsLen int = 128
@@ -101,6 +102,79 @@ func GetStackTrace(skip, depth int) (stacktrace StackTrace) {
 	// but frameIterator can provide less 'runtime.Frame' objects
 	// than we requested -> should fix 'frames' len w/o reallocate
 	return stacktrace[:i]
+}
+
+var (
+	cachedStackFrames = make(map[uintptr]StackFrame)
+	cachedStackFramesMu sync.RWMutex
+)
+
+func GetStackTrace2(skip, depth int) (stacktrace StackTrace) {
+
+	// see the same code section in 'getStackFramePoints'
+	// to more details what happening here with 'skip' arg
+	if skip < -3 {
+		skip = -3
+	}
+	skip++
+
+	framePoints := getStackFramePoints(skip, depth)
+	stacktrace = make(StackTrace, len(framePoints))
+
+	needToUpdateCache := false
+	found := false
+
+	cachedStackFramesMu.RLock()
+	for i, n := 0, len(framePoints); i < n; i++ {
+		if stacktrace[i], found = cachedStackFrames[framePoints[i]]; !found {
+			needToUpdateCache = true
+		}
+	}
+	cachedStackFramesMu.RUnlock()
+
+	if !needToUpdateCache {
+		return
+	}
+
+	for i, n := 0, len(framePoints); i < n; i++ {
+		if stacktrace[i].PC == 0 {
+			fp := framePoints[i]
+
+			f := runtime.FuncForPC(fp)
+			file, line := f.FileLine(fp)
+
+			stacktrace[i] = StackFrame{
+				Frame: runtime.Frame{
+
+					// Keep PC not initialized (0) because it's used as a signal
+					// that StackFrame has been initialized just now
+					// in the loop of updating cached frames below.
+					//
+					//PC:       framePoints[i],
+
+					Func:     f,
+					Function: f.Name(),
+					File:     file,
+					Line:     line,
+					Entry:    f.Entry(),
+				},
+			}
+
+			stacktrace[i].doFormat()
+		}
+	}
+
+	cachedStackFramesMu.Lock()
+	for i, n := 0, len(framePoints); i < n; i++ {
+		fp := framePoints[i]
+		if stacktrace[i].PC == 0 {
+			stacktrace[i].PC = fp
+		}
+		cachedStackFrames[fp] = stacktrace[i]
+	}
+	cachedStackFramesMu.Unlock()
+
+	return
 }
 
 // ExcludeInternal returns stacktrace based on current but with excluded all
