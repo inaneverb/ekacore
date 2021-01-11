@@ -7,10 +7,10 @@ package ekaunsafe_test
 
 import (
 	"fmt"
-	"github.com/qioalice/ekago/v2/ekaunsafe"
 	"testing"
 
 	"github.com/qioalice/ekago/v2/ekamath"
+	"github.com/qioalice/ekago/v2/ekaunsafe"
 
 	"github.com/stretchr/testify/assert"
 
