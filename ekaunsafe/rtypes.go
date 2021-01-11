@@ -3,7 +3,7 @@
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package ekadanger
+package ekaunsafe
 
 import (
 	"github.com/modern-go/reflect2"

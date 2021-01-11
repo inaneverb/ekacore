@@ -6,6 +6,9 @@
 package ekaunsafe
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/qioalice/ekago/v2/internal/ekafield"
 )
 
@@ -23,14 +26,23 @@ const (
 	FIELD_KIND_FLAG_ARRAY     = ekafield.KIND_FLAG_ARRAY
 	FIELD_KIND_FLAG_NULL      = ekafield.KIND_FLAG_NULL
 	FIELD_KIND_FLAG_SYSTEM    = ekafield.KIND_FLAG_SYSTEM
+)
 
+//noinspection GoSnakeCaseUsage,GoUnusedConst
+const (
 	FIELD_KIND_TYPE_INVALID = ekafield.KIND_TYPE_INVALID
+)
 
+//noinspection GoSnakeCaseUsage,GoUnusedConst
+const (
 	FIELD_KIND_SYS_TYPE_EKAERR_UUID           = ekafield.KIND_SYS_TYPE_EKAERR_UUID
 	FIELD_KIND_SYS_TYPE_EKAERR_CLASS_ID       = ekafield.KIND_SYS_TYPE_EKAERR_CLASS_ID
 	FIELD_KIND_SYS_TYPE_EKAERR_CLASS_NAME     = ekafield.KIND_SYS_TYPE_EKAERR_CLASS_NAME
 	FIELD_KIND_SYS_TYPE_EKAERR_PUBLIC_MESSAGE = ekafield.KIND_SYS_TYPE_EKAERR_PUBLIC_MESSAGE
+)
 
+//noinspection GoSnakeCaseUsage,GoUnusedConst
+const (
 	FIELD_KIND_TYPE_BOOL        = ekafield.KIND_TYPE_BOOL
 	FIELD_KIND_TYPE_INT         = ekafield.KIND_TYPE_INT
 	FIELD_KIND_TYPE_INT_8       = ekafield.KIND_TYPE_INT_8
@@ -56,43 +68,150 @@ var (
 	ErrFieldUnsupportedKind = ekafield.ErrUnsupportedKind
 )
 
-//noinspection GoUnusedGlobalVariable
-var (
-	FieldReset = ekafield.Reset
-	FieldBool = ekafield.Bool
-	FieldInt = ekafield.Int
-	FieldInt8 = ekafield.Int8
-	FieldInt16 = ekafield.Int16
-	FieldInt32 = ekafield.Int32
-	FieldInt64 = ekafield.Int64
-	FieldUint = ekafield.Uint
-	FieldUint8 = ekafield.Uint8
-	FieldUint16 = ekafield.Uint16
-	FieldUint32 = ekafield.Uint32
-	FieldUint64 = ekafield.Uint64
-	FieldUintptr = ekafield.Uintptr
-	FieldFloat32 = ekafield.Float32
-	FieldFloat64 = ekafield.Float64
-	FieldComplex64 = ekafield.Complex64
-	FieldComplex128 = ekafield.Complex128
-	FieldString = ekafield.String
-	FieldBoolp = ekafield.Boolp
-	FieldIntp = ekafield.Intp
-	FieldInt8p = ekafield.Int8p
-	FieldInt16p = ekafield.Int16p
-	FieldInt32p = ekafield.Int32p
-	FieldInt64p = ekafield.Int64p
-	FieldUintp = ekafield.Uintp
-	FieldUint8p = ekafield.Uint8p
-	FieldUint16p = ekafield.Uint16p
-	FieldUint32p = ekafield.Uint32p
-	FieldUint64p = ekafield.Uint64p
-	FieldFloat32p = ekafield.Float32p
-	FieldFloat64p = ekafield.Float64p
-	FieldType = ekafield.Type
-	FieldStringer = ekafield.Stringer
-	FieldTime = ekafield.Time
-	FieldDuration = ekafield.Duration
-	FieldNilValue = ekafield.NilValue
-)
+func FieldReset(f *Field) {
+	ekafield.Reset(f)
+}
 
+func FieldBool(key string, value bool) Field {
+	return ekafield.Bool(key, value)
+}
+
+func FieldInt(key string, value int) Field {
+	return ekafield.Int(key, value)
+}
+
+func FieldInt8(key string, value int8) Field {
+	return ekafield.Int8(key, value)
+}
+
+func FieldInt16(key string, value int16) Field {
+	return ekafield.Int16(key, value)
+}
+
+func FieldInt32(key string, value int32) Field {
+	return ekafield.Int32(key, value)
+}
+
+func FieldInt64(key string, value int64) Field {
+	return ekafield.Int64(key, value)
+}
+
+func FieldUint(key string, value uint) Field {
+	return ekafield.Uint(key, value)
+}
+
+func FieldUint8(key string, value uint8) Field {
+	return ekafield.Uint8(key, value)
+}
+
+func FieldUint16(key string, value uint16) Field {
+	return ekafield.Uint16(key, value)
+}
+
+func FieldUint32(key string, value uint32) Field {
+	return ekafield.Uint32(key, value)
+}
+
+func FieldUint64(key string, value uint64) Field {
+	return ekafield.Uint64(key, value)
+}
+
+func FieldUintptr(key string, value uintptr) Field {
+	return ekafield.Uintptr(key, value)
+}
+
+func FieldFloat32(key string, value float32) Field {
+	return ekafield.Float32(key, value)
+}
+
+func FieldFloat64(key string, value float64) Field {
+	return ekafield.Float64(key, value)
+}
+
+func FieldComplex64(key string, value complex64) Field {
+	return ekafield.Complex64(key, value)
+}
+
+func FieldComplex128(key string, value complex128) Field {
+	return ekafield.Complex128(key, value)
+}
+
+func FieldString(key string, value string) Field {
+	return ekafield.String(key, value)
+}
+
+func FieldBoolp(key string, value *bool) Field {
+	return ekafield.Boolp(key, value)
+}
+
+func FieldIntp(key string, value *int) Field {
+	return ekafield.Intp(key, value)
+}
+
+func FieldInt8p(key string, value *int8) Field {
+	return ekafield.Int8p(key, value)
+}
+
+func FieldInt16p(key string, value *int16) Field {
+	return ekafield.Int16p(key, value)
+}
+
+func FieldInt32p(key string, value *int32) Field {
+	return ekafield.Int32p(key, value)
+}
+
+func FieldInt64p(key string, value *int64) Field {
+	return ekafield.Int64p(key, value)
+}
+
+func FieldUintp(key string, value *uint) Field {
+	return ekafield.Uintp(key, value)
+}
+
+func FieldUint8p(key string, value *uint8) Field {
+	return ekafield.Uint8p(key, value)
+}
+
+func FieldUint16p(key string, value *uint16) Field {
+	return ekafield.Uint16p(key, value)
+}
+
+func FieldUint32p(key string, value *uint32) Field {
+	return ekafield.Uint32p(key, value)
+}
+
+func FieldUint64p(key string, value *uint64) Field {
+	return ekafield.Uint64p(key, value)
+}
+
+func FieldFloat32p(key string, value *float32) Field {
+	return ekafield.Float32p(key, value)
+}
+
+func FieldFloat64p(key string, value *float64) Field {
+	return ekafield.Float64p(key, value)
+}
+
+func FieldType(key string, value interface{}) Field {
+	return ekafield.Type(key, value)
+}
+
+func FieldStringer(key string, value fmt.Stringer) Field {
+	return ekafield.Stringer(key, value)
+}
+
+func FieldAddr(key string, value interface{}) Field {
+	return ekafield.Addr(key, value)
+}
+
+func FieldTime(key string, value time.Time) Field {
+	return ekafield.Time(key, value)
+}
+
+func FieldDuration(key string, value time.Duration) Field {
+	return ekafield.Duration(key, value)
+}
+
+func FieldNilValue(key string, baseType FieldKind) Field {
+	return ekafield.NilValue(key, baseType)
+}

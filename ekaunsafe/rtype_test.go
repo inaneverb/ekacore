@@ -3,13 +3,13 @@
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package ekadanger_test
+package ekaunsafe_test
 
 import (
 	"fmt"
+	"github.com/qioalice/ekago/v2/ekaunsafe"
 	"testing"
 
-	"github.com/qioalice/ekago/v2/ekadanger"
 	"github.com/qioalice/ekago/v2/ekamath"
 
 	"github.com/stretchr/testify/assert"
@@ -46,60 +46,60 @@ var (
 		f func() uintptr
 		eq uint64
 	}{
-		{ f: ekadanger.RTypeBool,        eq: 1 << 0          },
-		{ f: ekadanger.RTypeByte,        eq: 1 << 1 | 1 << 9 },
-		{ f: ekadanger.RTypeRune,        eq: 1 << 2 | 1 << 6 },
-		{ f: ekadanger.RTypeInt,         eq: 1 << 3          },
-		{ f: ekadanger.RTypeInt8,        eq: 1 << 4          },
-		{ f: ekadanger.RTypeInt16,       eq: 1 << 5          },
-		{ f: ekadanger.RTypeInt32,       eq: 1 << 6 | 1 << 2 },
-		{ f: ekadanger.RTypeInt64,       eq: 1 << 7          },
-		{ f: ekadanger.RTypeUint,        eq: 1 << 8          },
-		{ f: ekadanger.RTypeUint8,       eq: 1 << 9 | 1 << 1 },
-		{ f: ekadanger.RTypeUint16,      eq: 1 << 10         },
-		{ f: ekadanger.RTypeUint32,      eq: 1 << 11         },
-		{ f: ekadanger.RTypeUint64,      eq: 1 << 12         },
-		{ f: ekadanger.RTypeFloat32,     eq: 1 << 13         },
-		{ f: ekadanger.RTypeFloat64,     eq: 1 << 14         },
-		{ f: ekadanger.RTypeString,      eq: 1 << 15         },
-		{ f: ekadanger.RTypeStringArray, eq: 1 << 16         },
-		{ f: ekadanger.RTypeByteArray,   eq: 1 << 17         },
+		{ f: ekaunsafe.RTypeBool,        eq: 1 << 0          },
+		{ f: ekaunsafe.RTypeByte,        eq: 1 << 1 | 1 << 9 },
+		{ f: ekaunsafe.RTypeRune,        eq: 1 << 2 | 1 << 6 },
+		{ f: ekaunsafe.RTypeInt,         eq: 1 << 3          },
+		{ f: ekaunsafe.RTypeInt8,        eq: 1 << 4          },
+		{ f: ekaunsafe.RTypeInt16,       eq: 1 << 5          },
+		{ f: ekaunsafe.RTypeInt32,       eq: 1 << 6 | 1 << 2 },
+		{ f: ekaunsafe.RTypeInt64,       eq: 1 << 7          },
+		{ f: ekaunsafe.RTypeUint,        eq: 1 << 8          },
+		{ f: ekaunsafe.RTypeUint8,       eq: 1 << 9 | 1 << 1 },
+		{ f: ekaunsafe.RTypeUint16,      eq: 1 << 10         },
+		{ f: ekaunsafe.RTypeUint32,      eq: 1 << 11         },
+		{ f: ekaunsafe.RTypeUint64,      eq: 1 << 12         },
+		{ f: ekaunsafe.RTypeFloat32,     eq: 1 << 13         },
+		{ f: ekaunsafe.RTypeFloat64,     eq: 1 << 14         },
+		{ f: ekaunsafe.RTypeString,      eq: 1 << 15         },
+		{ f: ekaunsafe.RTypeStringArray, eq: 1 << 16         },
+		{ f: ekaunsafe.RTypeByteArray,   eq: 1 << 17         },
 	}
 	td2 = []struct{
 		f func(uintptr) bool
 		eq uint64
 	}{
-		{ f: ekadanger.RTypeIsAnyNumeric, eq: 4095 << 1        }, // [1..12] as idx
-		{ f: ekadanger.RTypeIsAnyReal,    eq: 16383 << 1       }, // [1..14] as idx
-		{ f: ekadanger.RTypeIsIntAny,     eq: 31 << 3 | 1 << 2 }, // [3..7,2] as idx
-		{ f: ekadanger.RTypeIsIntFixed,   eq: 15 << 4 | 1 << 2 }, // [4..7,2] as idx
-		{ f: ekadanger.RTypeIsUintAny,    eq: 31 << 8 | 1 << 1 }, // [8..12,1] as idx
-		{ f: ekadanger.RTypeIsUintFixed,  eq: 15 << 9 | 1 << 1 }, // [9..12,1] as idx
-		{ f: ekadanger.RTypeIsFloatAny,   eq: 3 << 13          }, // [13..14] as idx
+		{ f: ekaunsafe.RTypeIsAnyNumeric, eq: 4095 << 1        }, // [1..12] as idx
+		{ f: ekaunsafe.RTypeIsAnyReal,    eq: 16383 << 1       }, // [1..14] as idx
+		{ f: ekaunsafe.RTypeIsIntAny,     eq: 31 << 3 | 1 << 2 }, // [3..7,2] as idx
+		{ f: ekaunsafe.RTypeIsIntFixed,   eq: 15 << 4 | 1 << 2 }, // [4..7,2] as idx
+		{ f: ekaunsafe.RTypeIsUintAny,    eq: 31 << 8 | 1 << 1 }, // [8..12,1] as idx
+		{ f: ekaunsafe.RTypeIsUintFixed,  eq: 15 << 9 | 1 << 1 }, // [9..12,1] as idx
+		{ f: ekaunsafe.RTypeIsFloatAny,   eq: 3 << 13          }, // [13..14] as idx
 	}
 	pt = []struct{
 		f func() uintptr
 		z uintptr
 		name string
 	}{
-		{ f: ekadanger.RTypeBool,        z: reflect2.RTypeOf(tda[0]),  name: "RTypeBool"        },
-		{ f: ekadanger.RTypeByte,        z: reflect2.RTypeOf(tda[1]),  name: "RTypeByte"        },
-		{ f: ekadanger.RTypeRune,        z: reflect2.RTypeOf(tda[2]),  name: "RTypeRune"        },
-		{ f: ekadanger.RTypeInt,         z: reflect2.RTypeOf(tda[3]),  name: "RTypeInt"         },
-		{ f: ekadanger.RTypeInt8,        z: reflect2.RTypeOf(tda[4]),  name: "RTypeInt8"        },
-		{ f: ekadanger.RTypeInt16,       z: reflect2.RTypeOf(tda[5]),  name: "RTypeInt16"       },
-		{ f: ekadanger.RTypeInt32,       z: reflect2.RTypeOf(tda[6]),  name: "RTypeInt32"       },
-		{ f: ekadanger.RTypeInt64,       z: reflect2.RTypeOf(tda[7]),  name: "RTypeInt64"       },
-		{ f: ekadanger.RTypeUint,        z: reflect2.RTypeOf(tda[8]),  name: "RTypeUint"        },
-		{ f: ekadanger.RTypeUint8,       z: reflect2.RTypeOf(tda[9]),  name: "RTypeUint8"       },
-		{ f: ekadanger.RTypeUint16,      z: reflect2.RTypeOf(tda[10]), name: "RTypeUint16"      },
-		{ f: ekadanger.RTypeUint32,      z: reflect2.RTypeOf(tda[11]), name: "RTypeUint32"      },
-		{ f: ekadanger.RTypeUint64,      z: reflect2.RTypeOf(tda[12]), name: "RTypeUint64"      },
-		{ f: ekadanger.RTypeFloat32,     z: reflect2.RTypeOf(tda[13]), name: "RTypeFloat32"     },
-		{ f: ekadanger.RTypeFloat64,     z: reflect2.RTypeOf(tda[14]), name: "RTypeFloat64"     },
-		{ f: ekadanger.RTypeString,      z: reflect2.RTypeOf(tda[15]), name: "RTypeString"      },
-		{ f: ekadanger.RTypeStringArray, z: reflect2.RTypeOf(tda[16]), name: "RTypeStringArray" },
-		{ f: ekadanger.RTypeByteArray,   z: reflect2.RTypeOf(tda[17]), name: "RTypeByteArray"   },
+		{ f: ekaunsafe.RTypeBool,        z: reflect2.RTypeOf(tda[0]),  name: "RTypeBool"        },
+		{ f: ekaunsafe.RTypeByte,        z: reflect2.RTypeOf(tda[1]),  name: "RTypeByte"        },
+		{ f: ekaunsafe.RTypeRune,        z: reflect2.RTypeOf(tda[2]),  name: "RTypeRune"        },
+		{ f: ekaunsafe.RTypeInt,         z: reflect2.RTypeOf(tda[3]),  name: "RTypeInt"         },
+		{ f: ekaunsafe.RTypeInt8,        z: reflect2.RTypeOf(tda[4]),  name: "RTypeInt8"        },
+		{ f: ekaunsafe.RTypeInt16,       z: reflect2.RTypeOf(tda[5]),  name: "RTypeInt16"       },
+		{ f: ekaunsafe.RTypeInt32,       z: reflect2.RTypeOf(tda[6]),  name: "RTypeInt32"       },
+		{ f: ekaunsafe.RTypeInt64,       z: reflect2.RTypeOf(tda[7]),  name: "RTypeInt64"       },
+		{ f: ekaunsafe.RTypeUint,        z: reflect2.RTypeOf(tda[8]),  name: "RTypeUint"        },
+		{ f: ekaunsafe.RTypeUint8,       z: reflect2.RTypeOf(tda[9]),  name: "RTypeUint8"       },
+		{ f: ekaunsafe.RTypeUint16,      z: reflect2.RTypeOf(tda[10]), name: "RTypeUint16"      },
+		{ f: ekaunsafe.RTypeUint32,      z: reflect2.RTypeOf(tda[11]), name: "RTypeUint32"      },
+		{ f: ekaunsafe.RTypeUint64,      z: reflect2.RTypeOf(tda[12]), name: "RTypeUint64"      },
+		{ f: ekaunsafe.RTypeFloat32,     z: reflect2.RTypeOf(tda[13]), name: "RTypeFloat32"     },
+		{ f: ekaunsafe.RTypeFloat64,     z: reflect2.RTypeOf(tda[14]), name: "RTypeFloat64"     },
+		{ f: ekaunsafe.RTypeString,      z: reflect2.RTypeOf(tda[15]), name: "RTypeString"      },
+		{ f: ekaunsafe.RTypeStringArray, z: reflect2.RTypeOf(tda[16]), name: "RTypeStringArray" },
+		{ f: ekaunsafe.RTypeByteArray,   z: reflect2.RTypeOf(tda[17]), name: "RTypeByteArray"   },
 	}
 )
 
