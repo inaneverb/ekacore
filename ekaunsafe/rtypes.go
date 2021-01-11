@@ -28,7 +28,8 @@ var (
 	rtypeFloat64     uintptr = reflect2.RTypeOf(float64(0))
 	rtypeString      uintptr = reflect2.RTypeOf(string(""))
 	rtypeStringArray uintptr = reflect2.RTypeOf([]string(nil))
-	rtypeByteArray   uintptr = reflect2.RTypeOf([]byte(nil))
+	rtypeBytes       uintptr = reflect2.RTypeOf([]byte(nil))
+	rtypeBytesArray  uintptr = reflect2.RTypeOf([][]byte(nil))
 )
 
 /*
@@ -236,16 +237,28 @@ Useful along with reflect2.RTypeOf() function.
 func RTypeStringArray() uintptr { return rtypeStringArray }
 
 /*
-RTypeByteArray is a "constant" function.
+RTypeBytes is a "constant" function.
 Always returns the same value.
 
 Returns an integer representation of pointer to the type that describes
-builtin Golang "bool" type.
+builtin Golang "[]byte" type.
 
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeByteArray() uintptr { return rtypeByteArray }
+func RTypeBytes() uintptr { return rtypeBytes }
+
+/*
+RTypeBytesArray is a "constant" function.
+Always returns the same value.
+
+Returns an integer representation of pointer to the type that describes
+builtin Golang "[][]byte" type.
+
+Useful along with reflect2.RTypeOf() function.
+*/
+//go:inline
+func RTypeBytesArray() uintptr { return rtypeBytesArray }
 
 /*
 RTypeIsAnyNumeric returns true if passed rtype is any of signed or unsigned integers.

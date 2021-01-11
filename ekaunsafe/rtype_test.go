@@ -41,6 +41,7 @@ var (
 		string(""),      // 15
 		[]string(nil),   // 16
 		[]byte(nil),     // 17
+		[][]byte(nil),     // 18
 	}
 	td1 = []struct{
 		f func() uintptr
@@ -63,7 +64,8 @@ var (
 		{ f: ekaunsafe.RTypeFloat64,     eq: 1 << 14         },
 		{ f: ekaunsafe.RTypeString,      eq: 1 << 15         },
 		{ f: ekaunsafe.RTypeStringArray, eq: 1 << 16         },
-		{ f: ekaunsafe.RTypeByteArray,   eq: 1 << 17         },
+		{ f: ekaunsafe.RTypeBytes,       eq: 1 << 17         },
+		{ f: ekaunsafe.RTypeBytesArray,  eq: 1 << 18         },
 	}
 	td2 = []struct{
 		f func(uintptr) bool
@@ -99,7 +101,8 @@ var (
 		{ f: ekaunsafe.RTypeFloat64,     z: reflect2.RTypeOf(tda[14]), name: "RTypeFloat64"     },
 		{ f: ekaunsafe.RTypeString,      z: reflect2.RTypeOf(tda[15]), name: "RTypeString"      },
 		{ f: ekaunsafe.RTypeStringArray, z: reflect2.RTypeOf(tda[16]), name: "RTypeStringArray" },
-		{ f: ekaunsafe.RTypeByteArray,   z: reflect2.RTypeOf(tda[17]), name: "RTypeByteArray"   },
+		{ f: ekaunsafe.RTypeBytes,       z: reflect2.RTypeOf(tda[17]), name: "RTypeBytes"       },
+		{ f: ekaunsafe.RTypeBytesArray,  z: reflect2.RTypeOf(tda[18]), name: "RTypeBytesArray"  },
 	}
 )
 
@@ -164,8 +167,8 @@ func TestRTypeFloat32     (t *testing.T) { testRType(t, 13) }
 func TestRTypeFloat64     (t *testing.T) { testRType(t, 14) }
 func TestRTypeString      (t *testing.T) { testRType(t, 15) }
 func TestRTypeStringArray (t *testing.T) { testRType(t, 16) }
-func TestRTypeByteArray   (t *testing.T) { testRType(t, 17) }
-
+func TestRTypeBytes       (t *testing.T) { testRType(t, 17) }
+func TestRTypeBytesArray  (t *testing.T) { testRType(t, 18) }
 
 func TestRTypeIsAnyNumeric (t *testing.T) { testRTypeIs(t, 0) }
 func TestRTypeIsAnyReal    (t *testing.T) { testRTypeIs(t, 1) }
