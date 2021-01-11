@@ -10,7 +10,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/qioalice/ekago/v2/ekadanger"
+	"github.com/qioalice/ekago/v2/internal/ekaclike"
 
 	"github.com/modern-go/reflect2"
 )
@@ -433,7 +433,7 @@ func Stringer(key string, value fmt.Stringer) Field {
 func Addr(key string, value interface{}) Field {
 	if value != nil {
 
-		addr := ekadanger.TakeRealAddr(value)
+		addr := ekaclike.TakeRealAddr(value)
 		return Field{Key: key, IValue: int64(uintptr(addr)), Kind: KIND_TYPE_ADDR}
 
 	} else {
