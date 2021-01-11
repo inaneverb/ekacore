@@ -79,6 +79,8 @@ type (
 
 		// TODO
 		needSetFinalizer bool
+
+		traits uint64
 	}
 )
 

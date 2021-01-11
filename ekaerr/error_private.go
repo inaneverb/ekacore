@@ -27,6 +27,11 @@ const (
 	_ERR_SYS_FIELD_IDX_ERROR_ID       = 3
 )
 
+//goland:noinspection GoSnakeCaseUsage
+var(
+	_USE_GET_STACKTRACE_VER2 = false
+)
+
 // prepare prepares current Error for being used assuming that Error has been
 // obtained from the Error's pool. Returns prepared Error.
 func (e *Error) prepare() *Error {
@@ -194,7 +199,12 @@ func (e *Error) getCurrentLetterItem() *ekaletter.LetterItem {
 func (e *Error) init(classID ClassID, namespaceID NamespaceID) *Error {
 
 	skip := 3 // init(), newError(), [Class.New(), Class.Wrap()]
-	e.letter.StackTrace = ekasys.GetStackTrace(skip, -1).ExcludeInternal()
+
+	if _USE_GET_STACKTRACE_VER2 {
+		e.letter.StackTrace = ekasys.GetStackTrace2(skip, -1).ExcludeInternal()
+	} else {
+		e.letter.StackTrace = ekasys.GetStackTrace(skip, -1).ExcludeInternal()
+	}
 
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_ID].IValue = int64(classID)
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_NAME].SValue =

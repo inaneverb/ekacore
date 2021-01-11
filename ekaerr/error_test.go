@@ -7,12 +7,10 @@ package ekaerr_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"runtime"
 	"testing"
 
 	"github.com/qioalice/ekago/v2/ekaerr"
-	"github.com/qioalice/ekago/v2/ekalog"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -54,30 +52,6 @@ func TestError(t *testing.T) {
 	foo().LogAsWarn()
 }
 
-func BenchmarkError(b *testing.B) {
-	b.StopTimer()
-	b.ReportAllocs()
-
-	devNullJSONIntegrator := new(ekalog.CommonIntegrator).
-		WithEncoder(new(ekalog.CI_JSONEncoder).FreezeAndGetEncoder()).
-		WithMinLevel(ekalog.LEVEL_DEBUG).
-		WriteTo(ioutil.Discard)
-
-	ekalog.ReplaceIntegrator(devNullJSONIntegrator)
-
-	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		foo2().LogAsWarn()
-	}
-
-	defer func() {
-		runtime.GC()
-		fmt.Printf("EKAERR: %+v\n", ekaerr.EPS())
-		fmt.Printf("EKALOG: %+v\n", ekalog.EPS())
-		fmt.Println()
-	}()
-}
-
 func BenchmarkErrorCreation(b *testing.B) {
 	b.StopTimer()
 	b.ReportAllocs()
@@ -111,17 +85,13 @@ func BenchmarkErrorCreationReusing(b *testing.B) {
 	}
 }
 
-func BenchmarkErrorAddFieldNilError(b *testing.B) {
+func BenchmarkErrorCreateAndReleaser(b *testing.B) {
 	b.StopTimer()
 	b.ReportAllocs()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		var err *ekaerr.Error
-		//goland:noinspection GoNilness
-		//err.Throw()
-		if err.IsNotNil() {
-			err.Throw()
-		}
+		err := foo()
+		ekaerr.ReleaseError(&err)
 	}
 }
 
