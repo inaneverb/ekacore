@@ -190,6 +190,30 @@ Useful along with reflect2.RTypeOf() function.
 func RTypeFloat64() uintptr { return ekaclike.RTypeFloat64 }
 
 /*
+RTypeComplex64 is a "constant" function.
+Always returns the same value.
+
+Returns an integer representation of pointer to the type that describes
+builtin Golang "complex64" type.
+
+Useful along with reflect2.RTypeOf() function.
+*/
+//go:inline
+func RTypeComplex64() uintptr { return ekaclike.RTypeComplex64 }
+
+/*
+RTypeComplex128 is a "constant" function.
+Always returns the same value.
+
+Returns an integer representation of pointer to the type that describes
+builtin Golang "complex128" type.
+
+Useful along with reflect2.RTypeOf() function.
+*/
+//go:inline
+func RTypeComplex128() uintptr { return ekaclike.RTypeComplex128 }
+
+/*
 RTypeString is a "constant" function.
 Always returns the same value.
 
@@ -262,7 +286,7 @@ Useful along with reflect2.RTypeOf() function.
 func RTypeMapStringInterface() uintptr { return ekaclike.RTypeMapStringInterface }
 
 /*
-RTypeIsAnyNumeric returns true if passed ekaclike.RType is any of signed or unsigned integers.
+RTypeIsAnyNumeric returns true if passed rtype is any of signed or unsigned integers.
 It means, that it's true for
  - int, int8, int16, int32, int64,
  - uint, uint8, uint16, uint32, uint64
@@ -275,7 +299,7 @@ func RTypeIsAnyNumeric(rtype uintptr) bool {
 	return RTypeIsIntAny(rtype) || RTypeIsUintAny(rtype)
 }
 /*
-RTypeIsAnyReal returns true if passed ekaclike.RType is any of signed or unsigned integers
+RTypeIsAnyReal returns true if passed rtype is any of signed or unsigned integers
 or floats.
 It means that it's true for
  - int, int8, int16, int32, int64,
@@ -291,7 +315,7 @@ func RTypeIsAnyReal(rtype uintptr) bool {
 }
 
 /*
-RTypeIsIntAny returns true if passed ekaclike.RType is any of signed integers only.
+RTypeIsIntAny returns true if passed rtype is any of signed integers only.
 It means that it's true for int, int8, int16, int32, int64,
 but it also true for rune, because it's Golang alias for int32.
 */
@@ -301,7 +325,7 @@ func RTypeIsIntAny(rtype uintptr) bool {
 }
 
 /*
-RTypeIsIntFixed returns true if passed ekaclike.RType is any of signed fixed length integers only.
+RTypeIsIntFixed returns true if passed rtype is any of signed fixed length integers only.
 It means that it's true for int8, int16, int32, int64,
 but it also true for rune, because it's Golang alias for int32.
 
@@ -319,7 +343,7 @@ func RTypeIsIntFixed(rtype uintptr) bool {
 }
 
 /*
-RTypeIsUintAny returns true if passed ekaclike.RType is any of unsigned integers only.
+RTypeIsUintAny returns true if passed rtype is any of unsigned integers only.
 It means that it's true for uint, uint8, uint16, uint32, uint64,
 but it also true for byte, because it's Golang alias for uint8.
 */
@@ -329,7 +353,7 @@ func RTypeIsUintAny(rtype uintptr) bool {
 }
 
 /*
-RTypeIsUintFixed returns true if passed ekaclike.RType is any of unsigned fixed length integers only.
+RTypeIsUintFixed returns true if passed rtype is any of unsigned fixed length integers only.
 It means that it's true for uint8, uint16, uint32, uint64,
 but it also true for byte, because it's Golang alias for uint8.
 
@@ -347,13 +371,26 @@ func RTypeIsUintFixed(rtype uintptr) bool {
 }
 
 /*
-RTypeIsFloatAny returns true if passed ekaclike.RType is any of floats only.
+RTypeIsFloatAny returns true if passed rtype is any of floats only.
 It means that it's true for float32, float64.
 */
 //go:inline
 func RTypeIsFloatAny(rtype uintptr) bool {
 	switch rtype {
 	case ekaclike.RTypeFloat32, ekaclike.RTypeFloat64:
+		return true
+	default:
+		return false
+	}
+}
+
+/*
+RTypeIsComplexAny returns true if passed rtype is any of complexes only.
+It means that it's true for complex64, complex128.
+*/
+func RTypeIsComplexAny(rtype uintptr) bool {
+	switch rtype {
+	case ekaclike.RTypeComplex64, ekaclike.RTypeComplex128:
 		return true
 	default:
 		return false

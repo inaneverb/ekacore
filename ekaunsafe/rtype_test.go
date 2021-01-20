@@ -44,6 +44,8 @@ var (
 		[][]byte(nil),               // 18
 		map[string]string(nil),      // 19
 		map[string]interface{}(nil), // 20
+		complex64(0),                // 21
+		complex128(0),               // 22
 	}
 	td1 = []struct{
 		f func() uintptr
@@ -70,6 +72,8 @@ var (
 		{ f: ekaunsafe.RTypeBytesArray,          eq: 1 << 18         },
 		{ f: ekaunsafe.RTypeMapStringString,     eq: 1 << 19         },
 		{ f: ekaunsafe.RTypeMapStringInterface,  eq: 1 << 20         },
+		{ f: ekaunsafe.RTypeComplex64,           eq: 1 << 21         },
+		{ f: ekaunsafe.RTypeComplex128,          eq: 1 << 22         },
 	}
 	td2 = []struct{
 		f func(uintptr) bool
@@ -82,6 +86,7 @@ var (
 		{ f: ekaunsafe.RTypeIsUintAny,    eq: 31 << 8 | 1 << 1 }, // [8..12,1] as idx
 		{ f: ekaunsafe.RTypeIsUintFixed,  eq: 15 << 9 | 1 << 1 }, // [9..12,1] as idx
 		{ f: ekaunsafe.RTypeIsFloatAny,   eq: 3 << 13          }, // [13..14] as idx
+		{ f: ekaunsafe.RTypeIsComplexAny, eq: 3 << 21          }, // [21..22] as idx
 	}
 	pt = []struct{
 		f func() uintptr
@@ -109,6 +114,8 @@ var (
 		{ f: ekaunsafe.RTypeBytesArray,          z: reflect2.RTypeOf(tda[18]), name: "RTypeBytesArray"          },
 		{ f: ekaunsafe.RTypeMapStringString,     z: reflect2.RTypeOf(tda[19]), name: "RTypeMapStringString"     },
 		{ f: ekaunsafe.RTypeMapStringInterface,  z: reflect2.RTypeOf(tda[20]), name: "RTypeMapStringInterface"  },
+		{ f: ekaunsafe.RTypeComplex64,           z: reflect2.RTypeOf(tda[21]), name: "RTypeComplex64"           },
+		{ f: ekaunsafe.RTypeComplex128,          z: reflect2.RTypeOf(tda[22]), name: "RTypeComplex128"          },
 	}
 )
 
@@ -177,6 +184,9 @@ func TestRTypeBytes               (t *testing.T) { testRType(t, 17) }
 func TestRTypeBytesArray          (t *testing.T) { testRType(t, 18) }
 func TestRTypeMapStringString     (t *testing.T) { testRType(t, 19) }
 func TestRTypeMapStringInterface  (t *testing.T) { testRType(t, 20) }
+func TestRTypeComplex64           (t *testing.T) { testRType(t, 21) }
+func TestRTypeComplex128          (t *testing.T) { testRType(t, 22) }
+
 
 func TestRTypeIsAnyNumeric (t *testing.T) { testRTypeIs(t, 0) }
 func TestRTypeIsAnyReal    (t *testing.T) { testRTypeIs(t, 1) }
@@ -185,3 +195,4 @@ func TestRTypeIsIntFixed   (t *testing.T) { testRTypeIs(t, 3) }
 func TestRTypeIsUintAny    (t *testing.T) { testRTypeIs(t, 4) }
 func TestRTypeIsUintFixed  (t *testing.T) { testRTypeIs(t, 5) }
 func TestRTypeIsFloatAny   (t *testing.T) { testRTypeIs(t, 6) }
+func TestRTypeIsComplexAny (t *testing.T) { testRTypeIs(t, 7) }

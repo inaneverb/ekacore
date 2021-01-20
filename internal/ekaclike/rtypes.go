@@ -26,6 +26,8 @@ var (
 	RTypeUint64             = reflect2.RTypeOf(uint64(0))
 	RTypeFloat32            = reflect2.RTypeOf(float32(0))
 	RTypeFloat64            = reflect2.RTypeOf(float64(0))
+	RTypeComplex64          = reflect2.RTypeOf(complex64(0))
+	RTypeComplex128         = reflect2.RTypeOf(complex128(0))
 	RTypeString             = reflect2.RTypeOf(string(""))
 	RTypeStringArray        = reflect2.RTypeOf([]string(nil))
 	RTypeBytes              = reflect2.RTypeOf([]byte(nil))
