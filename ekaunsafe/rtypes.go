@@ -6,32 +6,7 @@
 package ekaunsafe
 
 import (
-	"github.com/modern-go/reflect2"
-)
-
-//goland:noinspection GoVarAndConstTypeMayBeOmitted,GoRedundantConversion,GoBoolExpressions
-var (
-	rtypeBool                uintptr = reflect2.RTypeOf(bool(0 == 0))
-	rtypeByte                uintptr = reflect2.RTypeOf(byte(0))
-	rtypeRune                uintptr = reflect2.RTypeOf(rune(0))
-	rtypeInt                 uintptr = reflect2.RTypeOf(int(0))
-	rtypeInt8                uintptr = reflect2.RTypeOf(int8(0))
-	rtypeInt16               uintptr = reflect2.RTypeOf(int16(0))
-	rtypeInt32               uintptr = reflect2.RTypeOf(int32(0))
-	rtypeInt64               uintptr = reflect2.RTypeOf(int64(0))
-	rtypeUint                uintptr = reflect2.RTypeOf(uint(0))
-	rtypeUint8               uintptr = reflect2.RTypeOf(uint8(0))
-	rtypeUint16              uintptr = reflect2.RTypeOf(uint16(0))
-	rtypeUint32              uintptr = reflect2.RTypeOf(uint32(0))
-	rtypeUint64              uintptr = reflect2.RTypeOf(uint64(0))
-	rtypeFloat32             uintptr = reflect2.RTypeOf(float32(0))
-	rtypeFloat64             uintptr = reflect2.RTypeOf(float64(0))
-	rtypeString              uintptr = reflect2.RTypeOf(string(""))
-	rtypeStringArray         uintptr = reflect2.RTypeOf([]string(nil))
-	rtypeBytes               uintptr = reflect2.RTypeOf([]byte(nil))
-	rtypeBytesArray          uintptr = reflect2.RTypeOf([][]byte(nil))
-	rtypeMapStringString     uintptr = reflect2.RTypeOf(map[string]string(nil))
-	rtypeMapStringInterface  uintptr = reflect2.RTypeOf(map[string]interface{}(nil))
+	"github.com/qioalice/ekago/v2/internal/ekaclike"
 )
 
 /*
@@ -44,7 +19,7 @@ builtin Golang "bool" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeBool() uintptr { return rtypeBool }
+func RTypeBool() uintptr { return ekaclike.RTypeBool }
 
 /*
 RTypeByte is a "constant" function.
@@ -56,7 +31,7 @@ builtin Golang "byte" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeByte() uintptr { return rtypeByte }
+func RTypeByte() uintptr { return ekaclike.RTypeByte }
 
 /*
 RTypeRune is a "constant" function.
@@ -68,7 +43,7 @@ builtin Golang "rune" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeRune() uintptr { return rtypeRune }
+func RTypeRune() uintptr { return ekaclike.RTypeRune }
 
 /*
 RTypeInt is a "constant" function.
@@ -80,7 +55,7 @@ builtin Golang "int" type (not "int8", "int16", "int32", "int64"!)
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeInt() uintptr { return rtypeInt }
+func RTypeInt() uintptr { return ekaclike.RTypeInt }
 
 /*
 RTypeInt8 is a "constant" function.
@@ -92,7 +67,7 @@ builtin Golang "int8" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeInt8() uintptr { return rtypeInt8 }
+func RTypeInt8() uintptr { return ekaclike.RTypeInt8 }
 
 /*
 RTypeInt16 is a "constant" function.
@@ -104,7 +79,7 @@ builtin Golang "int16" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeInt16() uintptr { return rtypeInt16 }
+func RTypeInt16() uintptr { return ekaclike.RTypeInt16 }
 
 /*
 RTypeInt32 is a "constant" function.
@@ -116,7 +91,7 @@ builtin Golang "int32" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeInt32() uintptr { return rtypeInt32 }
+func RTypeInt32() uintptr { return ekaclike.RTypeInt32 }
 
 /*
 RTypeInt64 is a "constant" function.
@@ -128,7 +103,7 @@ builtin Golang "int64" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeInt64() uintptr { return rtypeInt64 }
+func RTypeInt64() uintptr { return ekaclike.RTypeInt64 }
 
 /*
 RTypeUint is a "constant" function.
@@ -140,7 +115,7 @@ builtin Golang "uint" type (not "uint8", "uint16", "uint32", "uint64"!)
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeUint() uintptr { return rtypeUint }
+func RTypeUint() uintptr { return ekaclike.RTypeUint }
 
 /*
 RTypeUint8 is a "constant" function.
@@ -152,7 +127,7 @@ builtin Golang "uint8" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeUint8() uintptr { return rtypeUint8 }
+func RTypeUint8() uintptr { return ekaclike.RTypeUint8 }
 
 /*
 RTypeUint16 is a "constant" function.
@@ -164,7 +139,7 @@ builtin Golang "uint16" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeUint16() uintptr { return rtypeUint16 }
+func RTypeUint16() uintptr { return ekaclike.RTypeUint16 }
 
 /*
 RTypeUint32 is a "constant" function.
@@ -176,7 +151,7 @@ builtin Golang "uint32" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeUint32() uintptr { return rtypeUint32 }
+func RTypeUint32() uintptr { return ekaclike.RTypeUint32 }
 
 /*
 RTypeUint64 is a "constant" function.
@@ -188,7 +163,7 @@ builtin Golang "uint64" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeUint64() uintptr { return rtypeUint64 }
+func RTypeUint64() uintptr { return ekaclike.RTypeUint64 }
 
 /*
 RTypeFloat32 is a "constant" function.
@@ -200,7 +175,7 @@ builtin Golang "float32" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeFloat32() uintptr { return rtypeFloat32 }
+func RTypeFloat32() uintptr { return ekaclike.RTypeFloat32 }
 
 /*
 RTypeFloat64 is a "constant" function.
@@ -212,7 +187,7 @@ builtin Golang "float64" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeFloat64() uintptr { return rtypeFloat64 }
+func RTypeFloat64() uintptr { return ekaclike.RTypeFloat64 }
 
 /*
 RTypeString is a "constant" function.
@@ -224,7 +199,7 @@ builtin Golang "string" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeString() uintptr { return rtypeString }
+func RTypeString() uintptr { return ekaclike.RTypeString }
 
 /*
 RTypeStringArray is a "constant" function.
@@ -236,7 +211,7 @@ complex Golang "[]string" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeStringArray() uintptr { return rtypeStringArray }
+func RTypeStringArray() uintptr { return ekaclike.RTypeStringArray }
 
 /*
 RTypeBytes is a "constant" function.
@@ -248,7 +223,7 @@ complex Golang "[]byte" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeBytes() uintptr { return rtypeBytes }
+func RTypeBytes() uintptr { return ekaclike.RTypeBytes }
 
 /*
 RTypeBytesArray is a "constant" function.
@@ -260,7 +235,7 @@ complex Golang "[][]byte" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeBytesArray() uintptr { return rtypeBytesArray }
+func RTypeBytesArray() uintptr { return ekaclike.RTypeBytesArray }
 
 /*
 RTypeMapStringString is a "constant" function.
@@ -272,7 +247,7 @@ complex Golang "map[string]string" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeMapStringString() uintptr { return rtypeMapStringString }
+func RTypeMapStringString() uintptr { return ekaclike.RTypeMapStringString }
 
 /*
 RTypeMapStringInterface is a "constant" function.
@@ -284,10 +259,10 @@ complex Golang "map[string]interface{}" type.
 Useful along with reflect2.RTypeOf() function.
 */
 //go:inline
-func RTypeMapStringInterface() uintptr { return rtypeMapStringInterface }
+func RTypeMapStringInterface() uintptr { return ekaclike.RTypeMapStringInterface }
 
 /*
-RTypeIsAnyNumeric returns true if passed rtype is any of signed or unsigned integers.
+RTypeIsAnyNumeric returns true if passed ekaclike.RType is any of signed or unsigned integers.
 It means, that it's true for
  - int, int8, int16, int32, int64,
  - uint, uint8, uint16, uint32, uint64
@@ -300,7 +275,7 @@ func RTypeIsAnyNumeric(rtype uintptr) bool {
 	return RTypeIsIntAny(rtype) || RTypeIsUintAny(rtype)
 }
 /*
-RTypeIsAnyReal returns true if passed rtype is any of signed or unsigned integers
+RTypeIsAnyReal returns true if passed ekaclike.RType is any of signed or unsigned integers
 or floats.
 It means that it's true for
  - int, int8, int16, int32, int64,
@@ -316,17 +291,17 @@ func RTypeIsAnyReal(rtype uintptr) bool {
 }
 
 /*
-RTypeIsIntAny returns true if passed rtype is any of signed integers only.
+RTypeIsIntAny returns true if passed ekaclike.RType is any of signed integers only.
 It means that it's true for int, int8, int16, int32, int64,
 but it also true for rune, because it's Golang alias for int32.
 */
 //go:inline
 func RTypeIsIntAny(rtype uintptr) bool {
-	return rtype == rtypeInt || RTypeIsIntFixed(rtype)
+	return rtype == ekaclike.RTypeInt || RTypeIsIntFixed(rtype)
 }
 
 /*
-RTypeIsIntFixed returns true if passed rtype is any of signed fixed length integers only.
+RTypeIsIntFixed returns true if passed ekaclike.RType is any of signed fixed length integers only.
 It means that it's true for int8, int16, int32, int64,
 but it also true for rune, because it's Golang alias for int32.
 
@@ -336,7 +311,7 @@ Again. It false for just "int"!
 //go:inline
 func RTypeIsIntFixed(rtype uintptr) bool {
 	switch rtype {
-	case rtypeInt8, rtypeInt16, rtypeInt32, rtypeInt64:
+	case ekaclike.RTypeInt8, ekaclike.RTypeInt16, ekaclike.RTypeInt32, ekaclike.RTypeInt64:
 		return true
 	default:
 		return false
@@ -344,17 +319,17 @@ func RTypeIsIntFixed(rtype uintptr) bool {
 }
 
 /*
-RTypeIsUintAny returns true if passed rtype is any of unsigned integers only.
+RTypeIsUintAny returns true if passed ekaclike.RType is any of unsigned integers only.
 It means that it's true for uint, uint8, uint16, uint32, uint64,
 but it also true for byte, because it's Golang alias for uint8.
 */
 //go:inline
 func RTypeIsUintAny(rtype uintptr) bool {
-	return rtype == rtypeUint || RTypeIsUintFixed(rtype)
+	return rtype == ekaclike.RTypeUint || RTypeIsUintFixed(rtype)
 }
 
 /*
-RTypeIsUintFixed returns true if passed rtype is any of unsigned fixed length integers only.
+RTypeIsUintFixed returns true if passed ekaclike.RType is any of unsigned fixed length integers only.
 It means that it's true for uint8, uint16, uint32, uint64,
 but it also true for byte, because it's Golang alias for uint8.
 
@@ -364,7 +339,7 @@ Again. It false for just "uint"!
 //go:inline
 func RTypeIsUintFixed(rtype uintptr) bool {
 	switch rtype {
-	case rtypeUint8, rtypeUint16, rtypeUint32, rtypeUint64:
+	case ekaclike.RTypeUint8, ekaclike.RTypeUint16, ekaclike.RTypeUint32, ekaclike.RTypeUint64:
 		return true
 	default:
 		return false
@@ -372,13 +347,13 @@ func RTypeIsUintFixed(rtype uintptr) bool {
 }
 
 /*
-RTypeIsFloatAny returns true if passed rtype is any of floats only.
+RTypeIsFloatAny returns true if passed ekaclike.RType is any of floats only.
 It means that it's true for float32, float64.
 */
 //go:inline
 func RTypeIsFloatAny(rtype uintptr) bool {
 	switch rtype {
-	case rtypeFloat32, rtypeFloat64:
+	case ekaclike.RTypeFloat32, ekaclike.RTypeFloat64:
 		return true
 	default:
 		return false
