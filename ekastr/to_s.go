@@ -110,7 +110,7 @@ func ToStringUnsafe(rtype uintptr, word unsafe.Pointer, mask uint8) string {
 		return strconv.FormatFloat(*(*float64)(word), 'f', 2, 64)
 
 	case rtype == ekaclike.RTypeComplex64:
-		return strconv.FormatComplex(*(*complex64)(word), 'f', 2, 64)
+		return strconv.FormatComplex(complex128(*(*complex64)(word)), 'f', 2, 64)
 	case rtype == ekaclike.RTypeComplex128:
 		return strconv.FormatComplex(*(*complex128)(word), 'f', 2, 128)
 	}
