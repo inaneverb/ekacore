@@ -9,6 +9,17 @@ import (
 	"sync/atomic"
 )
 
+type (
+	// OnceInCallback is an alias to the function that user must define.
+	//
+	// That function user could pass to the OnceIn<interval>.Call() call.
+	// Then it will be called each time when time has come.
+	//
+	// An arguments represents a moment when a callback chain has been started
+	// for being called.
+	OnceInCallback func(ts Timestamp, dd Date, t Time)
+)
+
 //noinspection GoUnusedGlobalVariable
 var (
 	// -----
@@ -95,7 +106,7 @@ func (oiu *onceInUpdater) Time() Time {
 // "once in day", etc) are called consistently one by one, AT THE SAME goroutine!
 // So, if there is some "big" work, wrap your callback manually to the closure with
 // "go callback(ts, dd, t)" call (spawn a separate goroutine).
-func (oiu *onceInUpdater) Call(cb onceInCallback) {
+func (oiu *onceInUpdater) Call(cb OnceInCallback) {
 
 	if cb == nil {
 		return

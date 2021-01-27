@@ -12,15 +12,6 @@ import (
 )
 
 type (
-	// onceInCallback is an alias to the function that user must define.
-	//
-	// That function user could pass to the OnceIn<interval>.Call() call.
-	// Then it will be called each time when time has come.
-	//
-	// An arguments represents a moment when a callback chain has been started
-	// for being called.
-	onceInCallback func(ts Timestamp, dd Date, t Time)
-
 	// onceInUpdater is a special internal struct that gets the current timestamp
 	// once in some period and caching it allowing to get the cached data by getters.
 	onceInUpdater struct {
@@ -41,7 +32,7 @@ type (
 		/* 8b */ ts Timestamp // cached current Timestamp
 		/* 4b */ d Date // cached current Date
 		/* 4b */ t Time // cached current Time
-		/* -- */ cbs []onceInCallback // callbacks that must be called when time has come
+		/* -- */ cbs []OnceInCallback // callbacks that must be called when time has come
 		/* -- */ cbsMutex sync.Mutex
 		/* -- */ tm *time.Timer // timer that allows to update the cached data
 		/* -- */ updateDelayInSec Timestamp // timer delay
@@ -78,10 +69,10 @@ func (oiu *onceInUpdater) callbacksCaller() {
 		return
 	}
 
-	callbacksCopy := make([]onceInCallback, len(oiu.cbs))
+	callbacksCopy := make([]OnceInCallback, len(oiu.cbs))
 	copy(callbacksCopy, oiu.cbs)
 
-	f := func(cbs []onceInCallback, ts Timestamp, dd Date, t Time) {
+	f := func(cbs []OnceInCallback, ts Timestamp, dd Date, t Time) {
 		for i, n := 0, len(cbs); i < n; i++ {
 			cbs[i](ts, dd, t)
 		}
