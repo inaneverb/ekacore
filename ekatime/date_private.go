@@ -32,8 +32,11 @@ const (
 //noinspection GoSnakeCaseUsage
 const (
 	// Min and max values to use _YEAR_AS_NUM_STR instead of strconv.Itoa()
-	_YEAR_AS_NUM_STR_MIN Year = 1900
+	_YEAR_AS_NUM_STR_MIN      = _YEAR_MIN
 	_YEAR_AS_NUM_STR_MAX Year = 2100
+
+	_YEAR_MIN Year = 1900
+	_YEAR_MAX Year = 4095
 )
 
 //noinspection GoSnakeCaseUsage
@@ -48,8 +51,8 @@ func normalizeDate(y Year, m Month, d Day) (Year, Month, Day) {
 	if !IsValidDate(y, m, d) {
 		t := time.Date(int(y), time.Month(m), int(d), 0, 0, 0, 0, time.UTC)
 		ty, tm, td := t.Date()
-		if y > 4095 {
-			y = 4095
+		if y > _YEAR_MAX {
+			y = _YEAR_MAX
 		}
 		y, m, d = Year(ty), Month(tm), Day(td)
 	}

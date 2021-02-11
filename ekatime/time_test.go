@@ -86,3 +86,38 @@ func TestTime_MarshalJSON(t *testing.T) {
 	require.NoError(t, err)
 	require.EqualValues(t, string(d), `{"t":"13:14:15"}`)
 }
+
+func TestTime_Replace(t *testing.T) {
+	tt := ekatime.NewTime(12, 13, 14)
+
+	tt = tt.Replace(13, 1, 2)
+	require.Equal(t, ekatime.NewTime(13, 1, 2), tt)
+
+	tt = tt.Replace(20, -2, 4)
+	require.Equal(t, ekatime.NewTime(20, 1, 4), tt)
+
+	tt = tt.Replace(1, 0, -50)
+	require.Equal(t, ekatime.NewTime(1, 0, 4), tt)
+
+	tt = tt.Replace(24, 61, 30)
+	require.Equal(t, ekatime.NewTime(1, 0, 30), tt)
+}
+
+func TestTime_Add(t *testing.T) {
+	tt := ekatime.NewTime(12, 13, 14)
+
+	tt = tt.Add(1, 2, 3)
+	require.Equal(t, ekatime.NewTime(13, 15, 17), tt)
+
+	tt = tt.Add(-3, 0, 20)
+	require.Equal(t, ekatime.NewTime(10, 15, 37), tt)
+
+	tt = tt.Add(-23, 0, 61)
+	require.Equal(t, ekatime.NewTime(11, 16, 38), tt)
+
+	tt = tt.Add(0, -60, 0)
+	require.Equal(t, ekatime.NewTime(10, 16, 38), tt)
+
+	tt = tt.Add(127, 0, 0)
+	require.Equal(t, ekatime.NewTime(17, 16, 38), tt)
+}

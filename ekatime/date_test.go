@@ -94,3 +94,69 @@ func TestDate_MarshalJSON(t *testing.T) {
 	require.NoError(t, err)
 	require.EqualValues(t, string(d), `{"d":"2020-09-12"}`)
 }
+
+func TestDate_Replace(t *testing.T) {
+	d := ekatime.NewDate(2021, ekatime.MONTH_FEBRUARY, 10)
+
+	d = d.Replace(2013, ekatime.MONTH_JANUARY, 2)
+	require.Equal(t, ekatime.NewDate(2013, ekatime.MONTH_JANUARY, 02).ToCmp(), d.ToCmp())
+
+	d = d.Replace(2020, -2, 4)
+	require.Equal(t, ekatime.NewDate(2020, ekatime.MONTH_JANUARY, 4).ToCmp(), d.ToCmp())
+
+	d = d.Replace(0, 0, -50)
+	require.Equal(t, ekatime.NewDate(2020, ekatime.MONTH_JANUARY, 4).ToCmp(), d.ToCmp())
+
+	d = d.Replace(1899, 61, 31)
+	require.Equal(t, ekatime.NewDate(2020, ekatime.MONTH_JANUARY, 31).ToCmp(), d.ToCmp())
+
+	d = d.Replace(2013, ekatime.MONTH_FEBRUARY, -2)
+	require.Equal(t, ekatime.NewDate(2013, ekatime.MONTH_JANUARY, 31).ToCmp(), d.ToCmp())
+
+	d = d.Replace(2014, ekatime.MONTH_FEBRUARY, 30)
+	require.Equal(t, ekatime.NewDate(2014, ekatime.MONTH_JANUARY, 30).ToCmp(), d.ToCmp())
+
+	d = d.Replace(2000, ekatime.MONTH_FEBRUARY, 29)
+	require.Equal(t, ekatime.NewDate(2000, ekatime.MONTH_FEBRUARY, 29).ToCmp(), d.ToCmp())
+
+	d = d.Replace(2001, -1, -1)
+	require.Equal(t, ekatime.NewDate(2000, ekatime.MONTH_FEBRUARY, 29).ToCmp(), d.ToCmp())
+
+	d = d.Replace(0, 0, 13)
+	require.Equal(t, ekatime.NewDate(2000, ekatime.MONTH_FEBRUARY, 13).ToCmp(), d.ToCmp())
+}
+
+func TestDate_Add(t *testing.T) {
+	d := ekatime.NewDate(2021, ekatime.MONTH_FEBRUARY, 10)
+
+	d = d.Add(1, 2, 3)
+	require.Equal(t, ekatime.NewDate(2022, ekatime.MONTH_APRIL, 13).ToCmp(), d.ToCmp())
+
+	d = d.Add(0, -1, -13)
+	require.Equal(t, ekatime.NewDate(2022, ekatime.MONTH_FEBRUARY, 28).ToCmp(), d.ToCmp())
+
+	d = d.Add(0, 1, 3)
+	require.Equal(t, ekatime.NewDate(2022, ekatime.MONTH_MARCH, 31).ToCmp(), d.ToCmp())
+
+	d = d.Add(0, 1, 0)
+	require.Equal(t, ekatime.NewDate(2022, ekatime.MONTH_MAY, 1).ToCmp(), d.ToCmp())
+
+	d = d.Add(0, 127, 0)
+	require.Equal(t, ekatime.NewDate(2032, ekatime.MONTH_DECEMBER, 1).ToCmp(), d.ToCmp())
+}
+
+func TestDate_Days(t *testing.T) {
+	var d ekatime.Date
+
+	d = ekatime.NewDate(2021, ekatime.MONTH_FEBRUARY, 11)
+	require.EqualValues(t, 42, d.Days())
+
+	d = ekatime.NewDate(2021, ekatime.MONTH_DECEMBER, 31)
+	require.EqualValues(t, 365, d.Days())
+
+	d = ekatime.NewDate(2021, ekatime.MONTH_JANUARY, 1)
+	require.EqualValues(t, 1, d.Days())
+
+	d = ekatime.NewDate(2021, ekatime.MONTH_JANUARY, 0)
+	require.EqualValues(t, 366, d.Days())
+}

@@ -32,6 +32,11 @@ func IsValidTime(h Hour, m Minute, s Second) bool {
 	return h >= 0 && h <= 23 && m >= 0 && m <= 59 && s >= 0 && s <= 59
 }
 
+// IsValid is an alias for IsValidTime().
+func (t Time) IsValid() bool {
+	return IsValidTime(t.Split())
+}
+
 // Hour returns the hour number the current Time includes which.
 //
 // It guarantees that Hour() returns the valid hour number Time is of,
@@ -86,6 +91,66 @@ func NewTime(h Hour, m Minute, s Second) Time {
 	return (Time(h) << _TIME_OFFSET_HOUR) |
 		(Time(m) << _TIME_OFFSET_MINUTE) |
 		(Time(s) << _TIME_OFFSET_SECOND)
+}
+
+// Replace returns a new Time based on the current.
+// It returns the current Time with changed Hour, Minute, Second to those passed values,
+// which are in their allowed ranges. Does not doing time addition. Only replacing.
+// For time addition, use Add() method.
+//
+// Examples:
+//  NewTime(12, 13, 14)    // -> 12:13:14
+//    .Replace(13, 1, 2)   // -> 13:01:02
+//    .Replace(20, -2, 4)  // -> 20:01:04
+//    .Replace(1, 0, -50)  // -> 01:00:04
+//    .Replace(24, 61, 30) // -> 01:00:30
+func (t Time) Replace(h Hour, m Minute, s Second) Time {
+	h_, m_, s_ := t.Split()
+	if 0 <= h && h <= 23 {
+		h_ = h
+	}
+	if 0 <= m && m <= 59 {
+		m_ = m
+	}
+	if 0 <= s && s <= 59 {
+		s_ = s
+	}
+	return NewTime(h_, m_, s_)
+}
+
+// Add returns a new Time based on the current.
+// It returns the current Time with changed Hour, Minute, Second, using passed values,
+// as their addition's deltas.
+//
+// Examples:
+//  NewTime(12, 13, 14) // -> 12:13:14
+//    .Add(1, 2, 3)     // -> 13:15:17
+//    .Add(-3, 0, 20)   // -> 10:15:37
+//    .Add(-23, 0, 61)  // -> 11:16:38
+//    .Add(0, -60, 0)   // -> 10:16:38
+//    .Add(127, 0, 0)   // -> 17:16:38 (works OK with potential integer overflow)
+func (t Time) Add(h Hour, m Minute, s Second) Time {
+	h_, m_, s_ := t.Split()
+
+	h_ += h % 24
+	h_ += Hour(m / 60)
+
+	m_ += m % 60
+	m_ += Minute(s / 60)
+
+	s_ += s % 60
+
+	if h_ %= 24; h_ < 0 {
+		h_ += 24
+	}
+	if m_ %= 60; m_ < 0 {
+		m_ += 60
+	}
+	if s_ %= 60; s_ < 0 {
+		s_ += 60
+	}
+
+	return NewTime(h_, m_, s_)
 }
 
 // WithDate returns the current Time with the presented Date's year, month, day
