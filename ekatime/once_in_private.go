@@ -84,14 +84,14 @@ func (oiu *onceInUpdater) callbacksCaller() {
 // tick is a special method that is called when onceInUpdater's timer is triggered.
 // Updates the onceInUpdater's cached data, plans and runs timer at least one more time.
 func (oiu *onceInUpdater) tick() {
-	oiu.tm.Reset(oiu.update().tillNext(oiu.updateDelayInSec))
+	oiu.tm.Reset(oiu.update().TillNext(oiu.updateDelayInSec))
 }
 
 // run starts the onceInUpdater internal timer, fills the cached data by initial values.
 func (oiu *onceInUpdater) run(delayInSec Timestamp) {
 	oiu.update()
 	oiu.updateDelayInSec = delayInSec
-	oiu.tm = time.AfterFunc(Now().tillNext(delayInSec), oiu.tick)
+	oiu.tm = time.AfterFunc(Now().TillNext(delayInSec), oiu.tick)
 }
 
 // initOnceIn initializes all package level onceInUpdater global variables.

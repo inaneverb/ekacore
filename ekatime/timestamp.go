@@ -150,56 +150,67 @@ func UnixFromStd(t time.Time) Timestamp {
 	return Timestamp(t.Unix())
 }
 
+// BeginningAndEndOf returns the [A,B] pair, and A <= 'ts' <= B, and A-B == 'range_'.
+// There is a special formula that allows to get start and ending of 'ts'
+// related: day, month, year.
+//
+// In most cases you don't need to use this method, but use any of predefined
+// instead: BeginningOfDay(), BeginningAndEndOfMonth(), etc.
+func (ts Timestamp) BeginningAndEndOf(range_ Timestamp) TimestampPair {
+	x := ts + (range_- ts % range_)
+	return TimestampPair{x - range_, x - 1}
+}
+
 // BeginningOfDay returns the day beginning of the current timestamp 'ts'.
 // E.g: 12/11/2019, 15:46:40 (3:46:40 PM) -> 12/11/2019 00:00:00 (12:00:00 AM).
 func (ts Timestamp) BeginningOfDay() Timestamp {
-	return ts.beginningAndEndOf(SECONDS_IN_DAY)[0]
+	return ts.BeginningAndEndOf(SECONDS_IN_DAY)[0]
 }
 
 // EndOfDay returns the day ending of the current timestamp 'ts'.
 // E.g: 12/11/2019, 15:46:40 (3:46:40 PM) -> 12/11/2019 23:59:59 (11:59:59 PM).
 func (ts Timestamp) EndOfDay() Timestamp {
-	return ts.beginningAndEndOf(SECONDS_IN_DAY)[1]
+	return ts.BeginningAndEndOf(SECONDS_IN_DAY)[1]
 }
 
 // BeginningAndEndOfDay is the same as BeginningOfDay() and EndOfDay() calls.
 func (ts Timestamp) BeginningAndEndOfDay() TimestampPair {
-	return ts.beginningAndEndOf(SECONDS_IN_DAY)
+	return ts.BeginningAndEndOf(SECONDS_IN_DAY)
 }
 
 // BeginningOfMonth returns the month beginning of the current timestamp 'ts'.
 // E.g: 12/11/2019, 15:46:40 (3:46:40 PM) -> 1/11/2019 00:00:00 (12:00:00 AM).
 func (ts Timestamp) BeginningOfMonth() Timestamp {
 	y, m, _ := dateFromUnix(ts)
-	return ts.beginningAndEndOf(InMonth(y, m))[0]
+	return ts.BeginningAndEndOf(InMonth(y, m))[0]
 }
 
 // EndOfMonth returns the month ending of the current timestamp 'ts'.
 // E.g: 12/11/2019, 15:46:40 (3:46:40 PM) -> 30/11/2019 23:59:59 (11:59:59 PM).
 func (ts Timestamp) EndOfMonth() Timestamp {
 	y, m, _ := dateFromUnix(ts)
-	return ts.beginningAndEndOf(InMonth(y, m))[1]
+	return ts.BeginningAndEndOf(InMonth(y, m))[1]
 }
 
 // BeginningAndEndOfMonth is the same as BeginningOfMonth() and EndOfMonth() calls.
 func (ts Timestamp) BeginningAndEndOfMonth() TimestampPair {
 	y, m, _ := dateFromUnix(ts)
-	return ts.beginningAndEndOf(InMonth(y, m))
+	return ts.BeginningAndEndOf(InMonth(y, m))
 }
 
 // BeginningOfYear returns the year beginning of the current timestamp 'ts'.
 // E.g: 12/11/2019, 15:46:40 (3:46:40 PM) -> 1/1/2019 00:00:00 (12:00:00 AM).
 func (ts Timestamp) BeginningOfYear() Timestamp {
-	return ts.beginningAndEndOf(InYear(ts.Year()))[0]
+	return ts.BeginningAndEndOf(InYear(ts.Year()))[0]
 }
 
 // EndOfYear returns the year ending of the current timestamp 'ts'.
 // E.g: 12/11/2019, 15:46:40 (3:46:40 PM) -> 31/12/2019 23:59:59 (11:59:59 PM).
 func (ts Timestamp) EndOfYear() Timestamp {
-	return ts.beginningAndEndOf(InYear(ts.Year()))[1]
+	return ts.BeginningAndEndOf(InYear(ts.Year()))[1]
 }
 
 // BeginningAndEndOfYear is the same as BeginningOfYear() and EndOfYear() calls.
 func (ts Timestamp) BeginningAndEndOfYear() TimestampPair {
-	return ts.beginningAndEndOf(InYear(ts.Year()))
+	return ts.BeginningAndEndOf(InYear(ts.Year()))
 }
