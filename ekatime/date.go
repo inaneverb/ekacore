@@ -71,6 +71,11 @@ const (
 	MONTH_DECEMBER
 )
 
+// IsValid reports whether m is valid month (any of Jan,Feb,...,Dec).
+func (m Month) IsValid() bool {
+	return MONTH_JANUARY <= m && m <= MONTH_DECEMBER
+}
+
 // DaysInForYear is an alias for DaysInMonth(y, m), where m is the current Month.
 func (m Month) DaysInForYear(y Year) Day {
 	return DaysInMonth(y, m)
