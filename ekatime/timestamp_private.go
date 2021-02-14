@@ -22,8 +22,3 @@ func (ts Timestamp) beginningAndEndOf(range_ Timestamp) TimestampPair {
 func (ts Timestamp) tillNext(range_ Timestamp) time.Duration {
 	return time.Duration(ts + (range_- ts % range_) - ts) * time.Second
 }
-
-// weekday returns the current Timestamp 'ts' the number of day in week.
-func (ts Timestamp) weekday() Weekday {
-	return Weekday(((ts + SECONDS_IN_DAY) % SECONDS_IN_WEEK) / SECONDS_IN_DAY)
-}

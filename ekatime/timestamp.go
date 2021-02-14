@@ -47,7 +47,7 @@ func (ts Timestamp) Date() Date {
 	if ts == 0 {
 		return 0
 	}
-	return NewDate(dateFromUnix(ts)) | ts.weekday().asPartOfDate()
+	return NewDate(dateFromUnix(ts)) | ts.Weekday().asPartOfDate()
 }
 
 // Time returns the Time object, the current Timestamp includes which.
@@ -118,7 +118,12 @@ func (ts Timestamp) Split() (d Date, t Time) {
 	return ts.Date(), ts.Time()
 }
 
-// Now() is just the same as time.Now() but always returns UTC.
+// Weekday returns the current Timestamp ts the number of day in week.
+func (ts Timestamp) Weekday() Weekday {
+	return Weekday(((ts + SECONDS_IN_DAY) % SECONDS_IN_WEEK) / SECONDS_IN_DAY)
+}
+
+// Now is just the same as time.Now().
 func Now() Timestamp {
 	return UnixFromStd(time.Now())
 }

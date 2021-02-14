@@ -7,17 +7,14 @@ package ekatime
 
 type (
 	// Hour is a special type that has enough space to store Hour's number.
-	// Useless just by yourself but is a part of Time object.
 	// Valid values: [0..23].
 	Hour int8
 
 	// Minute is a special type that has enough space to store Minute's number.
-	// Useless just by yourself but is a part of Time object.
 	// Valid values: [0..59].
 	Minute int8
 
 	// Second is a special type that has enough space to store Second's number.
-	// Useless just by yourself but is a part of Time object.
 	// Valid values: [0..59].
 	Second int8
 

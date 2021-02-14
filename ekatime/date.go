@@ -5,9 +5,12 @@
 
 package ekatime
 
+import (
+	"math"
+)
+
 type (
 	// Day is a special type that has enough space to store Day's number.
-	// Useless just by yourself but is a part of Date object.
 	// Valid values: [1..31].
 	Day int8
 
@@ -16,14 +19,16 @@ type (
 	Days int32
 
 	// Month is a special type that has enough space to store Month's number.
-	// Useless just by yourself but is a part of Date object.
 	// Valid values: [1..12]. Use predefined constants to make it clear.
 	Month int8
 
 	// Year is a special type that has enough space to store Year's number.
-	// Useless just by yourself but is a part of Date object.
 	// Valid values: [1900..4095].
 	Year int16
+
+	// WeekNumber is a special type that has enough space to store week's number.
+	// Valid ranges: [0..53]. Depends on WeekNumber's getter.
+	WeekNumber int8
 
 	// Date is a special object that has enough space to store a some Date
 	// (including Day, Month, Year) but does it most RAM efficient way
@@ -174,8 +179,39 @@ func (dd Date) Weekday() Weekday {
 	if w := Weekday(dd >> _DATE_OFFSET_WEEKDAY) & _DATE_MASK_WEEKDAY; w > 0 {
 		return w-1
 	} else {
-		return dd.WithTime(0, 0, 0).weekday()
+		return dd.WithTime(0, 0, 0).Weekday()
 	}
+}
+
+// ISOWeek returns an ISO week of the current Date.
+// Returned value will be in the range [1..53].
+// Returns -1 if Date is not valid.
+//
+// Read more:
+// https://en.wikipedia.org/wiki/ISO_week_date
+func (dd Date) ISOWeek() WeekNumber {
+	y, m, d := dd.Split()
+	dow := dd.Weekday().To06()
+	if dow == 0 {
+		dow = 7
+	}
+	thu := d + Day(4 - dow) // nearest thursday
+	if m == MONTH_DECEMBER && thu > 31 {
+		return 1
+	}
+	if m == MONTH_JANUARY && thu < 1 {
+		y--
+		m = MONTH_DECEMBER
+		thu += 31
+	}
+	doy := math.Floor(275 * float64(m) / 9) + float64(thu - 31)
+	if m > MONTH_FEBRUARY {
+		if IsLeap(y) {
+			doy++
+		}
+		doy -= 2
+	}
+	return WeekNumber(1 + math.Floor(doy / 7))
 }
 
 // Split returns the year number, month number and day number the current Date
@@ -355,6 +391,20 @@ func (dd Date) Add(y Year, m Month, d Day) Date {
 	}
 
 	return NewDate(y_, m_, d_).AddDays(Days(d))
+}
+
+// Sub is the same as Add(-y, -m, -d), but exists to make your life easier,
+// when you have a Date, not its parts.
+//
+// Compare:
+//     dd1 := NewDate(...)
+//     dd2 := NewDate(...)
+//     y2, m2, d2 := dd2.Split()
+//     dd1.Add(-y2, -m2, d2) // dd1 - dd2
+// or
+//     dd1.Sub(dd2.Split())
+func (dd Date) Sub(y Year, m Month, d Day) Date {
+	return dd.Add(-y, -m, -d)
 }
 
 // Days returns an accumulated number of days that has been passed since 1 Jan.
