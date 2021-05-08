@@ -1,184 +1,117 @@
-// Copyright © 2020. All rights reserved.
+// Copyright © 2017-2021. All rights reserved.
 // Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekalog
 
-//goland:noinspection GoUnsortedImport
 import (
-	"github.com/qioalice/ekago/v2/internal/ekafield"
-	"github.com/qioalice/ekago/v2/internal/ekaclike"
+	"fmt"
+	"time"
+
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
 )
 
-// -----
-// In the process of initiating the idea of this package, improving it,
-// developing it, this package was a separate entity, not a part of LED tool
-// And this package was called 'logintegro'.
-//
-// Now this is just echo of the past,
-// but the idea of this package, its modernization has not left my head since 2017.
-// For this reason, this file, which is the package entry point,
-// contains constructors and other package-level functions, has this name.
-// -----
 
-// ------------------------------- ATTENTION ------------------------------- //
-// This is the disclaimer of package author.
-// Please, let it be as is, and be sure to read it completely,
-// because it's important to understand why some code is written this way.
-//
-// 1. REPEATABLE CODE - AVOIDING UNNECESSARY COPYING
-//
-// 1.1. Functions Package, Func, Class and Methods which are constructors,
-// don't use the similar methods on created Logger object because Logger
-// methods will cause unnecessary copying of entry object in that case.
-//
-// 1.2. Functions Debug, Debugf, Debugw, Info, Infof, Infow, etc don't use
-// the similar methods of baseLogger object (default Logger instance) because
-// it also will cause unnecessary copying but not a entry object but
-// various length arguments' slice of printf-style functions arguments or
-// arguments which represents log message fields.
-//
-// 1.3. Functions Debugw, Infow, Warnw, Errorw, Fatalw as well as
-// Logger class methods with the same name don't use With (or with)
-// baseLogger object's method or With (or with) Logger method for avoiding
-// unnecessary copying at least various length arguments' slice of
-// log message's fields and as most - the whole Entry object.
-//
-// 1.4. Functions Apply, With, Group which applies something to the default
-// package-level baseLogger object, also don't use Logger methods to avoiding
-// unnecessary copying and calls internal parts directly.
-// ------------------------------------------------------------------------- //
+// ------------------------------ COMMON METHODS ------------------------------ //
+// ---------------------------------------------------------------------------- //
 
+// Copy returns a copy of the package-level Logger. Does nothing for 'nopLogger'.
 //
-func ReplaceIntegrator(newIntegrator Integrator) {
-
-	if ekaclike.TakeRealAddr(newIntegrator) == nil {
-		return
-	}
-	if ci, ok := newIntegrator.(*CommonIntegrator); !(ok && ci != nil && ci.tryToBuild()) {
-		return
-	}
-
-	baseLogger.setIntegrator(newIntegrator)
+// Copy is useful when you need to build your Entry step-by-step,
+// adding fields, messages, etc.
+func Copy() (copy *Logger) {
+	return baseLogger.derive()
 }
 
-// SyncThis forces to flush all default package logger's integrator's buffer
-// and makes sure all pending log's entries are written.
-func SyncThis() error {
 
-	// baseLogger.IsValid() always returns true
-	// there is no need the same check as Logger.Sync has.
+// Sync forces to flush all Integrator buffers of package Logger
+// and makes sure all pending Entry are written.
+func Sync() error {
 	return baseLogger.Sync()
 }
 
-// Apply overwrites the behaviour of default package logger by provided reasons.
-//
-// This function works the same as any Logger constructor (New, Package, Func,
-// Class, Method) but all these things will be made on default baseLogger.
-// And it will be returned.
-//func ApplyThis(options ...interface{}) (defaultLogger *Logger) {
-//
-//	defaultLogger = baseLogger
-//
-//	if len(options) > 0 {
-//		defaultLogger = defaultLogger.apply(options)
-//	}
-//	return
-//}
+// --------------------------- FIELDS ADDING METHODS -------------------------- //
+// ---------------------------------------------------------------------------- //
 
-// Constructor.
-//func New(options ...interface{}) *loge.Logger {
-//
-//	// apply is private instead of public, because there is only 2 diff:
-//	// 1. public's has IsValid check (baseLogger always passes which)
-//	// 2. public's has empty options check (but it does not matter,
-//	// cause we shall clone Logger anyway).
-//	return baseLogger.apply(options) // has derive() call
-//}
+// Methods below are code-generated.
 
-// With adds the fields to the default package logger's copy.
-//
-// You can pass both of explicit or implicit fields. Even both of named/unnamed
-// implicit fields, but names (keys) should be only string.
-// Neither string-like (fmt.Stringer) nor string-cast ([]byte). Only strings.
-func With(fields ...interface{}) (copy *Logger) {
+func With(f ekaletter.LetterField) *Logger { return baseLogger.addField(f) }
+func WithBool(key string, value bool) *Logger { return baseLogger.addField(ekaletter.FBool(key, value)) }
+func WithInt(key string, value int) *Logger { return baseLogger.addField(ekaletter.FInt(key, value)) }
+func WithInt8(key string, value int8) *Logger { return baseLogger.addField(ekaletter.FInt8(key, value)) }
+func WithInt16(key string, value int16) *Logger { return baseLogger.addField(ekaletter.FInt16(key, value)) }
+func WithInt32(key string, value int32) *Logger { return baseLogger.addField(ekaletter.FInt32(key, value)) }
+func WithInt64(key string, value int64) *Logger { return baseLogger.addField(ekaletter.FInt64(key, value)) }
+func WithUint(key string, value uint) *Logger { return baseLogger.addField(ekaletter.FUint(key, value)) }
+func WithUint8(key string, value uint8) *Logger { return baseLogger.addField(ekaletter.FUint8(key, value)) }
+func WithUint16(key string, value uint16) *Logger { return baseLogger.addField(ekaletter.FUint16(key, value)) }
+func WithUint32(key string, value uint32) *Logger { return baseLogger.addField(ekaletter.FUint32(key, value)) }
+func WithUint64(key string, value uint64) *Logger { return baseLogger.addField(ekaletter.FUint64(key, value)) }
+func WithUintptr(key string, value uintptr) *Logger { return baseLogger.addField(ekaletter.FUintptr(key, value)) }
+func WithFloat32(key string, value float32) *Logger { return baseLogger.addField(ekaletter.FFloat32(key, value)) }
+func WithFloat64(key string, value float64) *Logger { return baseLogger.addField(ekaletter.FFloat64(key, value)) }
+func WithComplex64(key string, value complex64) *Logger { return baseLogger.addField(ekaletter.FComplex64(key, value)) }
+func WithComplex128(key string, value complex128) *Logger { return baseLogger.addField(ekaletter.FComplex128(key, value)) }
+func WithString(key string, value string) *Logger { return baseLogger.addField(ekaletter.FString(key, value)) }
+func WithBoolp(key string, value *bool) *Logger { return baseLogger.addField(ekaletter.FBoolp(key, value)) }
+func WithIntp(key string, value *int) *Logger { return baseLogger.addField(ekaletter.FIntp(key, value)) }
+func WithInt8p(key string, value *int8) *Logger { return baseLogger.addField(ekaletter.FInt8p(key, value)) }
+func WithInt16p(key string, value *int16) *Logger { return baseLogger.addField(ekaletter.FInt16p(key, value)) }
+func WithInt32p(key string, value *int32) *Logger { return baseLogger.addField(ekaletter.FInt32p(key, value)) }
+func WithInt64p(key string, value *int64) *Logger { return baseLogger.addField(ekaletter.FInt64p(key, value)) }
+func WithUintp(key string, value *uint) *Logger { return baseLogger.addField(ekaletter.FUintp(key, value)) }
+func WithUint8p(key string, value *uint8) *Logger { return baseLogger.addField(ekaletter.FUint8p(key, value)) }
+func WithUint16p(key string, value *uint16) *Logger { return baseLogger.addField(ekaletter.FUint16p(key, value)) }
+func WithUint32p(key string, value *uint32) *Logger { return baseLogger.addField(ekaletter.FUint32p(key, value)) }
+func WithUint64p(key string, value *uint64) *Logger { return baseLogger.addField(ekaletter.FUint64p(key, value)) }
+func WithFloat32p(key string, value *float32) *Logger { return baseLogger.addField(ekaletter.FFloat32p(key, value)) }
+func WithFloat64p(key string, value *float64) *Logger { return baseLogger.addField(ekaletter.FFloat64p(key, value)) }
+func WithType(key string, value interface{}) *Logger { return baseLogger.addField(ekaletter.FType(key, value)) }
+func WithStringer(key string, value fmt.Stringer) *Logger { return baseLogger.addField(ekaletter.FStringer(key, value)) }
+func WithAddr(key string, value interface{}) *Logger { return baseLogger.addField(ekaletter.FAddr(key, value)) }
+func WithUnixFromStd(key string, value time.Time) *Logger { return baseLogger.addField(ekaletter.FUnixFromStd(key, value)) }
+func WithUnixNanoFromStd(key string, value time.Time) *Logger { return baseLogger.addField(ekaletter.FUnixNanoFromStd(key, value)) }
+func WithUnix(key string, value int64) *Logger { return baseLogger.addField(ekaletter.FUnix(key, value)) }
+func WithUnixNano(key string, value int64) *Logger { return baseLogger.addField(ekaletter.FUnixNano(key, value)) }
+func WithDuration(key string, value time.Duration) *Logger { return baseLogger.addField(ekaletter.FDuration(key, value)) }
+func WithArray(key string, value interface{}) *Logger { return baseLogger.addField(ekaletter.FArray(key, value)) }
+func WithObject(key string, value interface{}) *Logger { return baseLogger.addField(ekaletter.FObject(key, value)) }
+func WithMap(key string, value interface{}) *Logger { return baseLogger.addField(ekaletter.FMap(key, value)) }
+func WithExtractedMap(key string, value map[string]interface{}) *Logger { return baseLogger.addField(ekaletter.FExtractedMap(key, value)) }
+func WithAny(key string, value interface{}) *Logger { return baseLogger.addField(ekaletter.FAny(key, value)) }
+func WithMany(fields ...ekaletter.LetterField) *Logger { return baseLogger.addFields(fields) }
+func WithManyAny(fields ...interface{}) *Logger { return baseLogger.addFieldsParse(fields) }
 
-	if len(fields) == 0 {
-		return baseLogger // avoid unnecessary copy
-	}
-	return baseLogger.derive(nil).entry.addFields(fields, nil).l
-}
 
-// WithThis is the same as With but doesn't create a copy of default package
-// logger. Modifies it in-place and returns then.
-func WithThis(fields ...interface{}) (defaultLogger *Logger) {
+// ------------------------ CONDITIONAL LOGGING METHODS ----------------------- //
+// ---------------------------------------------------------------------------- //
 
-	defaultLogger = baseLogger
 
-	if len(fields) > 0 {
-		defaultLogger.entry.addFields(fields, nil)
-	}
-	return
-}
-
-// WithStrict adds an explicit fields to the default package logger's copy.
-func WithStrict(fields ...ekafield.Field) (copy *Logger) {
-
-	if len(fields) == 0 {
-		return baseLogger // avoid unnecessary copy
-	}
-	return baseLogger.derive(nil).entry.addFields(nil, fields).l
-}
-
-// WithStrictThis is the same as WithStrict but doesn't create a copy of default
-// package logger. Modifies it in-place and returns then.
-func WithStrictThis(fields ...ekafield.Field) (defaultLogger *Logger) {
-
-	defaultLogger = baseLogger
-
-	if len(fields) > 0 {
-		defaultLogger.entry.addFields(nil, fields)
-	}
-	return
-}
-
-// SkipStackFrames specified how much stack frames shall be skipped
-// at the stacktrace generation. Forces stacktrace generation if it's not so.
-//func SkipStackFrames(n int) (copy *Logger) {
-//
-//	return baseLogger.derive(nil).entry.forceStacktrace(n).l
-//}
-
-// SkipStackFramesThis is the same as SkipStackFrames but doesn't create a copy
-// of default package logger. Modifies it in-place and returns then.
-//func SkipStackFramesThis(n int) (defaultLogger *Logger) {
-//
-//	defaultLogger = baseLogger
-//	defaultLogger.entry.forceStacktrace(n)
-//
-//	return
-//}
-
-// If returns package logger if 'cond' == 'true', otherwise nil. Thus it's useful
-// to chaining methods - next methods in chaining will be done only if 'cond' == true.
+// If returns package Logger if cond is true, otherwise nop Logger is returned.
+// Thus it's useful to chaining methods - next methods in chaining will be done
+// only if cond is true.
 func If(cond bool) (defaultLogger *Logger) {
-
-	if cond {
-		return baseLogger
-	} else {
-		return nil
-	}
+	return baseLogger.If(cond)
 }
 
-// allocLogger just allocates the memory to the new Logger object and then
-// corrects the all internal pointers.
-//func allocLogger() *Logger {
-//	l := new(Logger)
-//	// Don't allocate memory for core object, because in the default baseLogger
-//	// it will be overwritten and for other objects, if core isn't specified,
-//	// the baseLogger's core will be used.
-//	l.entry = new(Entry)
-//	l.entry.createdBy = l
-//	return l
-//}
+
+// ------------------------------ UTILITY METHODS ----------------------------- //
+// ---------------------------------------------------------------------------- //
+
+
+// ReplaceIntegrator replaces Integrator for the package Logger to the passed one.
+//
+// Requirements:
+//  - Integrator is not nil (even typed nil), panic otherwise;
+//  - If Integrator is CommonIntegrator
+//    it must not be registered with some Logger before, panic otherwise;
+//  - If Integrator is CommonIntegrator
+//    it must have at least 1 registered io.Writer, panic otherwise.
+//
+// WARNING.
+// Replacing Integrator will drop all pre-encoded ekaletter.LetterField fields
+// that are might be added already to the current Integrator.
+func ReplaceIntegrator(newIntegrator Integrator) {
+	baseLogger.ReplaceIntegrator(newIntegrator)
+}

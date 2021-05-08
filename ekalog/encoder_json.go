@@ -1,4 +1,4 @@
-// Copyright © 2020. All rights reserved.
+// Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
@@ -6,10 +6,6 @@
 package ekalog
 
 import (
-	"time"
-
-	"github.com/qioalice/ekago/v2/ekasys"
-	"github.com/qioalice/ekago/v2/internal/ekafield"
 	"github.com/qioalice/ekago/v2/internal/ekaletter"
 
 	"github.com/json-iterator/go"
@@ -18,20 +14,20 @@ import (
 //noinspection GoSnakeCaseUsage
 type (
 	// CI_JSONEncoder is a type that built to be used as a part of CommonIntegrator
-	// as an log Entries encoder to the some output as JSON.
+	// as an log Entry encoder to the some output as JSON.
 	// Custom indentation supported.
 	//
 	// If you want to use CI_JSONEncoder, you need to instantiate object,
-	// set indentation (if you need, default is 0) and then call
-	// FreezeAndGetEncoder() method. By that you'll get the function that has
-	// an alias CI_Encoder and you can add it as encoder by
-	// CommonIntegrator.WithEncoder().
+	// set indentation (if you need, default is 0: no indentation) and that is.
+	// The last thing you need to do is to register CI_ConsoleEncoder with
+	// CommonIntegrator using CommonIntegrator.WithEncoder().
 	//
-	// See https://github.com/qioalice/ekago/ekalog/integrator.go ,
-	// https://github.com/qioalice/ekago/ekalog/integrator_common.go for more info.
+	// You MUST NOT to call EncodeEntry() method manually.
+	// It is used by associated CommonIntegrator and it WILL lead to UB
+	// if you will try to use it manually. May even panic.
 	CI_JSONEncoder struct {
 
-		// You know what is JSON indent (pretty JSON, etc), right?
+		// You know what "JSON indent" is (pretty JSON, etc), right?
 		// How much spaces will be added to the beginning of line for each
 		// nested JSON entity for each nesting level.
 		//
@@ -52,89 +48,104 @@ type (
 		indent int
 
 		// api is jsoniter's API object.
-		// Created at the first FreezeAndGetEncoder() call for object.
-		// Won't be called twice. Only one.
-		//
-		// See FreezeAndGetEncoder() and doBuild() methods for more info.
+		// Created at the first doBuild() call for object.
 		api jsoniter.API
+
+		preEncodedFieldsStreamIndentX1 *jsoniter.Stream
+		preEncodedFieldsStreamIndentX2 *jsoniter.Stream
 	}
 )
 
-var (
-	// Make sure we won't break API by declaring package's console encoder
-	defaultJSONEncoder CI_Encoder
-)
-
+// SetIndent sets an indentation of JSON encoding format.
+// Any value <= 0 meaning "no indentation".
 //
+// Calling this method many times will overwrite previous value of format string.
+//
+// An indentation MUST NOT be changed after CI_JSONEncoder is registered
+// with CommonIntegrator using CommonIntegrator.WithEncoder() method.
 func (je *CI_JSONEncoder) SetIndent(num int) *CI_JSONEncoder {
 
-	if num >= 0 {
-		je.indent = num
+	if num < 0 {
+		num = 0
 	}
+	je.indent = num
 	return je
 }
 
-// FreezeAndGetEncoder builds current CI_JSONEncoder if it has not built yet
-// returning a function (has an alias CI_Encoder) that can be used at the
-// CommonIntegrator.WithEncoder() call while initializing.
-func (je *CI_JSONEncoder) FreezeAndGetEncoder() CI_Encoder {
-	return je.doBuild().encode
-}
-
-// doBuild builds the current CI_JSONEncoder only if it has not built yet.
-// There is no-op if encoder already built.
-func (je *CI_JSONEncoder) doBuild() *CI_JSONEncoder {
-
-	switch {
-	case je == nil:
-		return nil
-
-	case je.api != nil:
-		// do not build if it's so already
-		return je
-	}
-
-	je.api = jsoniter.Config{
-		IndentionStep:                 je.indent,
-		MarshalFloatWith6Digits:       true,
-		EscapeHTML:                    false,
-		SortMapKeys:                   false,
-		UseNumber:                     false,
-		DisallowUnknownFields:         false,
-		TagKey:                        "",
-		OnlyTaggedField:               false,
-		ValidateJsonRawMessage:        false,
-		ObjectFieldMustBeSimpleString: true,
-		CaseSensitive:                 false,
-	}.Froze()
-
-	return je
-}
-
+// PreEncodeField allows you to pre-encode some ekaletter.LetterField,
+// that is must be used with EACH Entry that will be encoded using this CI_JSONEncoder.
 //
-func (je *CI_JSONEncoder) encode(e *Entry) []byte {
+// It's useful when you want some unchanged runtime data for each log message,
+// like git hash commit, version, etc. Or if you want to create many loggers
+// attach some different fields to them and log different logs using them.
+//
+// Unnamed fields are not allowed.
+//
+// By default, encoded field will be added to the "fields" root section.
+// If you want to place field directly to the root section,
+// use ekaletter.KIND_FLAG_USER_DEFINED for ekaletter.LetterField's Kind property
+// (set it).
+//
+// WARNING!
+// PreEncodeField() MUST BE USED ONLY IF CI_JSONEncoder HAS BEEN REGISTERED
+// WITH SOME CommonIntegrator ALREADY. UB OTHERWISE, MAY PANIC!
+func (je *CI_JSONEncoder) PreEncodeField(f ekaletter.LetterField) {
+
+	// Avoid calls of PreEncodeField() when CI_ConsoleEncoder has not built yet.
+	if f.Key == "" || je.api == nil || f.IsInvalid() || f.RemoveVary() && f.IsZero() {
+		return
+	}
+
+	stream := je.preEncodedFieldsStreamIndentX2
+	if f.Kind & ekaletter.KIND_FLAG_USER_DEFINED != 0 {
+		stream = je.preEncodedFieldsStreamIndentX1
+	}
+
+	if wasAdded := je.encodeField(stream, f); wasAdded {
+		stream.WriteMore()
+	}
+}
+
+// EncodeEntry encodes passed Entry in JSON format using provided indentation.
+//
+// EncodeEntry is for internal purposes only and MUST NOT be called directly.
+// UB otherwise, may panic.
+func (je *CI_JSONEncoder) EncodeEntry(e *Entry) []byte {
 
 	s := je.api.BorrowStream(nil)
 	defer je.api.ReturnStream(s)
 
-	var (
-		allowEmpty = e.LogLetter.Items.Flags.TestAll(FLAG_INTEGRATOR_IGNORE_EMPTY_PARTS)
-	)
+	// Use last ekaerr.Error's message as Entry's one if it's empty.
+	if e.ErrLetter != nil {
+		if l := len(e.ErrLetter.Messages); l > 0 && e.LogLetter.Messages[0].Body == "" {
+			e.LogLetter.Messages[0].Body = e.ErrLetter.Messages[l-1].Body
+			e.ErrLetter.Messages[l-1].Body = ""
+		}
+	}
 
 	s.WriteObjectStart()
 
-	je.encodeBase(s, e, allowEmpty)
+	je.encodeBase(s, e)
 	s.WriteMore()
 
-	wasAdded :=
-		je.encodeFields(s, allowEmpty, e.LogLetter.Items.Fields)
-	if wasAdded {
+	// Write pre-encoded fields in root section
+	if b := je.preEncodedFieldsStreamIndentX1.Buffer(); len(b) > 0 {
+		s.SetBuffer(bufw2(s.Buffer(), b))
+		//s.WriteMore() // unnecessary, WriteMore() already called for field stream
+	}
+
+	// Handle special case when ekaerr.Error's ekaletter.Letter has a fields
+	// but has no stacktrace. It means that lightweight error has been created.
+	lightweightErrorFields := []ekaletter.LetterField(nil)
+	if e.ErrLetter != nil && len(e.ErrLetter.StackTrace) == 0 && len(e.ErrLetter.Fields) > 0 {
+		lightweightErrorFields = e.ErrLetter.Fields
+	}
+
+	if wasAdded := je.encodeFields(s, e.LogLetter.Fields, lightweightErrorFields, true); wasAdded {
 		s.WriteMore()
 	}
 
-	wasAdded =
-		je.encodeStacktrace(s, e, allowEmpty)
-	if wasAdded {
+	if wasAdded := je.encodeStacktrace(s, e); wasAdded {
 		s.WriteMore()
 	}
 
@@ -153,241 +164,14 @@ func (je *CI_JSONEncoder) encode(e *Entry) []byte {
 	copy(copied, b)
 
 	copied[len(copied)-1] = '\n'
+
+	// Restore ekaerr.Error's last message that was used as Entry's message.
+	if e.ErrLetter != nil {
+		if l := len(e.ErrLetter.Messages); l > 0 && e.ErrLetter.Messages[l-1].Body == "" {
+			e.ErrLetter.Messages[l-1].Body = e.LogLetter.Messages[0].Body
+			e.LogLetter.Messages[0].Body = ""
+		}
+	}
+
 	return copied
-}
-
-// encodeBase encodes e's level, timestamp, message to s.
-func (je *CI_JSONEncoder) encodeBase(s *jsoniter.Stream, e *Entry, allowEmpty bool) {
-
-	s.WriteObjectField("level")
-	s.WriteString(e.Level.String())
-	s.WriteMore()
-
-	s.WriteObjectField("level_value")
-	s.WriteUint8(uint8(e.Level))
-	s.WriteMore()
-
-	s.WriteObjectField("time")
-	s.WriteString(e.Time.Format(time.UnixDate))
-
-	if e.ErrLetter != nil {
-		s.WriteMore()
-		je.encodeError(s, e.ErrLetter, allowEmpty)
-	}
-
-	if len(e.LogLetter.Items.Message) > 0 || allowEmpty {
-
-		s.WriteMore()
-		s.WriteObjectField("message")
-		s.WriteString(e.LogLetter.Items.Message)
-	}
-}
-
-//
-func (je *CI_JSONEncoder) encodeError(s *jsoniter.Stream, errLetter *ekaletter.Letter, allowEmpty bool) {
-
-	for i, n := 0, len(errLetter.SystemFields); i < n; i++ {
-		switch errLetter.SystemFields[i].BaseType() {
-
-		case ekafield.KIND_SYS_TYPE_EKAERR_UUID:
-			s.WriteObjectField("error_id")
-			s.WriteString(errLetter.SystemFields[i].SValue)
-
-		case ekafield.KIND_SYS_TYPE_EKAERR_CLASS_ID:
-			s.WriteObjectField("error_class_id")
-			s.WriteInt64(errLetter.SystemFields[i].IValue)
-
-		case ekafield.KIND_SYS_TYPE_EKAERR_CLASS_NAME:
-			s.WriteObjectField("error_class_name")
-			s.WriteString(errLetter.SystemFields[i].SValue)
-
-		case ekafield.KIND_SYS_TYPE_EKAERR_PUBLIC_MESSAGE:
-			if publicMessage := errLetter.SystemFields[i].SValue; len(publicMessage) > 0 || allowEmpty {
-				s.WriteObjectField("error_public_message")
-				s.WriteString(publicMessage)
-				if i < n-1 {
-					s.WriteMore()
-				}
-			}
-			continue
-		}
-
-		if i < n-1 {
-			s.WriteMore()
-		}
-	}
-}
-
-//
-func (je *CI_JSONEncoder) encodeStacktrace(
-
-	s *jsoniter.Stream,
-	e *Entry,
-	allowEmpty bool,
-
-) (wasAdded bool) {
-
-	stacktrace := e.LogLetter.StackTrace
-	if len(stacktrace) == 0 && e.ErrLetter != nil {
-		stacktrace = e.ErrLetter.StackTrace
-	}
-
-	lStacktrace := int16(len(stacktrace))
-	if lStacktrace == 0 && !allowEmpty {
-		return false
-	}
-
-	s.WriteObjectField("stacktrace")
-
-	letterItem := (*ekaletter.LetterItem)(nil)
-	letterItemIdx := int16(0)
-	if e.ErrLetter != nil {
-		letterItem = e.ErrLetter.Items
-		letterItemIdx = letterItem.StackFrameIdx()
-	}
-
-	if lStacktrace > 0 {
-		s.WriteArrayStart()
-
-		for i := int16(0); i < lStacktrace; i++ {
-
-			letterItemPassed := (*ekaletter.LetterItem)(nil)
-			if letterItem != nil && letterItemIdx == i {
-				letterItemPassed = letterItem
-				letterItem = letterItem.Next()
-				letterItemIdx = letterItem.StackFrameIdx()
-			}
-			je.encodeStackFrame(s, stacktrace[i], letterItemPassed, allowEmpty)
-			if i < lStacktrace-1 {
-				s.WriteMore()
-			}
-		}
-
-		s.WriteArrayEnd()
-
-	} else {
-		s.WriteEmptyArray()
-	}
-
-	return true
-}
-
-//
-func (je *CI_JSONEncoder) encodeStackFrame(
-
-	s *jsoniter.Stream,
-	frame ekasys.StackFrame,
-	letterItem *ekaletter.LetterItem,
-	allowEmpty bool,
-) {
-	frame.DoFormat()
-
-	s.WriteObjectStart()
-
-	s.WriteObjectField("func")
-	s.WriteString(frame.Format[:frame.FormatFileOffset-1])
-	s.WriteMore()
-
-	s.WriteObjectField("file")
-	s.WriteString(frame.Format[frame.FormatFileOffset+1 : frame.FormatFullPathOffset-2])
-	s.WriteMore()
-
-	s.WriteObjectField("package")
-	s.WriteString(frame.Format[frame.FormatFullPathOffset:])
-
-	if letterItem != nil {
-		if len(letterItem.Message) > 0 || allowEmpty {
-			s.WriteMore()
-			s.WriteObjectField("message")
-			s.WriteString(letterItem.Message)
-		}
-		if len(letterItem.Fields) > 0 || allowEmpty {
-			s.WriteMore()
-			je.encodeFields(s, allowEmpty, letterItem.Fields)
-		}
-	}
-
-	s.WriteObjectEnd()
-}
-
-// JsonEncodeFields is JSON encoding helper that encodes 'fields' as JSON array,
-// adding it to the JSON document's root with the key "fields".
-//
-// Puts JSON encoded data into 's' stream,
-// doing nothing if 'fields' is empty and 'allowEmpty' is false.
-
-//
-func (je *CI_JSONEncoder) encodeFields(
-
-	s *jsoniter.Stream,
-	allowEmpty bool,
-	fields []ekafield.Field,
-
-) (wasAdded bool) {
-
-	emptySet := len(fields) == 0
-
-	if emptySet && !allowEmpty {
-		return false
-	}
-
-	s.WriteObjectField("fields")
-
-	if emptySet {
-		s.WriteEmptyArray()
-		return true
-	}
-
-	unnamedFieldIdx := 1
-
-	s.WriteArrayStart()
-
-	for i, n := int16(0), int16(len(fields)); i < n; i++ {
-		je.encodeField(s, fields[i], &unnamedFieldIdx)
-		s.WriteMore()
-	}
-
-	b := s.Buffer()
-	s.SetBuffer(b[:len(b)-1]) // remove last comma
-
-	s.WriteArrayEnd()
-
-	return true
-}
-
-// JsonEncodeField is JSON encoding helper that encodes 'f' field as JSON object
-// adding it to the JSON document. Uses 'unnamedFieldIdx' as a number
-// that will be transformed into string "unnamed_<number>" and that string will
-// be used as field's key if its key is empty.
-//
-// Puts JSON encoded data into 's' stream.
-
-//
-func (je *CI_JSONEncoder) encodeField(
-
-	s *jsoniter.Stream,
-	f ekafield.Field,
-	unnamedFieldIdx *int,
-) {
-	s.WriteObjectStart()
-
-	s.WriteObjectField("key")
-	s.WriteString(f.KeyOrUnnamed(unnamedFieldIdx))
-	s.WriteMore()
-
-	// TODO: write kind if requested
-
-	s.WriteObjectField("value")
-
-	if !f.Kind.IsNil() {
-		if f.SValue != "" {
-			s.WriteString(f.SValue)
-		} else {
-			_, _ = f.ValueWriteTo(s)
-		}
-	} else {
-		s.WriteNil()
-	}
-
-	s.WriteObjectEnd()
 }

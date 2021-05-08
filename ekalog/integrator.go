@@ -1,32 +1,44 @@
-// Copyright © 2020. All rights reserved.
+// Copyright © 2018-2021. All rights reserved.
 // Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekalog
 
-// -----
-// Integrator is the why this package called 'logintegro' earlier.
-// The main idea is: "You integrate your log messages with your destination service".
-// -----
+import (
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
+)
 
-// Integrator is an interface each type wants to convert log's Entry to some
-// real output shall implement.
+// Integrator is the way, an Entry must be encoded how and written to.
 //
-// E.g. If you want to use this package and writes all log's entries to your
-// own service declare, define your type and implement Integrator interface
-// and reg then it later using 'Logger.Apply' method or 'ApplyThis' func.
-// But you also can use any of predefined basic integrators which cover 99% cases.
+// It also allows to drop an Entry at the earlier steps if it's Level less than
+// level is returned by MinLevelEnabled().
+//
+// Main two methods are PreEncodeField() that allows to encode some fields once
+// and then use them for each Entry.
 type Integrator interface {
 
-	// Write writes log entry to some destination (integrator determines
-	// what it will be). Thus, Write does the main thing of Integrator:
-	// "Integrates your log messages with your log destination service".
-	Write(entry *Entry)
+	// PreEncodeField allows to encode ekaletter.LetterField once
+	// and then use them for each Entry.
+	// Using this method you will spent less resources at the ekaletter.LetterField's
+	// encoding, doing it only once for each that field.
+	PreEncodeField(f ekaletter.LetterField)
 
-	// MinLevelEnabled returns minimum log's Level an integrator will handle
-	// log entries with.
-	// E.g. if minimum level is 'Warning', 'Debug' logs will be dropped.
+	// EncodeAndWrite encodes Entry and then writes to some destination
+	// (integrator determines what and how it will be).
+	//
+	// Thus, EncodeAndWrite does the main thing of Integrator:
+	// "Integrates your log messages with your log destination service".
+	//
+	// WARNING.
+	// Integrator MUST NOT to hold an Entry or its parts after this method is done.
+	// The Logger will return Entry to its pool after this method is complete,
+	// so accessing to it or its parts is unsafe and WILL lead to UB.
+	EncodeAndWrite(entry *Entry)
+
+	// MinLevelEnabled returns minimum Level an integrator will handle Entry with.
+	// E.g. if minimum level is LEVEL_WARNING, LEVEL_DEBUG logs will be dropped
+	// at the most earlier moment - even before parsing.
 	MinLevelEnabled() Level
 
 	// MinLevelForStackTrace must return a minimum level starting with a stacktrace
@@ -40,10 +52,4 @@ type Integrator interface {
 	//
 	// Logger type has the same name's method that just calls this method.
 	Sync() error
-
-	// IsAsync must return whether Integrator async or not.
-	// It's very important for internal parts (GC).
-	//
-	// If you not sure, return 'true'. It's more secure but slower.
-	IsAsync() bool
 }

@@ -1,4 +1,4 @@
-// Copyright © 2020. All rights reserved.
+// Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
@@ -19,19 +19,16 @@ import (
 )
 
 func foo() *ekaerr.Error {
-	return ekaerr.Interrupted.
-		New("fwefwf").
-		AddFields("test", 42).
-		Throw()
+	return ekaerr.Interrupted.New("fwefwf").WithInt("test", 42).Throw()
 }
 
 func TestLog(t *testing.T) {
 
-	consoleEncoder := new(ekalog.CI_JSONEncoder)
+	consoleEncoder := new(ekalog.CI_ConsoleEncoder)
 	b := bytes.NewBuffer(nil)
 
 	stdoutConsoleIntegrator := new(ekalog.CommonIntegrator).
-		WithEncoder(consoleEncoder.FreezeAndGetEncoder()).
+		WithEncoder(consoleEncoder).
 		WithMinLevel(ekalog.LEVEL_DEBUG).
 		WriteTo(b)
 
@@ -44,7 +41,7 @@ func TestLog(t *testing.T) {
 
 	ekalog.ReplaceIntegrator(stdoutConsoleIntegrator)
 
-	ekaerr.Interrupted.New("test").LogAsWarn("", "key", "value")
+	ekalog.Warne("", ekaerr.Interrupted.New("test"), "key", "value")
 
 	ekalog.Debug("test %s %d", "hello", 25, "arg", 42)
 
@@ -53,7 +50,7 @@ func TestLog(t *testing.T) {
 	ekalog.Warn("test", "time", time.Now())
 	ekalog.Error("test")
 
-	foo().LogAsFatal()
+	ekalog.Emerge("", foo())
 }
 
 func BenchmarkLog(b *testing.B) {
@@ -61,7 +58,7 @@ func BenchmarkLog(b *testing.B) {
 	b.ReportAllocs()
 
 	devNullIntegrator := new(ekalog.CommonIntegrator).
-		WithEncoder(new(ekalog.CI_ConsoleEncoder).FreezeAndGetEncoder()).
+		WithEncoder(new(ekalog.CI_ConsoleEncoder)).
 		WithMinLevel(ekalog.LEVEL_DEBUG).
 		WriteTo(ioutil.Discard)
 

@@ -42,13 +42,11 @@ type (
 	}
 )
 
-//
 func (cb *colorBuilder) init() {
 	cb.bg, cb.fg = -2, -2
 	cb.bold, cb.italic, cb.underline = 0, 0, 0
 }
 
-//
 func (cb *colorBuilder) parseEntity(verbPart string) (parsed bool) {
 
 	if cb.bg == 100 {
@@ -158,7 +156,6 @@ func (cb *colorBuilder) parseEntity(verbPart string) (parsed bool) {
 	return cb.parseX256To(verbPart, colorDestination)
 }
 
-//
 func (_ *colorBuilder) parseBaseASCIITo(verbPart string, destination *int16) (parsed bool) {
 	// --- REMINDER! 1ST ARGUMENT IS ALWAYS UPPER CASED! ---
 
@@ -174,7 +171,6 @@ func (_ *colorBuilder) parseBaseASCIITo(verbPart string, destination *int16) (pa
 	return false
 }
 
-//
 func (_ *colorBuilder) parseX256To(verbPart string, destination *int16) (parsed bool) {
 
 	xterm256color, err := strconv.Atoi(verbPart)
@@ -186,7 +182,6 @@ func (_ *colorBuilder) parseX256To(verbPart string, destination *int16) (parsed 
 	return true
 }
 
-//
 func (_ *colorBuilder) parseHexTo(verbPart string, destination *int16) (parsed bool) {
 	// --- REMINDER! 1ST ARGUMENT IS ALWAYS UPPER CASED! ---
 
@@ -217,7 +212,6 @@ func (_ *colorBuilder) parseHexTo(verbPart string, destination *int16) (parsed b
 	return err == nil
 }
 
-//
 func (_ *colorBuilder) parseRgbTo(verbPart string, destination *int16) (parsed bool) {
 	// --- REMINDER! 1ST ARGUMENT IS ALWAYS UPPER CASED! ---
 
@@ -246,7 +240,6 @@ func (_ *colorBuilder) parseRgbTo(verbPart string, destination *int16) (parsed b
 	return true
 }
 
-//
 func (cb *colorBuilder) encode() string {
 
 	if cb.bg == 100 {

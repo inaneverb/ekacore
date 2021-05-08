@@ -1,4 +1,4 @@
-// Copyright © 2020. All rights reserved.
+// Copyright © 2018-2021. All rights reserved.
 // Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
@@ -7,52 +7,95 @@ package ekalog
 
 import (
 	"fmt"
-	"os"
 	"time"
 	"unsafe"
 
 	"github.com/qioalice/ekago/v2/ekadeath"
-	"github.com/qioalice/ekago/v2/internal/ekafield"
+	"github.com/qioalice/ekago/v2/ekaerr"
+	"github.com/qioalice/ekago/v2/internal/ekaclike"
 	"github.com/qioalice/ekago/v2/internal/ekaletter"
+
+	"github.com/modern-go/reflect2"
 )
 
 var (
-	// baseLogger is default package-level logger, that used by all package-level
-	// logger functions such a Debug, Debugf, Debugw, With, Group
+	// baseLogger is default package-level Logger, that used by all package-level
+	// logger functions.
 	baseLogger *Logger
+
+	// nopLogger is a special Logger that is returned to indicate,
+	// that next methods must do nothing.
+	nopLogger *Logger
 )
 
-// levelEnabled reports whether log's entry with level 'lvl' should be handled.
-func (l *Logger) levelEnabled(lvl Level) bool {
-	return lvl >= l.integrator.MinLevelEnabled()
-}
-
-// derive returns a new *Logger with at least cloned *Entry based on l's one
-// and probably with a new Integrator if 'newIntegrator' is not nil.
-func (l *Logger) derive(newIntegrator Integrator) (newLogger *Logger) {
-
-	// Entry clones any way because of that fact that entry stores ptr to parent.
-	// if we won't clone we'll have a two different loggers with the same entry's ptrs
-	// that are points to the only one (first or second) logger.
-
-	if newIntegrator == nil {
-		newIntegrator = l.integrator
+func (l *Logger) assert() {
+	if !l.IsValid() {
+		panic("Failed to do something with Logger. Logger is malformed.")
 	}
-	return new(Logger).setIntegrator(newIntegrator).setEntry(l.entry.clone())
 }
 
-// setIntegrator changes the l's integrator to the passed.
+// levelEnabled reports whether Entry with provided Level should be handled.
+func (l *Logger) levelEnabled(lvl Level) bool {
+	return lvl <= l.integrator.MinLevelEnabled()
+}
+
+// derive returns a new Logger with cloned Entry based on current Logger.
+func (l *Logger) derive() (newLogger *Logger) {
+	return new(Logger).setIntegrator(l.integrator).setEntry(l.entry.clone())
+}
+
+// setIntegrator changes the Logger's Integrator to the passed.
 // It's just assignment nothing more. Useful at the method chaining.
 func (l *Logger) setIntegrator(newIntegrator Integrator) (this *Logger) {
 	l.integrator = newIntegrator
 	return l
 }
 
-// setEntry changes the l's entry to the passed. Also changes parent ptr
+// setEntry changes the Logger's Entry to the passed. Also changes parent ptr
 // in newEntry to being pointed to the l. Useful at the method chaining.
 func (l *Logger) setEntry(newEntry *Entry) (this *Logger) {
 	l.entry = newEntry
 	l.entry.l = l
+	return l
+}
+
+// addField checks whether Logger is valid, not nop Logger, makes a copy
+// if it's requested and adds an ekaletter.LetterField to current Logger's Entry,
+// if field is addable.
+// Returns modified current Logger or its modified copy.
+func (l *Logger) addField(f ekaletter.LetterField) *Logger {
+	l.assert()
+	if l == nopLogger || f.IsInvalid() || f.RemoveVary() && f.IsZero() {
+		return l
+	}
+	ekaletter.LAddField(l.entry.LogLetter, f)
+	return l
+}
+
+// addFields is the same as addField() but works with an array of ekaletter.LetterField,
+// making a copy only once if it's requested.
+func (l *Logger) addFields(fs []ekaletter.LetterField) *Logger {
+	l.assert()
+	if l == nopLogger || len(fs) == 0 {
+		return l
+	}
+	for i, n := 0, len(fs); i < n; i++ {
+		ekaletter.LAddFieldWithCheck(l.entry.LogLetter, fs[i])
+	}
+	return l
+}
+
+// addFieldsParse creates a ekaletter.LetterField objects based on passed values,
+// try to treating them as a key-value pairs of that fields.
+// It also makes a copy if it's requested and adds generated ekaletter.LetterField
+// to the destination Logger's Entry only if those fields are addable.
+// Returns modified current Logger or its modified copy.
+func (l *Logger) addFieldsParse(fs []interface{}) *Logger {
+	l.assert()
+	if l == nopLogger || len(fs) == 0 {
+		return l
+	}
+	ekaletter.LParseTo(l.entry.LogLetter, fs, true)
 	return l
 }
 
@@ -92,23 +135,21 @@ func (l *Logger) setEntry(newEntry *Entry) (this *Logger) {
 // 4. Finally write a message and call then death.Die() if it's fatal level.
 func (l *Logger) log(
 
-	lvl Level,
-	format string,
-	errLetter *ekaletter.Letter,
-	args []interface{},
-	explicitFields []ekafield.Field,
+	lvl      Level,
+	format   string,
+	err      *ekaerr.Error,
+	args     []interface{},
+	fields   []ekaletter.LetterField,
 
 ) *Logger {
 
-	if !(l.IsValid() && l.levelEnabled(lvl)) {
+	l.assert()
+	if l == nopLogger || !l.levelEnabled(lvl) {
 		return l
 	}
 
 	// empty messages are skipped by default, but who knows?
-	if errLetter == nil && format == "" &&
-		len(args) == 0 && len(explicitFields) == 0 &&
-		!l.entry.LogLetter.Items.Flags.TestAll(FLAG_ALLOW_EMPTY_MESSAGES) {
-
+	if err.IsNil() && format == "" && len(args) == 0 && len(fields) == 0 {
 		return l
 	}
 
@@ -123,98 +164,75 @@ func (l *Logger) log(
 	workTempEntry.Level = lvl
 	workTempEntry.Time = time.Now()
 
-	// maybe first arg is something like string (ducktypes)?
-	// if it so, use it as message's body
-	onlyFields := false
-	if format == "" && len(args) > 0 {
+	var (
+		onlyFields = false
+		errLetter = ekaletter.BridgeErrorGetLetter(unsafe.Pointer(err))
+	)
 
-		if str, ok := args[0].(string); ok {
-			format = str
-			args = args[1:]
-			if format == "" {
-				// if user pass empty string as argument,
-				// it means he don't want log message, only fields
-				onlyFields = true
+	// Try to use ekaerr.Error's last message or first arg from args
+	// if format is not presented.
+
+	if format == "" {
+		if errLetter != nil {
+			format = ekaletter.LPopLastMessage(errLetter)
+		} else if len(args) > 0 {
+			var (
+				typ1stArg = reflect2.TypeOf(args[0])
+				rtype1stArg = uintptr(0)
+			)
+
+			if args[0] != nil {
+				rtype1stArg = typ1stArg.RType()
 			}
 
-		} else if stringer, ok := args[0].(fmt.Stringer); ok && stringer != nil {
-			format = stringer.String()
-			args = args[1:]
-			if format == "" {
-				onlyFields = true
+			if rtype1stArg == ekaclike.RTypeString {
+				var str string
+				typ1stArg.UnsafeSet(unsafe.Pointer(&str), reflect2.PtrOf(args[0]))
+				args = args[1:]
+				if format = str; format == "" {
+					// if user pass empty string as argument,
+					// it means he don't want log message, only fields
+					onlyFields = true
+				}
+
+			} else if typ1stArg.Implements(ekaletter.TypeFmtStringer) {
+				stringer := args[0].(fmt.Stringer)
+				if stringer != nil {
+					format = stringer.String()
+					args = args[1:]
+					if format == "" {
+						onlyFields = true
+					}
+				}
 			}
 		}
 	}
 
-	workTempEntry.LogLetter.Items.Message = format
+	workTempEntry.LogLetter.Messages[0].Body = format
 	workTempEntry.ErrLetter = errLetter
-	workTempEntry.addStacktrace()
+
+	if lvl <= l.integrator.MinLevelForStackTrace() {
+		workTempEntry.addStacktraceIfNotPresented()
+	}
 
 	// Try to extract message from 'args' if 'errLetter' == nil ('onlyFields' == false),
 	// but if 'errLetter' is set, it's OK to log w/o message.
-	if len(args) > 0 || len(explicitFields) > 0 {
-		ekaletter.ParseTo(workTempEntry.LogLetter.Items, args, explicitFields, onlyFields)
-	}
-
-	l.integrator.Write(workTempEntry)
-
-	if !l.integrator.IsAsync() {
-		if errLetter != nil {
-			ekaletter.GErrRelease(errLetter)
-		}
-		releaseEntry(workTempEntry)
-	}
-
 	switch {
-	case workTempEntry.Level.mustDie():
+	case len(args) > 0:
+		ekaletter.LParseTo(workTempEntry.LogLetter, args, onlyFields)
+	case len(fields) > 0:
+		workTempEntry.LogLetter.Fields = fields
+	}
+
+	l.integrator.EncodeAndWrite(workTempEntry)
+
+	ekaerr.ReleaseError(err)
+	releaseEntry(workTempEntry)
+
+	switch workTempEntry.Level {
+	case LEVEL_EMERGENCY:
 		ekadeath.Die()
 	}
 
 	return l
-}
-
-// logErr is just the same as 'logger'.log() but only for *Error's *Letter 'errLetter'.
-// Assumes that 'logger' is valid logger.
-//
-// Requirements:
-// 'logger'.IsValid() == true. Otherwise UB (may panic).
-func logErr(logger unsafe.Pointer, level uint8, errLetter *ekaletter.Letter, args []interface{}) {
-
-	loggerTyped := (*Logger)(logger)
-	if loggerTyped == nil {
-		loggerTyped = baseLogger
-	}
-
-	loggerTyped.log(Level(level), "", errLetter, args, nil)
-}
-
-// logErrThroughDefaultLogger is just the same as baseLogger.log() but only for
-// *Error's *Letter 'errLetter'.
-func logErrw(logger unsafe.Pointer, level uint8, errLetter *ekaletter.Letter, message string, fields []ekafield.Field) {
-
-	loggerTyped := (*Logger)(logger)
-	if loggerTyped == nil {
-		loggerTyped = baseLogger
-	}
-
-	loggerTyped.log(Level(level), message, errLetter, nil, fields)
-}
-
-// initBaseLogger performs a baseLogger initialization.
-func initBaseLogger() {
-
-	defaultConsoleEncoder = new(CI_ConsoleEncoder).FreezeAndGetEncoder()
-	defaultJSONEncoder = new(CI_JSONEncoder).FreezeAndGetEncoder()
-
-	_ = defaultConsoleEncoder
-	_ = defaultJSONEncoder
-
-	integrator := new(CommonIntegrator).
-		WithEncoder(defaultConsoleEncoder).
-		WithMinLevel(LEVEL_DEBUG).
-		WithMinLevelForStackTrace(LEVEL_WARNING).
-		WriteTo(os.Stdout)
-
-	entry := acquireEntry()
-	baseLogger = new(Logger).setIntegrator(integrator).setEntry(entry)
 }

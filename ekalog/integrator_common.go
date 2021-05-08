@@ -1,4 +1,4 @@
-// Copyright © 2020. All rights reserved.
+// Copyright © 2018-2021. All rights reserved.
 // Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
@@ -7,43 +7,46 @@ package ekalog
 
 import (
 	"io"
+	"sync"
 
 	"github.com/qioalice/ekago/v2/ekatyp"
 
 	"github.com/qioalice/ekago/v2/internal/ekaclike"
+	"github.com/qioalice/ekago/v2/internal/ekaletter"
 )
 
 //noinspection GoSnakeCaseUsage
 type (
 	// CommonIntegrator is the implementation of Integrator interface.
-	// It's SYNC Integrator, that calls 'io.Writer.Write' method one by one at the
+	// It's SYNC Integrator, that calls io.Writer.Write() method one by one at the
 	// same goroutine.
 	//
-	// This integrator covers 99% your cases. Why? Listen:
-	// 1. You can attach as many 'io.Writer's as you want.
-	// 2. You can define different encoders to different 'io.Writer's.
-	// 3. You can specify different minimum enabled levels for different 'io.Writer's.
-	// 4. You can specify different minimum levels for stacktrace for different 'io.Writer's.
+	// This integrator covers 99% your cases. Why? Look:
+	//  1. You can attach as many io.Writer as you want.
+	//  2. You can define different encoders for different io.Writer.
+	//  3. You can specify different minimum enabled levels for different io.Writer.
+	//  4. You can specify different minimum levels for stacktrace for different io.Writer.
 	//
 	// Yes. You can do something like this:
-	// - Handle all entries, encode them to JSON, and write to 'os.Stdout' and 'file1';
-	// - Handle log entries only with 'Warning' and more dangerous log levels,
-	//   encode them to YAML, and write to 'file2',
-	// - Handle log only 'Error' log entries and, encode them just as is and write them
-	//   to the 'os.Stderr'. ...
-	// ... and all of these things you can done using only one CommonIntegrator object!
+	//  - Handle all entries, encode them to JSON, and write to os.Stdout and file';
+	//  - Handle only LEVEL_WARNING and more dangerous log entries,
+	//    encode them to YAML, and write to 'file2',
+	//  - Handle only LEVEL_ERROR and more dangerous log entries,
+	//    encode them just as is and write them to the 'os.Stderr'.
+	//
+	// And all of these things can be done using only one CommonIntegrator object!
 	//
 	// How? Look:
 	// 		ig := new(CommonIntegrator)
-	// 		ig = ig.WithEncoder(encoder1).      // there is 1st dest registration begin
+	// 		ig = ig.WithEncoder(encoder1).      // there is 1st writer registration begin
 	// 		        WithMinLevel(LEVEL_DEBUG).
-	// 		        WriteTo(os.Stdout, file1).  // there is 1st dest registration end
-	// 		        WithEncoder(encoder2).      // there is 2nd dest registration begin
+	// 		        WriteTo(os.Stdout, file1).  // there is 1st writer registration end
+	// 		        WithEncoder(encoder2).      // there is 2nd writer registration begin
 	// 		        WithMinLevel(LEVEL_WARNING).
-	// 		        WriteTo(file2).             // there is 2nd dest registration end
-	// 		        WithEncoder(encoder3).      // there is 3rd dest registration begin
+	// 		        WriteTo(file2).             // there is 2nd writer registration end
+	// 		        WithEncoder(encoder3).      // there is 3rd writer registration begin
 	// 		        WithMinLevel(LEVEL_ERROR).
-	//              WriteTo(os.Stderr)          // there is 3rd dest registration end
+	//              WriteTo(os.Stderr)          // there is 3rd writer registration end
 	// And there is!
 	// Now you have 'ig' object and it is your integrator.
 	//
@@ -53,90 +56,173 @@ type (
 	// You may use one of default encoder, ekalog provides:
 	// - JSON encoder: CI_JSONEncoder class.
 	// - Plain text encoder (w/ TTY coloring supporting): CI_ConsoleEncoder class.
+	// You can register them using WithEncoder().
 	//
-	// You may instantiate them, specify format of encoding, call then
-	// FreezeAndGetEncoder() to get built encoder and there is!
-	// You can register it now using WithEncoder().
+	// NOTICE.
+	// CommonIntegrator IS A SYNC INTEGRATOR, MEANING THAT ALL FUNCTION CALLS
+	// WILL BE DONE WITH THE SAME GOROUTINE, THE CALLER REQUEST LOGGING
+	// IS RUNNING IN.
+	//
+	// WARNING.
+	// CommonIntegrator is thread-unsafety at the initialization*
+	// and unavailable to be modified after it is registered** with some Logger.
+	// If you're trying to modify CommonIntegrator after it was registered
+	// it will do nothing.
+	// If some CommonIntegrator was once registered it's unavailable
+	// to be registered again explicitly. You should create a new CommonIntegrator,
+	// initialize it and then use it.
+	//
+	// ----------
+	//
+	//  * "Initialization" is calling methods WithEncoder(), WithMinLevel(),
+	//    WriteTo().
+	//
+	//  ** "Registering" is linking CommonIntegrator with some Logger
+	//    using Logger.ReplaceIntegrator()
+	//    or package's functions WithIntegrator(), ReplaceIntegrator(),
+	//
 	CommonIntegrator struct {
 
 		// How it works?
-		// When you call WithMinLevel, WithMinLevelForStackTrace, WithEncoder
-		//   it saves min levels or encoder to output[i], where i is idx.
-		// When you call WriteTo it finishes output[i] (where i is idx),
-		//   and thus output[i] considered completed, the i counter increases
-		//   and then go to new _CI_Output.
-
-		output []_CI_Output // registered and approved destinations.
-		oll    Level        // the lowest level among all output's levels.
-		stll   Level        // the lowest level of stacktrace generating among all output's levels.
-		idx    int          // idx of current object in 'output' being registered.
-	}
-
-	// _CI_Output is a CommonIntegrator part that contains encoder
-	// and destination 'io.Writer's, Logger's Entry will be written to.
-	_CI_Output struct {
-		ml   Level       // minimum level log entry should have to be processed
-		stml Level       // minimum level starting with stacktrace must be added to the entry
-		enc  CI_Encoder  // func that encoders 'Entry' object to '[]byte'
-		dest []io.Writer // slice of 'io.Writer's, log entry will be written to
-	}
-
-	// CI_Encoder is the Common Integrator's Encoder and it's an alias
-	// to the function that takes an one log message (as Entry type),
-	// encodes it (by some rules) and returns the encoded data as RAW bytes.
-	CI_Encoder func(e *Entry) []byte
-
-	// An interface for default encoders.
-	_CI_EncoderGenerator interface {
-
-		// FreezeAndGetEncoder must perform all preparations, allocations,
-		// something else that may allow to increase runtime encoding.
 		//
-		// IT MUST BE NOT POSSIBLE TO CHANGE ENCODER BEHAVIOUR AFTER
-		// THIS METHOD IS CALLED AND SOME BUILT ENCODER HAS BEEN OBTAINED!
-		FreezeAndGetEncoder() CI_Encoder
+		// When you call WithMinLevel, WithMinLevelForStackTrace, WithEncoder
+		// it saves min levels or encoder to output[i], where i is idx.
+		//
+		// When you call WriteTo it finishes output[i] (where i is idx),
+		// and thus output[i] considered completed, the i counter increases
+		// and then go to new _CI_Output.
+
+		// -------------------------------------------------------------------- //
+
+		// mu is an CommonIntegrator initialization helper.
+		// It allows CommonIntegrator to be thread-safety.
+		//
+		// status doesn't handle a case when:
+		// 1. G1 reads status (0), can modify CommonIntegrator
+		// 2. G2 changes status (0->1), first use of CommonIntegrator
+		// 3. Now it's data race between G1, G2.
+		mu sync.Mutex
+
+		// isRegistered is true if CommonIntegrator has been registered
+		// with some Logger.
+		isRegistered bool
+
+		// -------------------------------------------------------------------- //
+
+		// oll is the lowest Level among all output's minimum Level enabled.
+		// uint32 because of sync/atomic operations, casted to Level later.
+		oll Level
+
+		// stll is the lowest level among all output's minimum Level
+		// for stacktrace being generated for.
+		stll Level
+
+		// output contains an outputs that are under registration
+		// or already approved.
+		output []_CI_Output
+
+		// idx is an index of output to object that is under initialization
+		// right now.
+		idx int
+	}
+
+	// CI_Encoder is an interface that types must implement to be allowed
+	// for being register with CommonIntegrator as one of encoders.
+	CI_Encoder interface {
+
+		// PreEncodeField must encode passed ekaletter.LetterField,
+		// save its encoded raw data in the internal parts and then use it
+		// for each Entry passed to EncodeEntry() method.
+		PreEncodeField(f ekaletter.LetterField)
+
+		// EncodeEntry must encode passed Entry by its own way and return
+		// an encoded raw data of Entry.
+		// Error handling is on implementation's shoulders.
+		EncodeEntry(e *Entry) []byte
 	}
 )
 
-// MinLevelEnabled returns minimum level an Integrator will handle Logger's Entries with.
+
+// --------------------- IMPLEMENT Integrator INTERFACE ----------------------- //
+// ---------------------------------------------------------------------------- //
+
+
+// MinLevelEnabled returns minimum level an Integrator will handle Entry with.
 // E.g. if minimum level is LEVEL_WARNING then LEVEL_DEBUG, LEVEL_INFO logs will be dropped.
-func (bi *CommonIntegrator) MinLevelEnabled() Level {
-	return bi.oll
+//
+// This method is used by internal Logger's part and this level may be set by
+// WithMinLevel().
+//
+// MinLevelEnabled() must not be used by caller before CommonIntegrator
+// is registered with some logger u
+// Otherwise it may return some strange results.
+func (ci *CommonIntegrator) MinLevelEnabled() Level {
+	ci.assertNil()
+	return ci.oll
 }
 
-// MinLevelForStackTrace returns a minimum level starting with a Logger's Entry
+// MinLevelForStackTrace returns a minimum level starting with an Entry
 // must generate and attach a stacktrace.
+// This method allows Logger not to generate stacktrace if there's no attached
+// ekaerr.Error if Entry's Level less than that.
 //
 // This method is used by internal Logger's part and this level may be set by
 // WithMinLevelForStackTrace().
 //
 // WARNING!
 // DOES NOT IMPACT FOR EKAERR ERROR OBJECTS THAT ATTACHED TO THE LOG ENTRY.
-// THEY WILL HAVE STACKTRACE ANYWAY.
-func (bi *CommonIntegrator) MinLevelForStackTrace() Level {
-	return bi.stll
+// THEY ALSO MAY DON'T HAVE A STACKTRACE BUT THEY HAVE ITS OWN RULES OF THAT.
+func (ci *CommonIntegrator) MinLevelForStackTrace() Level {
+	ci.assertNil()
+	return ci.stll
 }
 
-// Write writes log entry to all registered destinations.
-func (bi *CommonIntegrator) Write(entry *Entry) {
+// PreEncodeField passes presented ekaletter.LetterField to all registered
+// CI_Encoder objects, saving it as encoded RAW data inside them to attach them later
+// to each Entry that must be logged.
+//
+// PreEncodeField is for internal purposes only and MUST NOT be called directly.
+// UB otherwise, may panic.
+//
+// If PreEncodeField is called directly, the caller MUST call it only AFTER
+// registration of CommonIntegration with some Logger done.
+func (ci *CommonIntegrator) PreEncodeField(f ekaletter.LetterField) {
 
-	// it guarantees that bi.output is not empty,
+	ci.assertNil()
+
+	for i, n := 0, len(ci.output); i < n; i++ {
+		ci.output[i].encoder.PreEncodeField(f)
+	}
+}
+
+// EncodeAndWrite encodes Entry using registered CI_Encoder objects and then writes
+// obtained RAW data ([]byte) to correspondent io.Writer objects.
+//
+// According with Logger's code, Entry won't be here if it's Level < MinLevelEnabled().
+//
+// EncodeAndWrite is for internal purposes only and MUST NOT be called directly.
+// UB otherwise, may panic.
+func (ci *CommonIntegrator) EncodeAndWrite(entry *Entry) {
+
+	ci.assertNil()
+
+	// it guarantees that ci.output is not empty,
 	// because each CommonIntegrator object is checked by tryToBuild().
 
-	for _, output := range bi.output {
+	for _, output := range ci.output {
 
 		// maybe we must remove stacktrace?
 		logStacktraceBak := entry.LogLetter.StackTrace
-		if output.stml > entry.Level {
+		if output.stacktraceMinLevel > entry.Level {
 			entry.LogLetter.StackTrace = nil
 		}
 
-		encodedEntry := output.enc(entry)
+		encodedEntry := output.encoder.EncodeEntry(entry)
 
 		// restore stacktrace
 		entry.LogLetter.StackTrace = logStacktraceBak
 
-		for _, destination := range output.dest {
+		for _, destination := range output.writers {
 			_, _ = destination.Write(encodedEntry)
 		}
 	}
@@ -145,13 +231,19 @@ func (bi *CommonIntegrator) Write(entry *Entry) {
 // Sync flushes all pending log entries to all registered destinations,
 // until error occurred. If that will happen, the process will stop and error
 // will be returned.
-func (bi *CommonIntegrator) Sync() error {
+func (ci *CommonIntegrator) Sync() error {
 
-	// it guarantees that bi.output is not empty,
-	// because each CommonIntegrator object is checked by tryToBuild().
+	ci.assertNil()
 
-	for _, output := range bi.output {
-		for _, destination := range output.dest {
+	ci.mu.Lock()
+	defer ci.mu.Unlock()
+
+	if !ci.isRegistered {
+		return nil
+	}
+
+	for _, output := range ci.output {
+		for _, destination := range output.writers {
 			if syncer, ok := destination.(ekatyp.Syncer); ok {
 				if err := syncer.Sync(); err != nil {
 					return err
@@ -159,72 +251,88 @@ func (bi *CommonIntegrator) Sync() error {
 			}
 		}
 	}
+
 	return nil
 }
 
-// IsAsync always returns false, cause CommonIntegrator is a SYNCHRONOUS integrator.
-func (bi *CommonIntegrator) IsAsync() bool {
-	return false
-}
+
+// -------------------- CommonIntegrator BUILDING METHODS --------------------- //
+// ---------------------------------------------------------------------------- //
+
 
 // WithEncoder marks that all next registered writers by WriteTo() method
-// will be associated with 'enc' encoder.
-func (bi *CommonIntegrator) WithEncoder(enc CI_Encoder) *CommonIntegrator {
+// will be associated with passed CI_Encoder encoder.
+func (ci *CommonIntegrator) WithEncoder(enc CI_Encoder) *CommonIntegrator {
 
-	if bi == nil {
-		return bi
-	}
+	ci.assertWithLock()
+	defer ci.mu.Unlock()
 
-	// encAddr == nil if enc == nil
+	// encAddr == nil if encoder == nil
 	switch encAddr := ekaclike.TakeRealAddr(enc); {
 
-	case encAddr == nil && len(bi.output) == 0:
-		bi.output = append(bi.output, _CI_Output{
-			enc: defaultConsoleEncoder,
+	case encAddr == nil && len(ci.output) == 0:
+		ci.output = append(ci.output, _CI_Output{
+			encoder: defaultConsoleEncoder,
 		})
-		// bi.idx == 0 already (because len(bi.output) == 0)
+		// ci.idx == 0 already (because len(ci.output) == 0)
 
 	case encAddr == nil:
 		// do nothing.
-		// if there was a prev enc, next writers will be output to.
+		// if there was a prev encoder, next writers will be output to.
 		// otherwise defaultConsoleEncoder will be used.
-
-	case len(bi.output) == 0:
-		bi.output = append(bi.output, _CI_Output{
-			enc: enc,
-		})
-
-	default:
-		// maybe writers of prev encoder are empty?
-		if len(bi.output[bi.idx].dest) == 0 {
-			bi.output[bi.idx].enc = enc
-			return bi
-		}
-		bi.output = append(bi.output, _CI_Output{
-			enc: enc,
-		})
-		bi.idx++
 	}
 
-	return bi
+	// Now we know that CI_Encoder is not nil and we need to add it somewhere.
+	// Encoders might be CI_ConsoleEncoder or CI_JSONEncoder that must be built.
+
+	switch encTyped := enc.(type) {
+
+	case *CI_ConsoleEncoder:
+		encTyped.doBuild()
+
+	case *CI_JSONEncoder:
+		encTyped.doBuild()
+	}
+
+	// Final step.
+	// Determine to which _CI_Output a CI_Encoder will be added.
+
+	switch {
+
+	case len(ci.output) == 0:
+		ci.output = append(ci.output, _CI_Output{
+			encoder: enc,
+		})
+
+	case len(ci.output[ci.idx].writers) == 0:
+		// maybe writers of prev encoder are empty?
+		ci.output[ci.idx].encoder = enc
+
+	default:
+		ci.output = append(ci.output, _CI_Output{
+			encoder: enc,
+		})
+		ci.idx++
+	}
+
+	return ci
 }
 
 // WithMinLevel changes minimum level log's Entry to be processed for next
 // registered writers by WriteTo() method.
-func (bi *CommonIntegrator) WithMinLevel(minLevel Level) *CommonIntegrator {
+func (ci *CommonIntegrator) WithMinLevel(minLevel Level) *CommonIntegrator {
 
-	if bi == nil {
-		return nil
-	}
+	ci.assertWithLock()
+	defer ci.mu.Unlock()
 
-	if len(bi.output) == 0 {
-		// only in that case bi.idx == 0,
+	if len(ci.output) == 0 {
+		// only in that case ci.idx == 0,
 		// it was a direct call WithMinLevel(), even w/o WithEncoder() before.
-		bi.WithEncoder(nil) // then here will no SEGFAULT
+		ci.WithEncoder(nil) // then here will no SEGFAULT
 	}
 
-	bi.output[bi.idx].ml = minLevel
-	return bi
+	ci.output[ci.idx].minLevel = minLevel
+	return ci
 }
 
 // WithMinLevelForStackTrace changes a minimum level log's Entry stacktrace being
@@ -236,33 +344,32 @@ func (bi *CommonIntegrator) WithMinLevel(minLevel Level) *CommonIntegrator {
 // WARNING!
 // DOES NOT IMPACT FOR EKAERR ERROR OBJECTS THAT ATTACHED TO THE LOG ENTRY.
 // THEY WILL HAVE STACKTRACE ANYWAY.
-func (bi *CommonIntegrator) WithMinLevelForStackTrace(minLevel Level) *CommonIntegrator {
+func (ci *CommonIntegrator) WithMinLevelForStackTrace(minLevel Level) *CommonIntegrator {
 
-	if bi == nil {
-		return nil
-	}
+	ci.assertWithLock()
+	defer ci.mu.Unlock()
 
-	if len(bi.output) == 0 {
-		// only in that case bi.idx == 0,
+	if len(ci.output) == 0 {
+		// only in that case ci.idx == 0,
 		// it was a direct call WithMinLevel(), even w/o WithEncoder() before.
-		bi.WithEncoder(nil) // then here will no SEGFAULT
+		ci.WithEncoder(nil) // then here will no SEGFAULT
 	}
 
-	bi.output[bi.idx].stml = minLevel
-	return bi
+	ci.output[ci.idx].stacktraceMinLevel = minLevel
+	return ci
 }
 
-// WriteTo registers all passed 'io.Writer's as logger's destinations.
-// All previous WithEncoder(), WithMinLevel() calls will be applied to these writers.
-func (bi *CommonIntegrator) WriteTo(writers ...io.Writer) *CommonIntegrator {
+// WriteTo registers all passed io.Writer as CommonIntegrator destinations
+// for the CI_Encoder that has been specified using last WithEncoder() call
+// before this WriteTo() call.
+func (ci *CommonIntegrator) WriteTo(writers ...io.Writer) *CommonIntegrator {
 
-	if bi == nil {
-		return bi
-	}
+	ci.assertWithLock()
+	defer ci.mu.Unlock()
 
 	switch {
 	case len(writers) == 0 || len(writers) == 1 && writers[0] == nil:
-		return bi
+		return ci
 
 	default:
 		// keep only not nil writers
@@ -274,54 +381,16 @@ func (bi *CommonIntegrator) WriteTo(writers ...io.Writer) *CommonIntegrator {
 			}
 		}
 		if writers = notNilWriters; len(writers) == 0 {
-			return bi
+			return ci
 		}
 	}
 
-	if len(bi.output) == 0 {
-		// only in that case bi.idx == 0,
+	if len(ci.output) == 0 {
+		// only in that case ci.idx == 0,
 		// it was a direct call WriteTo(), even w/o WithEncoder() before.
-		bi.WithEncoder(nil) // otherwise there will be SEGFAULT
+		ci.WithEncoder(nil) // otherwise there will be SEGFAULT
 	}
 
-	bi.output[bi.idx].dest =
-		append(bi.output[bi.idx].dest, writers...)
-
-	return bi
-}
-
-// tryToBuild tries to "build" CommonIntegrator objects:
-// - drop all barely registered _CI_Output objects,
-// - calculate lowest levels of all _CI_Output s.
-//
-// Returns 'false' only if bi == nil or there is no registered writers.
-// Otherwise always 'true' is returned.
-func (bi *CommonIntegrator) tryToBuild() (wasBuilt bool) {
-
-	if bi == nil || len(bi.output) == 0 {
-		return false
-	}
-
-	// only last one bi.output could have empty writers set.
-	// fix it then
-	if len(bi.output[bi.idx].dest) == 0 {
-		if bi.output = bi.output[:bi.idx]; len(bi.output) == 0 {
-			// no valid enc/w after cut empty one
-			return false
-		}
-	}
-
-	bi.oll = Level(0xFF)
-	bi.stll = Level(0xFF)
-
-	for _, output := range bi.output {
-		if output.ml < bi.oll {
-			bi.oll = output.ml
-		}
-		if output.stml < bi.stll {
-			bi.stll = output.stml
-		}
-	}
-
-	return true
+	ci.output[ci.idx].writers = append(ci.output[ci.idx].writers, writers...)
+	return ci
 }

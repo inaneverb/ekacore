@@ -45,3 +45,10 @@ func bufgr(buf []byte, required int) []byte {
 func bufw(buf []byte, text string) []byte {
 	return append(bufgr(buf, len(text)), text...)
 }
+
+// bufw2 writes 'raw' to 'buf', growing 'buf' if it's need to write 'raw'.
+// Returns grown 'buf' (if it has been grown) or originally 'buf'.
+// So, it's recommend to use it func like Golang's one 'append'.
+func bufw2(buf, raw []byte) []byte {
+	return append(bufgr(buf, len(raw)), raw...)
+}
