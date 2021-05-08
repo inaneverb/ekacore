@@ -15,16 +15,20 @@ import (
 )
 
 type (
-	//
+	// CbErrorUpdateStacktrace is a special func alias that is an argument
+	// of ErrorUpdateStacktrace function.
 	CbErrorUpdateStacktrace func(oldStacktrace ekasys.StackTrace) (newStacktrace ekasys.StackTrace)
 )
 
-//
+// ErrorGetLetter returns an underlying ekaletter.Letter from provided ekaerr.Error object.
+// Returns nil if err is not valid.
 func ErrorGetLetter(err *ekaerr.Error) *ekaletter.Letter {
 	return ekaletter.BridgeErrorGetLetter(unsafe.Pointer(err))
 }
 
-//
+// ErrorUpdateStacktrace calls provided callback to change ekaerr.Error's stacktrace.
+// Your callback must not be nil, error must be valid
+// and your callback should return a new (modified) stacktrace that will be used.
 func ErrorUpdateStacktrace(err *ekaerr.Error, cb CbErrorUpdateStacktrace) {
 
 	if cb == nil || err.IsNil() {
