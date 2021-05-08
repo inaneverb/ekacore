@@ -23,99 +23,65 @@ const (
 
 	_ERR_SYS_FIELD_IDX_CLASS_ID       = 0
 	_ERR_SYS_FIELD_IDX_CLASS_NAME     = 1
-	_ERR_SYS_FIELD_IDX_PUBLIC_MESSAGE = 2
-	_ERR_SYS_FIELD_IDX_ERROR_ID       = 3
-)
-
-//goland:noinspection GoSnakeCaseUsage
-var(
-	_USE_GET_STACKTRACE_VER2 = false
+	_ERR_SYS_FIELD_IDX_ERROR_ID       = 2
 )
 
 // prepare prepares current Error for being used assuming that Error has been
 // obtained from the Error's pool. Returns prepared Error.
 func (e *Error) prepare() *Error {
 
-	// We need to set flags to the defaults anyway, cause *LetterItem may be marked.
-	for item := e.letter.Items; item != nil; item = ekaletter.GetNextItem(item) {
-		item.Flags = DefaultFlags
-	}
-
 	// Because the main reason of Error existence is being logged later,
 	// we need to make sure that it will be returned to the pool.
 	if e.needSetFinalizer {
-		runtime.SetFinalizer(e.letter, releaseErrorForFinalizer)
+		runtime.SetFinalizer(e, releaseErrorForFinalizer)
 		e.needSetFinalizer = false
 	}
 
 	return e
 }
 
-// cleanup prepares internal *Letter object and its internal *LetterItem items
-// for returning to the pool and being reused in the future.
+// cleanup frees all allocated resources (RAM in 99% cases) by Error, preparing
+// it for being returned to the pool and being reused in the future.
 func (e *Error) cleanup() *Error {
-
-	// It guarantees that cleanup() will be called only at the head of the
-	// *LetterItem linked list, and that *LetterItem linked list has been allocated
-	// chunk by chunk and its capacity % _LETTER_ITEM_ALLOC_CHUNK_SIZE == 0.
-
-	// First of all we need to release all unnecessary chunks
-	// (if they were allocated and added).
-
-	// It guarantees that Items != nil, and lastItem != nil because *Letter
-	// always have preallocated *LetterItem chunks.
-
-	item := e.letter.Items
-	for i := int16(0); i < _LETTER_REUSE_MAX_LETTER_ITEMS && item != nil; i++ {
-
-		for j := int16(0); j < _LETTER_ITEM_ALLOC_CHUNK_SIZE-1; j++ {
-			ekaletter.ResetItem(item)
-			item = ekaletter.GetNextItem(ekaletter.ResetItem(item))
-		}
-
-		next := ekaletter.GetNextItem(item)
-
-		if i == _LETTER_REUSE_MAX_LETTER_ITEMS-1 {
-			if next != nil {
-				pruneLetterItemsChunk(next)
-				ekaletter.SetNextItem(item, nil)
-			}
-		} else {
-			item = next
-		}
-	}
 
 	// We don't need to cleanup Namespace's ID or Class's ID,
 	// because it will be overwritten and also do not need to update SystemFields
 	// they will be overwritten too.
 
-	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_PUBLIC_MESSAGE].SValue = ""
-
 	e.letter.StackTrace = nil
 	e.stackIdx = 0
-	ekaletter.SetLastItem(e.letter, e.letter.Items)
 
+	ekaletter.LReset(e.letter)
 	return e
 }
 
-// addFields does the things described at the Error.AddFields() method.
-// This function accepts []interface instead of ...interface{} as argument.
-// And because also AddFields() must be called at the newError() constructor,
-// using this method with []interface{} argument's type we're avoiding
-// unpacking arguments call like AddFields(args...) in the newError(),
-// avoiding unnecessary copying.
-func (e *Error) addFields(args []interface{}) *Error {
-	if e.IsValid() && len(args) > 0 {
-		ekaletter.ParseTo(e.getCurrentLetterItem(), args, nil, true)
-		if e.stackIdx == 0 {
-			e.Mark()
-		}
+// addField checks whether Error is valid and adds an ekaletter.LetterField
+// to current Error, if field is addable.
+func (e *Error) addField(f ekaletter.LetterField) *Error {
+	ekaletter.LAddFieldWithCheck(e.letter, f)
+	return e
+}
+
+// addFields is the same as addField() but works with an array of ekaletter.LetterField.
+func (e *Error) addFields(fs []ekaletter.LetterField) *Error {
+	for i, n := 0, len(fs); i < n; i++ {
+		ekaletter.LAddFieldWithCheck(e.letter, fs[i])
 	}
 	return e
 }
 
-// is reports whether e belongs to at least one of passed 'cls' Classes
-// or any of e's parent (base) Class is the same as one of passed (if 'deep' is true).
+// addFieldsParse creates a ekaletter.LetterField objects based on passed values,
+// try to treating them as a key-value pairs of that fields.
+// Then adds generated ekaletter.LetterField to the Error only if those fields are addable.
+func (e *Error) addFieldsParse(fs []interface{}) *Error {
+	if e.IsValid() && len(fs) > 0 {
+		ekaletter.LParseTo(e.letter, fs, true)
+	}
+	return e
+}
+
+// is reports whether e belongs to at least one of passed cls Class
+// or any of Error's parent (base) Class is the same as one of passed (if deep is true).
 func (e *Error) is(cls []Class, deep bool) bool {
 
 	if !e.IsValid() || len(cls) == 0 {
@@ -148,7 +114,7 @@ func (e *Error) is(cls []Class, deep bool) bool {
 	return false
 }
 
-// of reports whether e belongs to at least one of passed 'nss' Namespaces.
+// of reports whether Error belongs to at least one of passed nss Namespace.
 func (e *Error) of(nss []Namespace) bool {
 
 	if !e.IsValid() || len(nss) == 0 {
@@ -164,47 +130,14 @@ func (e *Error) of(nss []Namespace) bool {
 	return false
 }
 
-// getCurrentLetterItem returns a *LetterItem from e's *Letter for e's.stackIdx.
-func (e *Error) getCurrentLetterItem() *ekaletter.LetterItem {
-
-	lastItem := ekaletter.GetLastItem(e.letter)
-	if e.stackIdx > -1 && lastItem.StackFrameIdx() == -1 {
-		ekaletter.SetStackFrameIdx(lastItem, e.stackIdx)
-	}
-
-	if e.stackIdx > lastItem.StackFrameIdx() {
-		// We need another *LetterItem,because now 'stackIdx' > last *LetterItem's idx.
-		// Are preallocated *LetterItem s over?
-		nextItem := ekaletter.GetNextItem(lastItem)
-
-		if nextItem == nil {
-			nextItem, _ = allocLetterItemsChunk()
-			ekaletter.SetNextItem(lastItem, nextItem)
-		}
-
-		ekaletter.SetLastItem(e.letter, nextItem)
-		ekaletter.SetStackFrameIdx(nextItem, e.stackIdx)
-		lastItem = nextItem
-	}
-
-	return lastItem
-}
-
 // init is a part of newError() func (Error's constructor).
-// Generates the stacktrace and an unique error's ID (UUID) saving it along with
-// 'classID' and 'namespaceID' to the e and then returns it.
-//
-// Requirements:
-// e != nil. Otherwise UB (may panic).
-func (e *Error) init(classID ClassID, namespaceID NamespaceID) *Error {
+// Generates the stacktrace and an unique error's ID (ULID) saving it along with
+// classID and namespaceID to the Error and then returns it.
+func (e *Error) init(classID ClassID, namespaceID NamespaceID, lightweight bool) *Error {
 
-	skip := 3 // init(), newError(), [Class.New(), Class.Wrap()]
+	skip := 3 // init(), newError(), [Class.New(), Class.Wrap(), Class.LightNew(), Class.LightWrap()]
 
-	if _USE_GET_STACKTRACE_VER2 {
-		e.letter.StackTrace = ekasys.GetStackTrace2(skip, -1).ExcludeInternal()
-	} else {
-		e.letter.StackTrace = ekasys.GetStackTrace(skip, -1).ExcludeInternal()
-	}
+	e.letter.StackTrace = ekasys.GetStackTrace(skip, -1).ExcludeInternal()
 
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_ID].IValue = int64(classID)
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_NAME].SValue =
@@ -299,7 +232,7 @@ func (e *Error) construct(baseMessage string, legacyErr error) *Error {
 	}
 
 	if baseMessage != "" {
-		e.getCurrentLetterItem().Message = baseMessage
+		ekaletter.LSetMessage(e.letter, baseMessage, true)
 	}
 
 	return e
@@ -308,24 +241,22 @@ func (e *Error) construct(baseMessage string, legacyErr error) *Error {
 // newError is an Error's constructor.
 // There are several steps:
 //
-// 1. Getting an *Error object (from the pool or allocate at the RAM heap).
-//
-// 2. Generate stacktrace, generate unique Error's ID, save it along with
-//    provided 'classID' and 'namespaceID' into an Error object.
-//
-// 3. Initialize the first message using 'legacyErr' and 'message.
-//
-// 4. Parse passed 'args' and also add it as first stack frame's fields.
-//
-// 5. Mark first stack frame if generated message (p.3) is not empty.
-//
-// 6. Done.
-func newError(classID ClassID, namespaceID NamespaceID, legacyErr error, message string, args []interface{}) *Error {
+//  1. Getting an *Error object (from the pool or allocate at the RAM heap).
+//  2. Generate stacktrace, generate unique Error's ID, save it along with
+//     provided 'classID' and 'namespaceID' into an Error object.
+//  3. Initialize the first message using 'legacyErr' and 'message.
+//  4. Parse passed 'args' and also add it as first stack frame's fields.
+//  5. Mark first stack frame if generated message (p.3) is not empty.
+func newError(
+	lightweight   bool,
+	classID       ClassID,
+	namespaceID   NamespaceID,
+	legacyErr     error,
+	message       string,
+	args          []interface{},
 
-	err := acquireError().init(classID, namespaceID).construct(message, legacyErr).addFields(args)
-	if err.letter.Items.Message != "" || len(err.letter.Items.Fields) > 0 {
-		err.Mark()
-	}
+) *Error {
 
-	return err
+	return acquireError().init(classID, namespaceID, lightweight).
+		construct(message, legacyErr).addFieldsParse(args)
 }

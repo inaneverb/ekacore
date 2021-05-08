@@ -80,12 +80,8 @@ func rebuiltExistedClassNames() {
 // There are several steps:
 //
 // 1. Getting a new available Class's ID.
-//
 // 2. Create a new Class object using provided 'parentID', 'namespaceID', 'name'.
-//
 // 3. Save it into the internal Class's storage basing on the its (Class's) ID.
-//
-// 4. Done.
 func newClass(parentID ClassID, namespaceID NamespaceID, name, fullName string) Class {
 
 	c := Class{

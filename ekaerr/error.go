@@ -1,4 +1,4 @@
-// Copyright © 2020. All rights reserved.
+// Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
@@ -6,6 +6,10 @@
 package ekaerr
 
 import (
+	"fmt"
+	"strings"
+	"time"
+
 	"github.com/qioalice/ekago/v2/internal/ekaletter"
 )
 
@@ -23,16 +27,15 @@ type (
 	// - DO NOT FORGOT TO USE Throw().
 	// - IF YOU WANT TO DO SOMETHING WITH YOUR ERROR, DO IT BEFORE LOGGING.
 	// - ALL ERROR OBJECTS ARE THREAD-UNSAFE. AVOID POTENTIAL DATA RACES!
-	// - NEVER USE ERROR OBJECT AS VALUE, ALWAYS USE AS ITS REFERENCE.
+	// - NEVER USE ERROR OBJECT AS VALUE, ALWAYS USE BY REFERENCE.
 	//
 	// -----
 	//
 	// ERROR OBJECTS CREATED MANUALLY CONSIDERED NOT INITIALIZED AND WILL NOT
 	// WORK PROPERLY, WILL NOT CONTAIN ANY YOUR DATA AND WILL NOT WORK AT ALL!
 	//
-	// Use New() or Wrap() error Class's methods to create an *Error object.
-	// See https://github.com/qioalice/ekago/ekaerr/README.md for more details
-	// or take a look at the examples.
+	// Use Class.New(), Class.Wrap(), Class.LightNew(), Class.LightWrap() methods
+	// to create an *Error object.
 	//
 	// BECAUSE OF THE MAIN IDEA OF THIS PACKAGE AND EKALOG PACKAGE,
 	// ERROR AND ITS LOGGING ARE STRONGLY LINKED AND ERROR EXISTENCE WITHOUT LOGGING
@@ -45,7 +48,7 @@ type (
 	//
 	// IF YOU LOG AN ERROR, YOU MUST NOT USE AN ERROR OBJECT THEN!
 	// DO WHATEVER YOU WANT WITH AN ERROR OBJECT BEFORE YOU WILL LOG IT USING EKALOG.
-	// AFTER YOU LOG YOUR ERROR THAT ERROR OBJECT WILL BE BROKEN AND CAN NOT BE USED.
+	// AFTER YOU LOG YOUR ERROR THAT ERROR OBJECT WILL BE BROKEN AND CANNOT BE USED.
 	//
 	// This is because after calling error's log finisher
 	// ( from https://github.com/qioalice/ekago/ekaerr/error_ekalog.go )
@@ -53,8 +56,36 @@ type (
 	// (RAM optimisation).
 	//
 	// If you do not want to log an error but want to return it manually to the pool
-	// (i don't know the case when you needed it, but whatever) you can just call
+	// (I don't know the case when you needed it, but whatever) you can just call
 	// ReleaseError(err).
+	// If you won't do it, an allocated Error will returned to the pool automatically
+	// when it goes out from the scope.
+	//
+	// -----
+	//
+	// Lightweight errors.
+	//
+	// Lightweight errors is just the same Error but w/o stacktrace generating.
+	// You can also add fields or messages but they won't be linked to some stacktrace.
+	// Thus, Throw() call in that case is meaningless and will do nothing.
+	//
+	// Often it's useful when you don't want to log your error but do something instead.
+	//
+	// If you will log lightweight Error, make sure your encoder supports lightweight errors.
+	// Both of ekalog.CI_ConsoleEncoder, ekalog.CI_JSONEncoder provides that.
+	//
+	// -----
+	//
+	// Error's ID.
+	//
+	// Each Error object (even lightweight) has its own ID.
+	// You can use that ID to find and determine Error by its ID.
+	//
+	// Earlier and UUIDv4 was used to generate ID.
+	// Since 3.0 ver, an ULID is used instead.
+	//
+	// Read more about ULID here: https://github.com/ulid/spec
+	// and here https://github.com/oklog/ulid .
 	Error struct {
 
 		// letter is the main internal part of Error object.
@@ -77,24 +108,13 @@ type (
 		// Allows to specify to which stack frame fields or message will be attached.
 		stackIdx int16
 
-		// TODO
 		needSetFinalizer bool
-
-		traits uint64
 	}
 )
 
-var (
-	// DefaultFlags is the Flag's set that will be used as default flags
-	// for each *LetterItem that is created for Error's *Letter.
-	DefaultFlags = FLAG_ALLOW_UNNAMED_NIL
-
-	// TODO: Maybe these flags must be protected by the mutex?
-)
-
-// IsValid reports whether e is valid Error object or not.
+// IsValid reports whether Error is valid Error object or not.
 //
-// It returns false if e == nil, or e has not been initialized properly
+// It returns false if either Error is nil, or Error has not been initialized properly
 // (instantiated manually instead of Class's constructors calling).
 //
 // You can also use IsNil() and IsNotNil() to make your code more clean.
@@ -102,13 +122,13 @@ func (e *Error) IsValid() bool {
 	return e != nil && e.letter != nil
 }
 
-// IsNotNil is IsValid's alias. Does absolutely the same thing.
+// IsNotNil is IsValid() alias. Does absolutely the same thing.
 // Introduced to increase your code's cleaning.
 func (e *Error) IsNotNil() bool {
 	return e.IsValid()
 }
 
-// IsNil is !e.IsValid() code alias. Does exactly that thing, nothing more.
+// IsNil is `!Error.IsValid()` code alias. Does exactly that thing, nothing more.
 // Introduced to increase your code's cleaning (and easy chaining typing).
 func (e *Error) IsNil() bool {
 	return !e.IsValid()
@@ -130,7 +150,8 @@ func (e *Error) IsNil() bool {
 //            return err.S("foo failed").W("id", 42).Throw()
 //        }
 //
-// See https://github.com/qioalice/ekago/ekaerr/README.md for more details.
+// Does nothing for lightweight errors.
+// Nil safe.
 func (e *Error) Throw() *Error {
 	if e.IsValid() && e.stackIdx+1 < int16(len(e.letter.StackTrace)) {
 		e.stackIdx++
@@ -138,122 +159,139 @@ func (e *Error) Throw() *Error {
 	return e
 }
 
-// Mark marks your current e's stack frame as important.
+// AddMessage adds a message to your current Error's stack frame.
 // Nil safe. Returns this.
-//
-// It's very useful at the logging when you need to filter some especially significant
-// stack frames. And because Throw() changing current stack frame, you must mark
-// the stack frames you need as soon as you working with it.
-//
-// See https://github.com/qioalice/ekago/ekaerr/README.md for more details.
-func (e *Error) Mark() *Error {
-	if e.IsValid() {
-		e.getCurrentLetterItem().Flags.SetAll(FLAG_MARKED_LETTER_ITEM)
-	}
-	return e
-}
-
-// AddMessage adds a 'message' to your current e's stack frame.
-// Nil safe. Returns this.
-//
-// See https://github.com/qioalice/ekago/ekaerr/README.md for more details.
 func (e *Error) AddMessage(message string) *Error {
 	if e.IsValid() {
-		e.getCurrentLetterItem().Message = message
-		if e.stackIdx == 0 {
-			e.Mark()
+		if message = strings.TrimSpace(message); message != "" {
+			ekaletter.LSetMessage(e.letter, message, true)
 		}
 	}
 	return e
 }
 
-// AddFields extract key-value pairs from 'args' and adds it to your current e's stack frame.
+// With adds provided ekaletter.LetterField to your current Error stack frame.
 // Nil safe. Returns this.
-//
-// You can use only strings as keys. If key expected but found not string value,
-// it will be added value of unnamed field. You can use whatever you want as values.
-//
-// See https://github.com/qioalice/ekago/internal/field/field.go ,
-// https://github.com/qioalice/ekago/ekaerr/README.md for more details.
-//
-// Expert mode:
-// If you want to minimise reflecting and increase performance, use Field objects
-// to generate your fields and pass them as 'args'.
-// It's private parts of ekago, but you can access them using ekaexp package.
-// See https://github.com/qioalice/ekago/ekaexp/README.md for more details.
-func (e *Error) AddFields(args ...interface{}) *Error {
-	return e.addFields(args)
-}
+func (e *Error) With(f ekaletter.LetterField) *Error { return e.addField(f) }
 
-// ModifyBy calls f callback passing the current Error object into and returning
+// Methods below are code-generated.
+
+func (e *Error) WithBool(key string, value bool) *Error { return e.addField(ekaletter.FBool(key, value)) }
+func (e *Error) WithInt(key string, value int) *Error { return e.addField(ekaletter.FInt(key, value)) }
+func (e *Error) WithInt8(key string, value int8) *Error { return e.addField(ekaletter.FInt8(key, value)) }
+func (e *Error) WithInt16(key string, value int16) *Error { return e.addField(ekaletter.FInt16(key, value)) }
+func (e *Error) WithInt32(key string, value int32) *Error { return e.addField(ekaletter.FInt32(key, value)) }
+func (e *Error) WithInt64(key string, value int64) *Error { return e.addField(ekaletter.FInt64(key, value)) }
+func (e *Error) WithUint(key string, value uint) *Error { return e.addField(ekaletter.FUint(key, value)) }
+func (e *Error) WithUint8(key string, value uint8) *Error { return e.addField(ekaletter.FUint8(key, value)) }
+func (e *Error) WithUint16(key string, value uint16) *Error { return e.addField(ekaletter.FUint16(key, value)) }
+func (e *Error) WithUint32(key string, value uint32) *Error { return e.addField(ekaletter.FUint32(key, value)) }
+func (e *Error) WithUint64(key string, value uint64) *Error { return e.addField(ekaletter.FUint64(key, value)) }
+func (e *Error) WithUintptr(key string, value uintptr) *Error { return e.addField(ekaletter.FUintptr(key, value)) }
+func (e *Error) WithFloat32(key string, value float32) *Error { return e.addField(ekaletter.FFloat32(key, value)) }
+func (e *Error) WithFloat64(key string, value float64) *Error { return e.addField(ekaletter.FFloat64(key, value)) }
+func (e *Error) WithComplex64(key string, value complex64) *Error { return e.addField(ekaletter.FComplex64(key, value)) }
+func (e *Error) WithComplex128(key string, value complex128) *Error { return e.addField(ekaletter.FComplex128(key, value)) }
+func (e *Error) WithString(key string, value string) *Error { return e.addField(ekaletter.FString(key, value)) }
+func (e *Error) WithBoolp(key string, value *bool) *Error { return e.addField(ekaletter.FBoolp(key, value)) }
+func (e *Error) WithIntp(key string, value *int) *Error { return e.addField(ekaletter.FIntp(key, value)) }
+func (e *Error) WithInt8p(key string, value *int8) *Error { return e.addField(ekaletter.FInt8p(key, value)) }
+func (e *Error) WithInt16p(key string, value *int16) *Error { return e.addField(ekaletter.FInt16p(key, value)) }
+func (e *Error) WithInt32p(key string, value *int32) *Error { return e.addField(ekaletter.FInt32p(key, value)) }
+func (e *Error) WithInt64p(key string, value *int64) *Error { return e.addField(ekaletter.FInt64p(key, value)) }
+func (e *Error) WithUintp(key string, value *uint) *Error { return e.addField(ekaletter.FUintp(key, value)) }
+func (e *Error) WithUint8p(key string, value *uint8) *Error { return e.addField(ekaletter.FUint8p(key, value)) }
+func (e *Error) WithUint16p(key string, value *uint16) *Error { return e.addField(ekaletter.FUint16p(key, value)) }
+func (e *Error) WithUint32p(key string, value *uint32) *Error { return e.addField(ekaletter.FUint32p(key, value)) }
+func (e *Error) WithUint64p(key string, value *uint64) *Error { return e.addField(ekaletter.FUint64p(key, value)) }
+func (e *Error) WithFloat32p(key string, value *float32) *Error { return e.addField(ekaletter.FFloat32p(key, value)) }
+func (e *Error) WithFloat64p(key string, value *float64) *Error { return e.addField(ekaletter.FFloat64p(key, value)) }
+func (e *Error) WithType(key string, value interface{}) *Error { return e.addField(ekaletter.FType(key, value)) }
+func (e *Error) WithStringer(key string, value fmt.Stringer) *Error { return e.addField(ekaletter.FStringer(key, value)) }
+func (e *Error) WithAddr(key string, value interface{}) *Error { return e.addField(ekaletter.FAddr(key, value)) }
+func (e *Error) WithUnixFromStd(key string, value time.Time) *Error { return e.addField(ekaletter.FUnixFromStd(key, value)) }
+func (e *Error) WithUnixNanoFromStd(key string, value time.Time) *Error { return e.addField(ekaletter.FUnixNanoFromStd(key, value)) }
+func (e *Error) WithUnix(key string, value int64) *Error { return e.addField(ekaletter.FUnix(key, value)) }
+func (e *Error) WithUnixNano(key string, value int64) *Error { return e.addField(ekaletter.FUnixNano(key, value)) }
+func (e *Error) WithDuration(key string, value time.Duration) *Error { return e.addField(ekaletter.FDuration(key, value)) }
+func (e *Error) WithArray(key string, value interface{}) *Error { return e.addField(ekaletter.FArray(key, value)) }
+func (e *Error) WithObject(key string, value interface{}) *Error { return e.addField(ekaletter.FObject(key, value)) }
+func (e *Error) WithMap(key string, value interface{}) *Error { return e.addField(ekaletter.FMap(key, value)) }
+func (e *Error) WithExtractedMap(key string, value map[string]interface{}) *Error { return e.addField(ekaletter.FExtractedMap(key, value)) }
+func (e *Error) WithAny(key string, value interface{}) *Error { return e.addField(ekaletter.FAny(key, value)) }
+
+func (e *Error) WithMany(fields ...ekaletter.LetterField) *Error { return e.addFields(fields) }
+
+func (e *Error) WithManyAny(fields ...interface{}) *Error { return e.addFieldsParse(fields) }
+
+// Apply calls f callback passing the current Error object into and returning
 // the Error object, callback is return what.
 // Nil safe.
 //
-// Does nothing if f == nil.
+// Does nothing if f is nil.
 //
 // Why?
 // You can write your own fields appender like:
 //     func (this *YourType) errAddIdentifiers(err *ekaerr.Error) *ekaerr.Error {
-//         return err.AddFields("id", this.ID, "date", this.Date)
+//         return err.WithManyAny("id", this.ID, "date", this.Date)
 //     }
 //
 // And then use it like:
 //     yt := new(YourType)
-//     return ekaerr.IllegalState.
-//         New("Unexpected state of world").
-//         ModifyBy(yt.errAddIdentifiers).
+//     return ekaerr.IllegalState.New("Unexpected state of world").
+//         Apply(yt.errAddIdentifiers).
 //         Throw()
 //
-// Brilliant, isn't? And that most important it's so clean.
-func (e *Error) ModifyBy(f func(err *Error) *Error) *Error {
+// Brilliant, isn't? And most importantly it's so clean.
+func (e *Error) Apply(f func(err *Error) *Error) *Error {
 	if e.IsValid() && f != nil {
 		return f(e)
 	}
 	return e
 }
 
-// Is reports whether e has been instantiated by 'cls' Class's constructors.
-// Returns false if either e is not valid Error or 'cls' is invalid.
+// Is reports whether Error has been instantiated by cls Class's constructors.
+// Returns false if either Error is not valid or Class is invalid.
 // Nil safe.
 func (e *Error) Is(cls Class) bool {
 	return e.IsValid() && isValidClassID(cls.id) && e.classID == cls.id
 }
 
-// IsAny reports whether e belongs to at least one of passed 'cls' Classes
+// IsAny reports whether Error belongs to at least one of passed cls Class
 // (has been instantiated using one of them).
-// Returns false if e is not valid Error or no one class has been passed.
+// Returns false if Error is not valid or no one class has been passed.
 // Nil-safe.
 func (e *Error) IsAny(cls ...Class) bool {
 	return e.is(cls, false)
 }
 
-// Of reports whether e has been instantiated by some Class that belongs to
-// 'ns' Namespace. Returns false if either e is not valid or 'ns' is invalid.
+// Of reports whether Error has been instantiated by some Class that belongs to
+// ns Namespace. Returns false if either Error is not valid or Namespace is invalid.
 // Nil safe.
 func (e *Error) Of(ns Namespace) bool {
 	return e.IsValid() && isValidNamespaceID(ns.id) && e.namespaceID == ns.id
 }
 
-// OfAny reports whether e belongs to at least one of passed 'nss' Namespaces
-// (has been instantiated by the Class that belongs to one of 'nss' Namespace).
-// Returns false if either e is not valid Error or no one namespace has been passed.
+// OfAny reports whether Error belongs to at least one of passed nss Namespace
+// (has been instantiated by the Class that belongs to one of nss Namespace).
+// Returns false if either Error is not valid or no one namespace has been passed.
 // Nil safe.
 func (e *Error) OfAny(nss ...Namespace) bool {
 	return e.of(nss)
 }
 
-// IsAnuDeep reports whether e belongs to at least one of passed 'cls' Classes
-// or any of its parent (base) Classes is the same as one of passed 'cls'
-// Returns false if e is not valid Error or no one class has been passed.
+// IsAnyDeep reports whether Error belongs to at least one of passed cls Class
+// or any of its parent (base) Class is the same as one of passed cls.
+// Returns false if Error is not valid or no one class has been passed.
 // Nil-safe.
 //
-// IsAnyDeep() has increased algorithmic complexity and MUCH SLOWER than IsAny()
-// if you pass subclasses. So, make sure it's what you need.
+// IsAnyDeep has increased algorithmic complexity (uses recursive algorithm)
+// and MUCH SLOWER than IsAny() if you pass subclasses. So, make sure it's what you need.
 func (e *Error) IsAnyDeep(cls ...Class) bool {
 	return e.is(cls, true)
 }
 
-// Class returns e's Class. A special 'invalidClass' is returned if e == nil
+// Class returns Error's Class. A special invalidClass is returned if Error is nil
 // or has been manually instantiated instead of constructor using.
 // Nil safe.
 func (e *Error) Class() Class {
@@ -263,33 +301,9 @@ func (e *Error) Class() Class {
 	return classByID(e.classID, true)
 }
 
-// PublicMessage returns e's public message that you may set using SetPublicMessage().
-// It's a simple abstraction to provide another message that you may show to the user.
-// Returns "" if public message is not set or e is not valid Error.
-// Nil safe.
-func (e *Error) PublicMessage() string {
-	if !e.IsValid() {
-		return ""
-	}
-	return e.letter.SystemFields[_ERR_SYS_FIELD_IDX_PUBLIC_MESSAGE].SValue
-}
-
-// SetPublicMessage sets e's public message that you may get using PublicMessage().
-// Keep in mind that public message IS NOT ATTACHED to the stack frame
-// but to the whole Error.
-// So, only one public message may be exist at once for each Error object.
-// Nil safe.
-func (e *Error) SetPublicMessage(newPublicMessage string) *Error {
-	if e.IsValid() {
-		e.letter.SystemFields[_ERR_SYS_FIELD_IDX_PUBLIC_MESSAGE].SValue =
-			newPublicMessage
-	}
-	return e
-}
-
-// ID returns an unique e's ID as UUIDv4. You can tell this ID to the user and
+// ID returns an unique Error's ID as ULID. You can tell this ID to the user and
 // log this error. Then it will be easy to find an associated error.
-// Returns "" if e is not valid Error.
+// Returns "" if Error is not valid.
 // Nil safe.
 func (e *Error) ID() string {
 	if !e.IsValid() {
@@ -298,14 +312,13 @@ func (e *Error) ID() string {
 	return e.letter.SystemFields[_ERR_SYS_FIELD_IDX_ERROR_ID].SValue
 }
 
-// ReleaseError prepares 'err' for being reused in the future and releases
+// ReleaseError prepares Error for being reused in the future and releases
 // its internal parts (returning them to the pool).
 //
 // YOU MUST NOT USE ERROR OBJECT AFTER PASSING THEM INTO THIS FUNCTION.
 // YOU DO NOT NEED TO CALL THIS FUNCTION IF YOUR ERROR WILL BE LOGGED USING EKALOG.
-func ReleaseError(err **Error) {
-	if err != nil && (*err).IsValid() {
-		releaseError(*err)
-		*err = nil
+func ReleaseError(err *Error) {
+	if err.IsValid() {
+		releaseError(err)
 	}
 }

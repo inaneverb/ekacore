@@ -1,4 +1,4 @@
-// Copyright © 2020. All rights reserved.
+// Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
@@ -12,31 +12,19 @@ import (
 )
 
 func init() {
-	// Create first N *Error objects and fill its pool by them.
-	initErrorPool()
+	errorPool.New = allocError
 
 	ekaletter.BridgeErrorGetLetter = bridgeGetLetter
 
 	ekaletter.BridgeErrorGetStackIdx = bridgeGetStackIdx
 	ekaletter.BridgeErrorSetStackIdx = bridgeSetStackIdx
 
-	// Initialize the gate's functions to link ekalog <-> ekaerr packages.
-	ekaletter.GErrRelease = releaseErrorForGate
-
 	// It's prohibited to use some types as Error's fields.
-	//
-	// See letter.ParseTo() for more details at the
-	// https://github.com/qioalice/ekago/internal/letter/letter.go
-	ekaletter.TypesBeingIgnoredForParsing = append(
-		ekaletter.TypesBeingIgnoredForParsing,
-
-		reflect2.TypeOf(ekaletter.Letter{}),
-		reflect2.TypeOf((*ekaletter.Letter)(nil)),
-
-		reflect2.TypeOf(ekaletter.LetterItem{}),
-		reflect2.TypeOf((*ekaletter.LetterItem)(nil)),
-
-		reflect2.TypeOf(Error{}),
-		reflect2.TypeOf((*Error)(nil)),
-	)
+	ignoredTypes := []uintptr {
+		reflect2.RTypeOf(Class{}), reflect2.RTypeOf((*Class)(nil)),
+		reflect2.RTypeOf(Namespace{}), reflect2.RTypeOf((*Namespace)(nil)),
+		reflect2.RTypeOf(Error{}), reflect2.RTypeOf((*Error)(nil)),
+	}
+	ekaletter.RTypesBeingIgnoredForParsing =
+		append(ekaletter.RTypesBeingIgnoredForParsing, ignoredTypes...)
 }

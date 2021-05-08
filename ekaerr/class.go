@@ -1,4 +1,4 @@
-// Copyright © 2020. All rights reserved.
+// Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
@@ -78,11 +78,19 @@ type (
 // Requirements:
 // c must be valid Class object. Otherwise nil Error is returned.
 func (c Class) New(message string, args ...interface{}) *Error {
-
 	if !isValidClassID(c.id) {
 		return nil
 	}
-	return newError(c.id, c.namespaceID, nil, message, args)
+	return newError(false, c.id, c.namespaceID, nil, message, args)
+}
+
+// LightNew is the same as just New() but creates a lightweight Error instead.
+// Read more what lightweight error is in Error's doc.
+func (c Class) LightNew(message string, args ...interface{}) *Error {
+	if !isValidClassID(c.id) {
+		return nil
+	}
+	return newError(true, c.id, c.namespaceID, nil, message, args)
 }
 
 // Wrap is an Error's constructor. Specify what legacy Golang error you need
@@ -94,12 +102,19 @@ func (c Class) New(message string, args ...interface{}) *Error {
 // c must be valid Class object. Otherwise nil Error is returned.
 // 'err' != nil. Otherwise nil Error is returned.
 func (c Class) Wrap(err error, message string, args ...interface{}) *Error {
-
 	if !isValidClassID(c.id) || err == nil {
 		return nil
 	}
-	// TODO: err is Error, check nil too
-	return newError(c.id, c.namespaceID, err, message, args)
+	return newError(false, c.id, c.namespaceID, err, message, args)
+}
+
+// LightWrap is the same as just Wrap() but creates a lightweight Error instead.
+// Read more what lightweight error is in Error's doc.
+func (c Class) LightWrap(err error, message string, args ...interface{}) *Error {
+	if !isValidClassID(c.id) || err == nil {
+		return nil
+	}
+	return newError(true, c.id, c.namespaceID, err, message, args)
 }
 
 // IsValid reports whether c is valid Class object or not.

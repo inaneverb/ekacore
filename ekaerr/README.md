@@ -21,7 +21,7 @@ Now you can:
 
 Golang has very primitive error management by default. It's just error interface with `Error() string` method. All you can do w/o extern libraries is create a simple error message with some text, nothing more: `errors.New(...)` or `fmt.Errorf(...)`. 
 
-What if you want stacktrace? Message's fields like IP addr, user's ID? Or add auxiliary messages for each stacktrace's frame that could be describe what happened in details?
+What if you want stacktrace? LetterMessage's fields like IP addr, user's ID? Or add auxiliary messages for each stacktrace's frame that could be describe what happened in details?
 
 Imagine you define a func, that may be failed:
 ```go

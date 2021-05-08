@@ -1,4 +1,4 @@
-// Copyright © 2020. All rights reserved.
+// Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/qioalice/ekago/v2/ekaerr"
+	"github.com/qioalice/ekago/v2/ekalog"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -22,34 +23,23 @@ func (T) String() string {
 }
 
 func foo() *ekaerr.Error {
-	return foo1().
-		AddMessage("foo bad").
-		AddFields("foo_arg", T{}).
-		Throw()
+	return foo1().AddMessage("foo bad").WithObject("foo_arg", T{}).Throw()
 }
 
 func foo1() *ekaerr.Error {
-	return foo2().
-		AddMessage("foo1 bad").
-		AddFields("foo1_arg", 23).
-		Throw()
+	return foo2().AddMessage("foo1 bad").WithInt("foo1_arg", 23).Throw()
 }
 
 func foo2() *ekaerr.Error {
-	return foo3().
-		AddMessage("foo2 bad").
-		AddFields("foo2_arg?", "").
-		Throw()
+	return foo3().AddMessage("foo2 bad").WithString("foo2_arg?", "").Throw()
 }
 
 func foo3() *ekaerr.Error {
-	return ekaerr.IllegalState.
-		New("what??", "arg1?", nil).
-		Throw()
+	return ekaerr.IllegalState.New("what??", "arg1?", nil).Throw()
 }
 
 func TestError(t *testing.T) {
-	foo().LogAsWarn()
+	ekalog.Warne("", foo())
 }
 
 func BenchmarkErrorCreation(b *testing.B) {
@@ -80,8 +70,7 @@ func BenchmarkErrorCreationReusing(b *testing.B) {
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		err := ekaerr.NotImplemented.New("An error")
-		ekaerr.ReleaseError(&err)
+		ekaerr.ReleaseError(ekaerr.NotImplemented.New("An error"))
 	}
 }
 
@@ -90,8 +79,7 @@ func BenchmarkErrorCreateAndReleaser(b *testing.B) {
 	b.ReportAllocs()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		err := foo()
-		ekaerr.ReleaseError(&err)
+		ekaerr.ReleaseError(foo())
 	}
 }
 
