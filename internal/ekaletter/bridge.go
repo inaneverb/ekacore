@@ -1,4 +1,4 @@
-// Copyright © 2020. All rights reserved.
+// Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
@@ -7,8 +7,6 @@ package ekaletter
 
 import (
 	"unsafe"
-
-	"github.com/qioalice/ekago/v2/internal/ekafield"
 )
 
 // It's a special file that contains gate functions.
@@ -34,22 +32,4 @@ var (
 
 	BridgeErrorGetStackIdx func(err unsafe.Pointer) int16
 	BridgeErrorSetStackIdx func(err unsafe.Pointer, newStackIdx int16)
-
-	// BridgeLogErr2 and BridgeLogwErr2 are a functions that are initialized
-	// in the ekalog package and used in the ekaerr package.
-	//
-	// These functions must log an *ekaerr.Error
-	// (using its internal private *Letter 'errLetter') with log level 'level',
-	// using 'logger' as untyped pointer to the *ekalog.Logger object
-	// (or keep it nil if standard package's level logger must be used).
-
-	BridgeLogErr2 func(logger unsafe.Pointer, level uint8, errLetter *Letter, errArgs []interface{})
-	BridgeLogwErr2 func(logger unsafe.Pointer, level uint8, errLetter *Letter, errMessage string, errFields []ekafield.Field)
-
-	// GErrRelease is a function that is initialized in the ekaerr package
-	// and used in the ekalog package.
-	//
-	// This function must return a 'errLetter' object as Error's *Letter object
-	// to its pool for being reused in the future.
-	GErrRelease func(errLetter *Letter)
 )

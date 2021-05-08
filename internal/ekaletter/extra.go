@@ -17,7 +17,7 @@ func PrintfVerbsCount(format *string) (verbsCount int) {
 
 	// because Golang uses UTF8, log messages can be written not using just ASCII.
 	// yes, yes, I agree, it's some piece of shit, but who knows?
-	// because of that this loop is so ugly.
+	// Because of that this loop is so ugly.
 
 	// Golang promises, that for-range loop of string splits it to runes
 	// (and runes could be UTF8 characters).
