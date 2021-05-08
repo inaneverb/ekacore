@@ -9,6 +9,8 @@ import (
 
 // Colors lists Xterm color codes vs. RGBA; values taken from https://gist.github.com/jasonm23/2868981
 // color.Palette is really []color.Color and provides .Convert() and .Index()
+//
+//goland:noinspection GoStructInitializationWithoutFieldNames
 var Colors = color.Palette{
 	// Basic block
 	0:  color.RGBA{0x00, 0x00, 0x00, 0xff},

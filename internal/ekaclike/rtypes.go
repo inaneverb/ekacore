@@ -6,6 +6,9 @@
 package ekaclike
 
 import (
+	"time"
+	"unsafe"
+
 	"github.com/modern-go/reflect2"
 )
 
@@ -34,4 +37,8 @@ var (
 	RTypeBytesArray         = reflect2.RTypeOf([][]byte(nil))
 	RTypeMapStringString    = reflect2.RTypeOf(map[string]string(nil))
 	RTypeMapStringInterface = reflect2.RTypeOf(map[string]interface{}(nil))
+	RTypeUintptr            = reflect2.RTypeOf(uintptr(0))
+	RTypeUnsafePointer      = reflect2.RTypeOf(unsafe.Pointer(nil))
+	RTypeTimeTime           = reflect2.RTypeOf(time.Time{})
+	RTypeTimeDuration       = reflect2.RTypeOf(time.Duration(0))
 )

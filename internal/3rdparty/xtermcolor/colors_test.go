@@ -11,6 +11,7 @@ type rgbaTest struct {
 	exp uint8
 }
 
+//goland:noinspection GoStructInitializationWithoutFieldNames
 var rgbaTests = []rgbaTest{
 	{color.RGBA{255, 0, 255, 255}, 13},
 	{color.RGBA{127, 127, 127, 255}, 8},
