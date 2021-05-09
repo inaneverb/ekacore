@@ -1,5 +1,5 @@
 // Copyright © 2020. All rights reserved.
-// Refactorer, modifier: Ilya Yuryevich.
+// Refactorer, modifier: Ilya Stroy.
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
@@ -218,8 +218,7 @@ func UUID_NewV2_OrPanic(domain byte) UUID { return UUID_OrPanic(UUID_NewV2(domai
 func UUID_NewV4_OrPanic() UUID { return UUID_OrPanic(UUID_NewV4()) }
 
 // Next methods are the same as just generators v1/v2/v4 but it returns
-// a NULL UUID "6ba7b810-9dad-11d1-80b4-00c04fd430c8" if any error is occurred
-// while UUID been generated.
+// a zero UUID if any error is occurred while UUID been generated.
 
 //noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_NewV1_OrNil() UUID { return UUID_OrNil(UUID_NewV1()) }
