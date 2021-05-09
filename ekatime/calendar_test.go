@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/qioalice/ekago/v2/ekaerr"
-	"github.com/qioalice/ekago/v2/ekatime"
+	"github.com/qioalice/ekago/v3/ekaerr"
+	"github.com/qioalice/ekago/v3/ekatime"
 
 	"github.com/json-iterator/go"
 	"github.com/stretchr/testify/require"

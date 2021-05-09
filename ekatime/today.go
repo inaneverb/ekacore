@@ -6,7 +6,7 @@
 package ekatime
 
 import (
-	"github.com/qioalice/ekago/v2/ekaerr"
+	"github.com/qioalice/ekago/v3/ekaerr"
 )
 
 type (

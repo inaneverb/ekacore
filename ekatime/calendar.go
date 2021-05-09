@@ -11,7 +11,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/qioalice/ekago/v2/ekadeath"
+	"github.com/qioalice/ekago/v3/ekadeath"
 )
 
 type (

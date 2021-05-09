@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"unsafe"
 
-	"github.com/qioalice/ekago/v2/internal/ekaclike"
+	"github.com/qioalice/ekago/v3/internal/ekaclike"
 
 	"github.com/modern-go/reflect2"
 )

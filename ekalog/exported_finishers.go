@@ -7,9 +7,9 @@ package ekalog
 
 import (
 	"fmt"
-	"github.com/qioalice/ekago/v2/ekaerr"
 
-	"github.com/qioalice/ekago/v2/internal/ekaletter"
+	"github.com/qioalice/ekago/v3/ekaerr"
+	"github.com/qioalice/ekago/v3/internal/ekaletter"
 )
 
 // Log writes log message with desired 'level',

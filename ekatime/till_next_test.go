@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/qioalice/ekago/v2/ekatime"
+	"github.com/qioalice/ekago/v3/ekatime"
 
 	"github.com/stretchr/testify/require"
 )

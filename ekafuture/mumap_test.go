@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/qioalice/ekago/v2/ekafuture"
+	"github.com/qioalice/ekago/v3/ekafuture"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -3,11 +3,13 @@
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package ekasys
+package ekasys_test
 
 import (
 	"fmt"
 	"testing"
+
+	"github.com/qioalice/ekago/v3/ekasys"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -18,7 +20,7 @@ import (
 // - frame.Function contains current test name
 func TestGetStackTraceCommonDepth1(t *testing.T) {
 
-	frames := GetStackTrace(0, 1)
+	frames := ekasys.GetStackTrace(0, 1)
 
 	assert.Len(t, frames, 1, "invalid len of frames")
 	assert.Contains(t, frames[0].Function, "TestGetStackTraceCommonDepth1",
@@ -32,7 +34,7 @@ func TestGetStackTraceCommonDepth1(t *testing.T) {
 // - first three returned frames have valid function names
 func TestGetStackTraceCommonDepthAbsolutelyFull(t *testing.T) {
 
-	frames := GetStackTrace(-3, -1)
+	frames := ekasys.GetStackTrace(-3, -1)
 
 	assert.True(t, len(frames) >= 3, "invalid len of frames")
 
@@ -50,18 +52,18 @@ func TestGetStackTraceCommonDepthAbsolutelyFull(t *testing.T) {
 
 type T struct{}
 
-func (T) foo() StackFrame {
-	return GetStackTrace(0, 1)[0]
+func (T) foo() ekasys.StackFrame {
+	return ekasys.GetStackTrace(0, 1)[0]
 }
 
 // TestStackFrame_DoFormat just see what StackFrame.DoFormat generates.
 func TestStackFrame_DoFormat(t *testing.T) {
 
-	frame := GetStackTrace(0, 1)[0]
-	fmt.Println(frame.doFormat())
+	frame := ekasys.GetStackTrace(0, 1)[0]
+	fmt.Println(frame.DoFormat())
 
 	frame = new(T).foo()
-	fmt.Println(frame.doFormat())
+	fmt.Println(frame.DoFormat())
 }
 
 // Bench StackFrame.doFormat func (generating readable output of stack frame).
@@ -70,10 +72,11 @@ func BenchmarkStackFrame_DoFormat(b *testing.B) {
 	b.ReportAllocs()
 	b.StopTimer()
 
-	frame := GetStackTrace(0, 1)[0]
+	frame := ekasys.GetStackTrace(0, 1)[0]
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		frame.doFormat()
+		frame.Format = ""
+		frame.DoFormat()
 	}
 }

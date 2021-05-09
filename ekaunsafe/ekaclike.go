@@ -8,7 +8,7 @@ package ekaunsafe
 import (
 	"unsafe"
 
-	"github.com/qioalice/ekago/v2/internal/ekaclike"
+	"github.com/qioalice/ekago/v3/internal/ekaclike"
 )
 
 // To see docs and comments,

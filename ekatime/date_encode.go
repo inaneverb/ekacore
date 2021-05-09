@@ -9,7 +9,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/qioalice/ekago/v2/internal/ekaenc"
+	"github.com/qioalice/ekago/v3/internal/ekaenc"
 )
 
 //goland:noinspection GoSnakeCaseUsage

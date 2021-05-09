@@ -6,7 +6,7 @@
 package ekadeath
 
 import (
-	"github.com/qioalice/ekago/v2/ekatyp"
+	"github.com/qioalice/ekago/v3/ekatyp"
 )
 
 type (

@@ -3,10 +3,12 @@
 // Contacts: qioalice@gmail.com, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package ekasys
+package ekasys_test
 
 import (
 	"testing"
+
+	"github.com/qioalice/ekago/v3/ekasys"
 )
 
 // benchGetStackTraceCommonDepth aux bench func that starts
@@ -17,7 +19,7 @@ func benchGetStackTraceCommonDepth(b *testing.B, depth int) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_ = GetStackTrace(0, depth)
+		_ = ekasys.GetStackTrace(0, depth)
 	}
 }
 
@@ -26,15 +28,15 @@ func benchGetStackTraceCommonDepth(b *testing.B, depth int) {
 // specified 'depth' arg.
 func benchGetStackTraceSyntheticDepth(b *testing.B, depth, createDepth int) {
 
-	type tF func(int, int) StackTrace
+	type tF func(int, int) ekasys.StackTrace
 
 	wrapper := func(f tF) tF {
-		return func(i1 int, i2 int) StackTrace {
+		return func(i1 int, i2 int) ekasys.StackTrace {
 			return f(i1, i2)
 		}
 	}
 
-	var f tF = GetStackTrace
+	var f tF = ekasys.GetStackTrace
 
 	for i := 0; i < createDepth; i++ {
 		f = wrapper(f)

@@ -6,7 +6,7 @@
 package ekalog
 
 import (
-	"github.com/qioalice/ekago/v2/internal/ekaletter"
+	"github.com/qioalice/ekago/v3/internal/ekaletter"
 
 	"github.com/json-iterator/go"
 )

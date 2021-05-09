@@ -11,7 +11,7 @@ import (
 
 	"github.com/json-iterator/go"
 
-	"github.com/qioalice/ekago/v2/ekatyp"
+	"github.com/qioalice/ekago/v3/ekatyp"
 )
 
 type (

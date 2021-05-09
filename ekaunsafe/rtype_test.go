@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/qioalice/ekago/v2/ekamath"
-	"github.com/qioalice/ekago/v2/ekaunsafe"
+	"github.com/qioalice/ekago/v3/ekamath"
+	"github.com/qioalice/ekago/v3/ekaunsafe"
 
 	"github.com/stretchr/testify/assert"
 

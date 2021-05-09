@@ -8,7 +8,7 @@ package ekaclike_test
 import (
 	"testing"
 
-	"github.com/qioalice/ekago/v2/internal/ekaclike"
+	"github.com/qioalice/ekago/v3/internal/ekaclike"
 
 	"github.com/stretchr/testify/assert"
 )

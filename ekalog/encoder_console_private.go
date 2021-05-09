@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/qioalice/ekago/v2/ekasys"
-	"github.com/qioalice/ekago/v2/internal/ekaletter"
+	"github.com/qioalice/ekago/v3/ekasys"
+	"github.com/qioalice/ekago/v3/internal/ekaletter"
 
 	"github.com/json-iterator/go"
 )

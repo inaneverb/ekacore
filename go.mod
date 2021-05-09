@@ -1,4 +1,4 @@
-module github.com/qioalice/ekago/v2
+module github.com/qioalice/ekago/v3
 
 go 1.15
 

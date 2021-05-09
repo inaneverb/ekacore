@@ -10,8 +10,8 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/qioalice/ekago/v2/ekaerr"
-	"github.com/qioalice/ekago/v2/ekalog"
+	"github.com/qioalice/ekago/v3/ekaerr"
+	"github.com/qioalice/ekago/v3/ekalog"
 
 	"github.com/stretchr/testify/assert"
 )

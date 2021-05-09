@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/qioalice/ekago/v2/ekastr"
+	"github.com/qioalice/ekago/v3/ekastr"
 )
 
 func BenchmarkPItoa64(b *testing.B) {

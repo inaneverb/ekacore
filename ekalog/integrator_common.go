@@ -9,10 +9,9 @@ import (
 	"io"
 	"sync"
 
-	"github.com/qioalice/ekago/v2/ekatyp"
-
-	"github.com/qioalice/ekago/v2/internal/ekaclike"
-	"github.com/qioalice/ekago/v2/internal/ekaletter"
+	"github.com/qioalice/ekago/v3/ekatyp"
+	"github.com/qioalice/ekago/v3/internal/ekaclike"
+	"github.com/qioalice/ekago/v3/internal/ekaletter"
 )
 
 //noinspection GoSnakeCaseUsage

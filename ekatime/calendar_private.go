@@ -10,8 +10,8 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/qioalice/ekago/v2/ekalog"
-	"github.com/qioalice/ekago/v2/ekamath"
+	"github.com/qioalice/ekago/v3/ekalog"
+	"github.com/qioalice/ekago/v3/ekamath"
 )
 
 //noinspection GoSnakeCaseUsage

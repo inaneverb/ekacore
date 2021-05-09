@@ -9,7 +9,7 @@ import (
 	"bytes"
 	"database/sql/driver"
 
-	"github.com/qioalice/ekago/v2/ekarand"
+	"github.com/qioalice/ekago/v3/ekarand"
 
 	"github.com/oklog/ulid/v2"
 )

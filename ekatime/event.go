@@ -5,7 +5,9 @@
 
 package ekatime
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type (
 	// Event represents some unusual days - events.

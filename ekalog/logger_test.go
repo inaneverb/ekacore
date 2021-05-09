@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/qioalice/ekago/v2/ekadeath"
-	"github.com/qioalice/ekago/v2/ekaerr"
-	"github.com/qioalice/ekago/v2/ekalog"
+	"github.com/qioalice/ekago/v3/ekadeath"
+	"github.com/qioalice/ekago/v3/ekaerr"
+	"github.com/qioalice/ekago/v3/ekalog"
 )
 
 func foo() *ekaerr.Error {

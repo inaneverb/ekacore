@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/qioalice/ekago/v2/ekastr"
+	"github.com/qioalice/ekago/v3/ekastr"
 
 	"github.com/stretchr/testify/assert"
 )
