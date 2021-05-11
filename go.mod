@@ -8,6 +8,7 @@ require (
 	github.com/json-iterator/go v1.1.9
 	github.com/modern-go/reflect2 v1.0.1
 	github.com/oklog/ulid/v2 v2.0.2
+	github.com/qioalice/ekago/v2 v2.9.9
 	github.com/stretchr/testify v1.6.1
 	github.com/theodesp/go-heaps v0.0.0-20190520121037-88e35354fe0a
 )
