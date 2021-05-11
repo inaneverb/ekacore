@@ -24,7 +24,7 @@ import (
 //   d.TillNext(3 * SECONDS_IN_HOUR) // -> 1h45m45s (till 15:00:00, range of 3h)
 //   d.TillNext(30 * SECONDS_IN_MINUTE) // -> 15m45s (till 13:30:00, range of 30m).
 func (ts Timestamp) TillNext(range_ Timestamp) time.Duration {
-	return time.Duration(ts + (range_- ts % range_) - ts) * time.Second
+	return time.Duration(ts.tillNext(range_)) * time.Second
 }
 
 // TillNextMinute returns how much ns (as time.Duration) must be passed until
@@ -118,4 +118,8 @@ func TillNextMonth() time.Duration {
 // TillNextYear is the same as Timestamp.TillNextYear() but for current time.
 func TillNextYear() time.Duration {
 	return Now().TillNextYear()
+}
+
+func(ts Timestamp) tillNext(range_ Timestamp) Timestamp {
+	return ts + (range_- ts % range_) - ts
 }

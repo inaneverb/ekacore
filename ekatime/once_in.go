@@ -15,9 +15,17 @@ type (
 	// That function user could pass to the OnceIn<interval>.Call() call.
 	// Then it will be called each time when time has come.
 	//
-	// An arguments represents a moment when a callback chain has been started
-	// for being called.
-	OnceInCallback func(ts Timestamp, dd Date, t Time)
+	// An arguments represents a moment when a callback is called.
+	OnceInCallback func(ts Timestamp)
+
+	// OnceInPanicCallback is an alias to the function that user may define.
+	//
+	// That function user could pass along with OnceInCallback
+	// to the OnceIn<interval>.Call() call.
+	// This function will be called only if original OnceInCallback panics.
+	//
+	// An argument represents a recovered panic object.
+	OnceInPanicCallback func(panicObj interface{})
 )
 
 //noinspection GoUnusedGlobalVariable
@@ -86,7 +94,7 @@ func (oiu *onceInUpdater) Time() Time {
 // Call calls cb every time when associated onceIn updater's time has come.
 // So, it means that
 //
-//     ekatime.OnceInHour.Call(func(ts Timestamp, _ Date, _ Time){
+//     ekatime.OnceInHour.Call(func(ts Timestamp){
 //         fmt.Println(ts)
 //     })
 //
@@ -96,24 +104,26 @@ func (oiu *onceInUpdater) Time() Time {
 // Does nothing if you pass a nil cb.
 // That callback will be rejected with no-op.
 //
-// WARNING! IMPOSSIBLE TO STOP!
-// YOU CAN NOT "CANCEL" A CALLBACK YOU ONCE ADDED TO PLANNER.
-// IT WILL BE CALLED EVERY TIME UNTIL THE END.
-// If you need to stop, handle it manually!
+// WARNING!
+// IMPOSSIBLE TO STOP! YOU CANNOT "CANCEL" A CALLBACK YOU ONCE ADDED TO PLANNER.
+// It will be called every time until the end. If you need to stop, handle it manually!
 //
-// WARNING! ONE THREAD!
-// All callbacks associated with the same onceIn delayer (e.g. "once in hour",
-// "once in day", etc) are called consistently one by one, AT THE SAME goroutine!
+// WARNING!
+// ONE THREAD! ALL CALLBACKS SHARES THE SAME WORKER GOROUTINE.
 // So, if there is some "big" work, wrap your callback manually to the closure with
 // "go callback(ts, dd, t)" call (spawn a separate goroutine).
-func (oiu *onceInUpdater) Call(cb OnceInCallback) {
-
-	if cb == nil {
-		return
+func (oiu *onceInUpdater) Call(invokeNow bool, cb OnceInCallback, panicCb ...OnceInPanicCallback) {
+	if cb != nil {
+		onceInRegister(cb, panicCb, oiu.repeatDelay, -1, invokeNow, true)
 	}
+}
 
-	oiu.cbsMutex.Lock()
-	defer oiu.cbsMutex.Unlock()
-
-	oiu.cbs = append(oiu.cbs, cb)
+// After is the same as Call() but calls cb after dur is passed.
+//
+// Does nothing if dur >= OnceIn's delayer time.
+// It means, you cannot delay up to 1h function execution using OnceInHour.
+func (oiu *onceInUpdater) After(delayInSec Timestamp, invokeNow bool, cb OnceInCallback, panicCb ...OnceInPanicCallback) {
+	if cb != nil && delayInSec < oiu.repeatDelay {
+		onceInRegister(cb, panicCb, oiu.repeatDelay, delayInSec, invokeNow, true)
+	}
 }

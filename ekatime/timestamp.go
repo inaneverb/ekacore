@@ -19,6 +19,18 @@ type (
 	TimestampPair [2]Timestamp
 )
 
+// Cmp compares current timestamp and provided one.
+// Returns -1 if current < another, 0 if they're equal, 1 if current > another.
+func (ts Timestamp) Cmp(anotherTimestamp Timestamp) int {
+	if ts < anotherTimestamp {
+		return -1
+	} else if ts > anotherTimestamp {
+		return 1
+	} else {
+		return 0
+	}
+}
+
 // I64 returns int64 representation of the current Timestamp 'ts.
 func (ts Timestamp) I64() int64 {
 	return int64(ts)
