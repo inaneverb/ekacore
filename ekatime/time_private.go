@@ -7,8 +7,9 @@ package ekatime
 
 import (
 	"fmt"
-	"github.com/modern-go/reflect2"
 	"time"
+
+	"github.com/modern-go/reflect2"
 )
 
 //noinspection GoSnakeCaseUsage
