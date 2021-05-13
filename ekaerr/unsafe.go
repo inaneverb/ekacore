@@ -34,7 +34,7 @@ func bridgeGetLetter(err unsafe.Pointer) *ekaletter.Letter {
 // assuming that 'err' is an untyped pointer to the ekaerr.Error.
 func bridgeGetStackIdx(err unsafe.Pointer) int16 {
 	if err := (*Error)(err); err.IsValid() {
-		return err.stackIdx
+		return ekaletter.LGetStackIdx(err.letter)
 	} else {
 		return -1
 	}
@@ -42,8 +42,12 @@ func bridgeGetStackIdx(err unsafe.Pointer) int16 {
 
 // bridgeSetStackIdx sets the new value of the *ekaerr.Error object's 'stackIdx' field
 // assuming that 'err' is an untyped pointer to the ekaerr.Error.
+// New stack index must be 0 or greater.
+//
+// IT MUST BE USED CAREFULLY!
+// YOU CAN GET PANIC IF YOUR STACK IDX WILL BE GREATER THAN AN EMBEDDED STACKTRACE'S LENGTH.
 func bridgeSetStackIdx(err unsafe.Pointer, newStackIdx int16) {
 	if err := (*Error)(err); err.IsValid() && newStackIdx >= 0 {
-		err.stackIdx = newStackIdx
+		ekaletter.LSetStackIdx(err.letter, newStackIdx)
 	}
 }

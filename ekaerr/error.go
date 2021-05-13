@@ -104,10 +104,6 @@ type (
 		// the Class that has been used to create this object, belongs to.
 		namespaceID NamespaceID
 
-		// stackIdx is an internal counter that is increased by Throw().
-		// Allows to specify to which stack frame fields or message will be attached.
-		stackIdx int16
-
 		needSetFinalizer bool
 	}
 )
@@ -153,8 +149,8 @@ func (e *Error) IsNil() bool {
 // Does nothing for lightweight errors.
 // Nil safe.
 func (e *Error) Throw() *Error {
-	if e.IsValid() && e.stackIdx+1 < int16(len(e.letter.StackTrace)) {
-		e.stackIdx++
+	if e.IsValid() {
+		ekaletter.LIncStackIdx(e.letter)
 	}
 	return e
 }

@@ -132,6 +132,31 @@ func LPopLastMessage(l *Letter) string {
 	return ""
 }
 
+// LIncStackIdx increments Letter's stackIdx property if it's allowed.
+// Returns a new value.
+//
+// Increment won't happen (and current value is returned) if it's maximum
+// of allowed stack idx for the current len of stackframe.
+func LIncStackIdx(l *Letter) {
+	if l.stackFrameIdx+1 < int16(len(l.StackTrace)) {
+		l.stackFrameIdx++
+	}
+}
+
+// LGetStackIdx returns Letter's stackIdx property.
+func LGetStackIdx(l *Letter) int16 {
+	return l.stackFrameIdx
+}
+
+// LSetStackIdx replaces a Letter's stackIdx to the provided one returning an old.
+// IT MUST BE USED CAREFULLY. YOU CAN GET A PANIC IF YOUR STACK INDEX
+// IS GREATER THAN A LENGTH OF EMBEDDED STACKFRAME.
+func LSetStackIdx(l *Letter, newStackIdx int16) (oldStackIdx int16) {
+	oldStackIdx = l.stackFrameIdx
+	l.stackFrameIdx = newStackIdx
+	return oldStackIdx
+}
+
 // LReset resets all internal fields, frees unnecessary RAM, preparing
 // it for being returned to the pool and being reused in the future.
 func LReset(l *Letter) *Letter {

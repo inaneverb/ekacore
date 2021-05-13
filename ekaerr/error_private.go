@@ -49,7 +49,6 @@ func (e *Error) cleanup() *Error {
 	// they will be overwritten too.
 
 	e.letter.StackTrace = nil
-	e.stackIdx = 0
 
 	ekaletter.LReset(e.letter)
 	return e
