@@ -218,7 +218,7 @@ func (e *Error) WithAny(key string, value interface{}) *Error { return e.addFiel
 
 func (e *Error) WithMany(fields ...ekaletter.LetterField) *Error { return e.addFields(fields) }
 
-func (e *Error) WithManyAny(fields ...interface{}) *Error { return e.addFieldsParse(fields) }
+func (e *Error) WithManyAny(fields ...interface{}) *Error { return e.addFieldsParse(fields, true) }
 
 // Apply calls f callback passing the current Error object into and returning
 // the Error object, callback is return what.

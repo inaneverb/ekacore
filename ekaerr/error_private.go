@@ -76,9 +76,9 @@ func (e *Error) addFields(fs []ekaletter.LetterField) *Error {
 // addFieldsParse creates a ekaletter.LetterField objects based on passed values,
 // try to treating them as a key-value pairs of that fields.
 // Then adds generated ekaletter.LetterField to the Error only if those fields are addable.
-func (e *Error) addFieldsParse(fs []interface{}) *Error {
+func (e *Error) addFieldsParse(fs []interface{}, onlyFields bool) *Error {
 	if e.IsValid() && len(fs) > 0 {
-		ekaletter.LParseTo(e.letter, fs, true)
+		ekaletter.LParseTo(e.letter, fs, onlyFields)
 	}
 	return e
 }
@@ -261,5 +261,5 @@ func newError(
 ) *Error {
 
 	return acquireError().init(classID, namespaceID, lightweight).
-		construct(message, legacyErr).addFieldsParse(args)
+		construct(message, legacyErr).addFieldsParse(args, false)
 }
