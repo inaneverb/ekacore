@@ -82,4 +82,6 @@ func (ci *CommonIntegrator) build() {
 			ci.stll = output.stacktraceMinLevel
 		}
 	}
+
+	ci.isRegistered = true
 }

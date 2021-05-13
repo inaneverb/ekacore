@@ -984,14 +984,14 @@ func (ce *CI_ConsoleEncoder) encodeFieldValue(to []byte, f ekaletter.LetterField
 			}
 
 		case ekaletter.KIND_TYPE_STRUCT:
-			if jsonedStruct, legacyErr := jsoniter.Marshal(f.Value); legacyErr != nil {
+			if jsonedStruct, legacyErr := jsoniter.Marshal(f.Value); legacyErr == nil {
 				to = bufw2(to, jsonedStruct)
 			} else {
 				to = bufw(to, "<unsupported_struct>")
 			}
 
 		case ekaletter.KIND_TYPE_ARRAY:
-			if jsonedArray, legacyErr := jsoniter.Marshal(f.Value); legacyErr != nil {
+			if jsonedArray, legacyErr := jsoniter.Marshal(f.Value); legacyErr == nil {
 				to = bufw2(to, jsonedArray)
 			} else {
 				to = bufw(to, "<unsupported_array>")

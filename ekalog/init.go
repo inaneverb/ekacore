@@ -23,6 +23,7 @@ func init() {
 		WithMinLevel(LEVEL_DEBUG).
 		WithMinLevelForStackTrace(LEVEL_WARNING).
 		WriteTo(os.Stdout)
+	integrator.build()
 
 	entry := acquireEntry()
 
