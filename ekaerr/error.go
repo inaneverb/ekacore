@@ -301,6 +301,18 @@ func (e *Error) Class() Class {
 	return classByID(e.classID, true)
 }
 
+// ReplaceClass replaces both of Error's Class and Namespace to the provided Class
+// and its Namespace.
+// Does nothing if any of Error or new Class is invalid.
+// Nil safe.
+func (e *Error) ReplaceClass(newClass Class) *Error {
+	if e.IsValid() && newClass.IsValid() {
+		e.classID = newClass.id
+		e.namespaceID = newClass.namespaceID
+	}
+	return e
+}
+
 // ID returns an unique Error's ID as ULID. You can tell this ID to the user and
 // log this error. Then it will be easy to find an associated error.
 // Returns "" if Error is not valid.
