@@ -58,14 +58,18 @@ func (e *Error) cleanup() *Error {
 // addField checks whether Error is valid and adds an ekaletter.LetterField
 // to current Error, if field is addable.
 func (e *Error) addField(f ekaletter.LetterField) *Error {
-	ekaletter.LAddFieldWithCheck(e.letter, f)
+	if e.IsValid() {
+		ekaletter.LAddFieldWithCheck(e.letter, f)
+	}
 	return e
 }
 
 // addFields is the same as addField() but works with an array of ekaletter.LetterField.
 func (e *Error) addFields(fs []ekaletter.LetterField) *Error {
-	for i, n := 0, len(fs); i < n; i++ {
-		ekaletter.LAddFieldWithCheck(e.letter, fs[i])
+	if e.IsValid() {
+		for i, n := 0, len(fs); i < n; i++ {
+			ekaletter.LAddFieldWithCheck(e.letter, fs[i])
+		}
 	}
 	return e
 }
