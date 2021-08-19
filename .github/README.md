@@ -3,6 +3,7 @@
   <br>
 </p>
 <p align="center">
+<sub>
 Ekago is a useful Golang packages toolkit that I wrote for myself and published for others.
 <br>
 And this is the first toolkit that contains both of improved logging and error generating mechanisms which are strongly linked to each other.
@@ -10,10 +11,10 @@ Honestly, this project has been started as "another one logging library", but no
 <br>
 The root of project does not provide any code. It's toolkit, remember?
 All subpackages that this package has been named starting with "eka" avoiding your package's names import conflicting and import renaming. A trifle, but nice.
+</sub>
+</p>
 
 ---
-
------
 
 Each **Ekago** subpackage has its own readme file where you can meet with them face by face, read more and get an answers to "What? Why? How?".
 
