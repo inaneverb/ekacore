@@ -1,6 +1,3 @@
-
-![ekago_logo](https://user-images.githubusercontent.com/16417743/85555445-9a32e900-b62e-11ea-9a38-464199ff08e5.jpg)
-
 <p align="center">
   <img alt="Privet" height="125" src="https://raw.githubusercontent.com/qioalice/ekago/master/.github/logo.svg">
   <br>
