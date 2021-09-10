@@ -82,42 +82,42 @@ func (ts Timestamp) TillNextYear() time.Duration {
 
 // TillNextMinute is the same as Timestamp.TillNextMinute() but for current time.
 func TillNextMinute() time.Duration {
-	return Now().TillNextMinute()
+	return NewTimestampNow().TillNextMinute()
 }
 
 // TillNextHour is the same as Timestamp.TillNextHour() but for current time.
 func TillNextHour() time.Duration {
-	return Now().TillNextHour()
+	return NewTimestampNow().TillNextHour()
 }
 
 // TillNext12h is the same as Timestamp.TillNext12h() but for current time.
 func TillNext12h() time.Duration {
-	return Now().TillNext12h()
+	return NewTimestampNow().TillNext12h()
 }
 
 // TillNextNoon is the same as Timestamp.TillNextNoon() but for current time.
 func TillNextNoon() time.Duration {
-	return Now().TillNextNoon()
+	return NewTimestampNow().TillNextNoon()
 }
 
 // TillNextMidnight is the same as Timestamp.TillNextMidnight() but for current time.
 func TillNextMidnight() time.Duration {
-	return Now().TillNextMidnight()
+	return NewTimestampNow().TillNextMidnight()
 }
 
 // TillNextDay is the same as Timestamp.TillNextDay() but for current time.
 func TillNextDay() time.Duration {
-	return Now().TillNextDay()
+	return NewTimestampNow().TillNextDay()
 }
 
 // TillNextMonth is the same as Timestamp.TillNextMonth() but for current time.
 func TillNextMonth() time.Duration {
-	return Now().TillNextMonth()
+	return NewTimestampNow().TillNextMonth()
 }
 
 // TillNextYear is the same as Timestamp.TillNextYear() but for current time.
 func TillNextYear() time.Duration {
-	return Now().TillNextYear()
+	return NewTimestampNow().TillNextYear()
 }
 
 func(ts Timestamp) tillNext(range_ Timestamp) Timestamp {

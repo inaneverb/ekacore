@@ -154,5 +154,5 @@ func (t Time) Add(h Hour, m Minute, s Second) Time {
 // as a new Timestamp object.
 func (t Time) WithDate(y Year, m Month, d Day) Timestamp {
 	hh, mm, ss := t.Split()
-	return UnixFrom(y, m, d, hh, mm, ss)
+	return NewTimestamp(y, m, d, hh, mm, ss)
 }

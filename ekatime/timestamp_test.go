@@ -32,7 +32,7 @@ func TestDate_Equal(t *testing.T) {
 // =========================================================================== //
 
 func Benchmark_BeginningOfYear_CachedYear(b *testing.B) {
-	currYear := ekatime.Now().Year()
+	currYear := ekatime.NewTimestampNow().Year()
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -41,7 +41,7 @@ func Benchmark_BeginningOfYear_CachedYear(b *testing.B) {
 }
 
 func Benchmark_BeginningOfYear_NonCachedYear(b *testing.B) {
-	notCachedYear := ekatime.Now().Year() + 20
+	notCachedYear := ekatime.NewTimestampNow().Year() + 20
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -50,7 +50,7 @@ func Benchmark_BeginningOfYear_NonCachedYear(b *testing.B) {
 }
 
 func Benchmark_EndOfYear_CachedYear(b *testing.B) {
-	currYear := ekatime.Now().Year()
+	currYear := ekatime.NewTimestampNow().Year()
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -59,7 +59,7 @@ func Benchmark_EndOfYear_CachedYear(b *testing.B) {
 }
 
 func Benchmark_EndOfYear_NonCachedYear(b *testing.B) {
-	notCachedYear := ekatime.Now().Year() + 20
+	notCachedYear := ekatime.NewTimestampNow().Year() + 20
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -68,7 +68,7 @@ func Benchmark_EndOfYear_NonCachedYear(b *testing.B) {
 }
 
 func Benchmark_BeginningAndEndOfYear_CachedYear(b *testing.B) {
-	currYear := ekatime.Now().Year()
+	currYear := ekatime.NewTimestampNow().Year()
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -77,7 +77,7 @@ func Benchmark_BeginningAndEndOfYear_CachedYear(b *testing.B) {
 }
 
 func Benchmark_BeginningAndEndOfYear_NonCachedYear(b *testing.B) {
-	notCachedYear := ekatime.Now().Year() + 20
+	notCachedYear := ekatime.NewTimestampNow().Year() + 20
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -90,7 +90,7 @@ func Benchmark_BeginningAndEndOfYear_NonCachedYear(b *testing.B) {
 // =========================================================================== //
 
 func Benchmark_BeginningOfMonth_CachedYear(b *testing.B) {
-	currYear := ekatime.Now().Year()
+	currYear := ekatime.NewTimestampNow().Year()
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -99,7 +99,7 @@ func Benchmark_BeginningOfMonth_CachedYear(b *testing.B) {
 }
 
 func Benchmark_BeginningOfMonth_NonCachedYear(b *testing.B) {
-	notCachedYear := ekatime.Now().Year() + 20
+	notCachedYear := ekatime.NewTimestampNow().Year() + 20
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -108,7 +108,7 @@ func Benchmark_BeginningOfMonth_NonCachedYear(b *testing.B) {
 }
 
 func Benchmark_EndOfMonth_CachedYear(b *testing.B) {
-	currYear := ekatime.Now().Year()
+	currYear := ekatime.NewTimestampNow().Year()
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -117,7 +117,7 @@ func Benchmark_EndOfMonth_CachedYear(b *testing.B) {
 }
 
 func Benchmark_EndOfMonth_NonCachedYear(b *testing.B) {
-	notCachedYear := ekatime.Now().Year() + 20
+	notCachedYear := ekatime.NewTimestampNow().Year() + 20
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -126,7 +126,7 @@ func Benchmark_EndOfMonth_NonCachedYear(b *testing.B) {
 }
 
 func Benchmark_BeginningAndEndOfMonth_CachedYear(b *testing.B) {
-	currYear := ekatime.Now().Year()
+	currYear := ekatime.NewTimestampNow().Year()
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -135,7 +135,7 @@ func Benchmark_BeginningAndEndOfMonth_CachedYear(b *testing.B) {
 }
 
 func Benchmark_BeginningAndEndOfMonth_NonCachedYear(b *testing.B) {
-	notCachedYear := ekatime.Now().Year() + 20
+	notCachedYear := ekatime.NewTimestampNow().Year() + 20
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -148,9 +148,9 @@ func Benchmark_BeginningAndEndOfMonth_NonCachedYear(b *testing.B) {
 // =========================================================================== //
 
 func TestTimestamp_String(t *testing.T) {
-	ts1 := ekatime.UnixFrom(2020, 9, 1,14, 2, 13)
-	ts2 := ekatime.UnixFrom(1812, 11, 24, 23, 59, 59)
-	ts3 := ekatime.UnixFrom(2100, 2, 15, 0, 0, 0)
+	ts1 := ekatime.NewTimestamp(2020, 9, 1,14, 2, 13)
+	ts2 := ekatime.NewTimestamp(1812, 11, 24, 23, 59, 59)
+	ts3 := ekatime.NewTimestamp(2100, 2, 15, 0, 0, 0)
 
 	require.EqualValues(t, "2020/09/01 14:02:13", ts1.String())
 	require.EqualValues(t, "1812/11/24 23:59:59", ts2.String())
@@ -158,7 +158,7 @@ func TestTimestamp_String(t *testing.T) {
 }
 
 func BenchmarkTimestamp_String_Cached(b *testing.B) {
-	ts0 := ekatime.UnixFrom(2020, 9, 1,14, 2, 13)
+	ts0 := ekatime.NewTimestamp(2020, 9, 1,14, 2, 13)
 	b.ResetTimer(); b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		_ = ts0.String()
@@ -166,7 +166,7 @@ func BenchmarkTimestamp_String_Cached(b *testing.B) {
 }
 
 func BenchmarkTimestamp_String_FmtSprintf(b *testing.B) {
-	dd, tt := ekatime.UnixFrom(2020, 9, 1,14, 2, 13).Split()
+	dd, tt := ekatime.NewTimestamp(2020, 9, 1,14, 2, 13).Split()
 	y, m, d := dd.Split()
 	hh, mm, ss := tt.Split()
 	b.ResetTimer(); b.ReportAllocs()
@@ -186,10 +186,10 @@ func TestTimestamp_ParseFrom(t *testing.T) {
 	bd4 := []byte("2020-09-01t12:13:14") // valid
 	bd5 := []byte("2020-09-0112:13:14")  // invalid (w/o T)
 
-	orig1 := ekatime.UnixFrom(1814, 5, 12, 0, 0, 0)
-	orig2 := ekatime.UnixFrom(2020, 9, 1, 0, 0, 0)
-	orig3 := ekatime.UnixFrom(2020, 9, 1, 23, 59, 59)
-	orig4 := ekatime.UnixFrom(2020, 9, 1, 12, 13, 14)
+	orig1 := ekatime.NewTimestamp(1814, 5, 12, 0, 0, 0)
+	orig2 := ekatime.NewTimestamp(2020, 9, 1, 0, 0, 0)
+	orig3 := ekatime.NewTimestamp(2020, 9, 1, 23, 59, 59)
+	orig4 := ekatime.NewTimestamp(2020, 9, 1, 12, 13, 14)
 
 	var (ts1, ts2, ts3, ts4, ts5 ekatime.Timestamp)
 
@@ -224,7 +224,7 @@ func TestTimestamp_MarshalJSON(t *testing.T) {
 	var ts = struct {
 		TS ekatime.Timestamp `json:"ts"`
 	}{
-		TS: ekatime.UnixFrom(2020, 9, 12, 13, 14, 15),
+		TS: ekatime.NewTimestamp(2020, 9, 12, 13, 14, 15),
 	}
 	d, err := json.Marshal(&ts)
 

@@ -135,12 +135,12 @@ func (ts Timestamp) Weekday() Weekday {
 	return Weekday(((ts + SECONDS_IN_DAY) % SECONDS_IN_WEEK) / SECONDS_IN_DAY)
 }
 
-// Now is just the same as time.Now().
-func Now() Timestamp {
-	return UnixFromStd(time.Now())
+// NewTimestampNow is just the same as time.Now().
+func NewTimestampNow() Timestamp {
+	return NewTimestampFromStd(time.Now())
 }
 
-// UnixFrom creates and returns Timestamp object from the presented Date 'd'
+// NewTimestamp creates and returns Timestamp object from the presented Date 'd'
 // and Time 't'.
 //
 // WARNING!
@@ -148,7 +148,7 @@ func Now() Timestamp {
 // and Timestamp.MarshalJSON() will return JSON null for that value,
 // and Timestamp.Date() will return 0/0/0 Date, NOT 01 Jan 1970!
 // To avoid it, use 00:00:01 as Time.
-func UnixFrom(y Year, m Month, d Day, hh Hour, mm Minute, ss Second) Timestamp {
+func NewTimestamp(y Year, m Month, d Day, hh Hour, mm Minute, ss Second) Timestamp {
 	if y > 4095 {
 		y = 4095
 	}
@@ -156,9 +156,9 @@ func UnixFrom(y Year, m Month, d Day, hh Hour, mm Minute, ss Second) Timestamp {
 	return Timestamp(tt.Unix())
 }
 
-// UnixFromStd creates and returns Timestamp object from the standard Golang's
+// NewTimestampFromStd creates and returns Timestamp object from the standard Golang's
 // time.Time object (UTC time).
-func UnixFromStd(t time.Time) Timestamp {
+func NewTimestampFromStd(t time.Time) Timestamp {
 	return Timestamp(t.Unix())
 }
 

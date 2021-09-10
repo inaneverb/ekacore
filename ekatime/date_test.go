@@ -159,6 +159,9 @@ func TestDate_Days(t *testing.T) {
 
 	d = ekatime.NewDate(2021, ekatime.MONTH_JANUARY, 0)
 	require.EqualValues(t, 366, d.Days())
+
+	d = ekatime.NewDate(2021, ekatime.MONTH_SEPTEMBER, 10)
+	require.EqualValues(t, 253, d.Days())
 }
 
 var TestDateWeekNumber = []struct{
@@ -521,4 +524,15 @@ func TestDate_ISOWeek(t *testing.T) {
 	for _, n := range TestDateWeekNumber {
 		require.Equal(t, n.expectedWeekNumber, ekatime.NewDate(n.y, n.m, n.d).ISOWeek())
 	}
+}
+
+func TestNewDateFromDays(t *testing.T) {
+	require.Equal(t,
+		ekatime.NewDate(2021, ekatime.MONTH_SEPTEMBER, 10).ToCmp(),
+		ekatime.NewDateFromDays(2021, 253).ToCmp(),
+	)
+	require.EqualValues(t,
+		253,
+		ekatime.NewDateFromDays(2021, 253).Days(),
+	)
 }

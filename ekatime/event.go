@@ -10,6 +10,10 @@ import (
 )
 
 type (
+	// EventID is an alias to Golang unit type
+	// that is used to represents an Event's ID.
+	EventID uint16
+
 	// Event represents some unusual days - events.
 	// Like holidays, personal vacation days or work day off, etc.
 	//
@@ -24,6 +28,10 @@ type (
 	// Takes just 8 byte. At all! Thanks to bitwise operations.
 	Event uint64
 )
+
+func (e Event) IsValid() bool {
+	return e != _EVENT_INVALID && e.Date().IsValid()
+}
 
 //
 func (e Event) Year() Year {
@@ -57,16 +65,16 @@ func (e Event) IsWorkday() bool {
 
 //
 func (e Event) IsDayOff() bool {
-	return uint8(e >> _EVENT_OFFSET_IS_WORKDAY) & _EVENT_MASK_IS_WORKDAY > 0
+	return uint8((e >> _EVENT_OFFSET_IS_WORKDAY) & _EVENT_MASK_IS_WORKDAY) > 0
 }
 
 //
-func (e Event) ID() uint16 {
-	return uint16(e >> _EVENT_OFFSET_ID) & _EVENT_MASK_ID
+func (e Event) ID() EventID {
+	return EventID(e >> _EVENT_OFFSET_ID & _EVENT_MASK_ID)
 }
 
 //
-func NewEvent(d Date, id uint16, isDayOff bool) Event {
+func NewEvent(d Date, id EventID, isDayOff bool) Event {
 
 	isDayOffBit := Event(0)
 	if isDayOff {
@@ -76,7 +84,7 @@ func NewEvent(d Date, id uint16, isDayOff bool) Event {
 	d = d.ensureWeekdayExist()
 
 	return Event(d & _DATE_MASK_DATE) << _EVENT_OFFSET_DATE | isDayOffBit |
-		Event(id & _EVENT_MASK_ID) << _EVENT_OFFSET_ID
+		(Event(id) & _EVENT_MASK_ID) << _EVENT_OFFSET_ID
 }
 
 // String returns the current Event's string representation in the following format:

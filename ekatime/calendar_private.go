@@ -99,7 +99,7 @@ func (c *Calendar) updateToday() *Today {
 	newToday := new(Today)
 	newToday.c = c
 
-	newToday.Timestamp = Now()
+	newToday.Timestamp = NewTimestampNow()
 
 	newToday.Date, newToday.Time                    = newToday.Timestamp.Split()
 	newToday.Year, newToday.Month, newToday.Day     = newToday.Date.Split()

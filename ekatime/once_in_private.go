@@ -150,7 +150,7 @@ func (oie onceInExeElem) invoke(ts Timestamp) {
 func onceInWorker() {
 
 	for atomic.LoadInt32(&onceInShutdownRequested) == 0 {
-		ts := Now()
+		ts := NewTimestampNow()
 		onceInFibHeapMu.Lock()
 
 		nearestOie := onceInFibHeap.FindMin()
@@ -162,7 +162,7 @@ func onceInWorker() {
 			continue
 		}
 
-		// If we're here, nearestOie is not nil and it time has come.
+		// If we're here, nearestOie is not nil and its time has come.
 		_ = onceInFibHeap.DeleteMin() // the same as nearestOie
 
 		// Register next call.
@@ -198,7 +198,7 @@ func onceInRegister(cb OnceInCallback, panicCb []OnceInPanicCallback, repeatDela
 		afterDelay = 0
 	}
 	
-	oie := onceInExeElem{ Now(), repeatDelay, afterDelay, cb, panicCb_ }
+	oie := onceInExeElem{NewTimestampNow(), repeatDelay, afterDelay, cb, panicCb_ }
 	if !invokeNow {
 		oie.when += oie.when.tillNext(repeatDelay) + afterDelay
 	}
@@ -221,7 +221,7 @@ func initOnceIn() {
 		<-onceInShutdownConfirmed
 	})
 	
-	now := Now()
+	now := NewTimestampNow()
 
 	OnceInMinute.init(now, SECONDS_IN_MINUTE)
 	OnceIn10Minutes.init(now, SECONDS_IN_MINUTE * 10)

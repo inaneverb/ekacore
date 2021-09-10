@@ -29,6 +29,11 @@ const (
 	_DATE_MASK_DATE      Date    = (Date(1) << _DATE_OFFSET_UNUSED) - 1
 )
 
+//goland:noinspection GoSnakeCaseUsage
+const (
+	_DATE_INVALID Date = 0
+)
+
 //noinspection GoSnakeCaseUsage
 const (
 	// Min and max values to use _YEAR_AS_NUM_STR instead of strconv.Itoa()

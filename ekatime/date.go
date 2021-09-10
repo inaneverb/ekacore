@@ -16,7 +16,7 @@ type (
 
 	// Days is like time.Duration from std Golang lib,
 	// but indicates time's range in passed days.
-	Days int32
+	Days int16
 
 	// Month is a special type that has enough space to store Month's number.
 	// Valid values: [1..12]. Use predefined constants to make it clear.
@@ -40,14 +40,14 @@ type (
 	//     Because of the internal parts, the Date objects that represents the same
 	//     date (e.g: 01 Jan 1970) may not be equal by just eq comparison, like:
 	//
-	//         d1 := UnixFrom(NewDate(1970, 1, 1), 0).Date()
+	//         d1 := NewTimestamp(NewDate(1970, 1, 1), 0).Date()
 	//         d2 := NewDate(1970, 1, 1)
 	//         d1 == d2 // false <---
 	//
 	//     For being able to use eq operator, call ToCmp() before,
 	//     or use Equal() method:
 	//
-	//         d1 := UnixFrom(NewDate(1970, 1, 1), 0).Date()
+	//         d1 := NewTimestamp(NewDate(1970, 1, 1), 0).Date()
 	//         d2 := NewDate(1970, 1, 1)
 	//         d1.ToCmp() == d2.ToCmp() // true <---
 	//         d1.Equal(d2) // true <---
@@ -71,6 +71,31 @@ const (
 	MONTH_DECEMBER
 )
 
+// BelongsToMonth reports whether passed Day belongs to provided Month.
+//
+// It returns true for 29 Feb, cause there's no leap year check.
+// If you want it, use Day.BelongsToMonthAndYear() method.
+func (d Day) BelongsToMonth(m Month) bool {
+
+	// 2004 is a leap year, so leap check will pass.
+	// Thus, call Day(29).BelongsToMonth() will always return true.
+
+	return d.BelongsToMonthAndYear(2004, m)
+}
+
+// BelongsToMonthAndYear reports whether passed Day belongs to provided Month,
+// with checking leap year.
+func (d Day) BelongsToMonthAndYear(y Year, m Month) bool {
+	return (m.IsValid() && d <= _Table0[m-1]) || (d == 29 && m == MONTH_FEBRUARY && y.IsLeap())
+}
+
+// BelongsToYear reports whether current Days object belongs to provided Year
+// (has value [1..365/366]).
+// The upper bound depends of whether provided year is leap or not.
+func (d Days) BelongsToYear(y Year) bool {
+	return (1 <= d && d <= 365) || (d == 366 && y.IsLeap())
+}
+
 // IsValid reports whether m is valid month (any of Jan,Feb,...,Dec).
 func (m Month) IsValid() bool {
 	return MONTH_JANUARY <= m && m <= MONTH_DECEMBER
@@ -85,6 +110,11 @@ func (m Month) DaysInForYear(y Year) Day {
 // where m is the current Month.
 func (m Month) DaysInIgnoreYear() Day {
 	return DaysInMonthIgnoreYear(m)
+}
+
+// IsValid reports whether current Year is valid and between [1900..4095] years.
+func (y Year) IsValid() bool {
+	return _YEAR_MIN <= y && y <= _YEAR_MAX
 }
 
 // IsLeap returns true if the current year is leap (e.g. 1992, 1996, 2000, 2004, etc).
@@ -122,7 +152,7 @@ func (dd Date) Equal(other Date) bool {
 // only if Date has not been created manually but using constructors
 // like NewDate(), Event.Date(), Timestamp.Date(), Timestamp.Split(), etc.
 func (dd Date) Year() Year {
-	return Year(dd >> _DATE_OFFSET_YEAR) & _DATE_MASK_YEAR
+	return Year(dd>>_DATE_OFFSET_YEAR) & _DATE_MASK_YEAR
 }
 
 // Month returns the month number the current Date includes which.
@@ -132,7 +162,7 @@ func (dd Date) Year() Year {
 // only if Date has not been created manually but using constructors
 // like NewDate(), Event.Date(), Timestamp.Date(), Timestamp.Split(), etc.
 func (dd Date) Month() Month {
-	return Month(dd >> _DATE_OFFSET_MONTH) & _DATE_MASK_MONTH
+	return Month(dd>>_DATE_OFFSET_MONTH) & _DATE_MASK_MONTH
 }
 
 // Day returns the day number the current Date includes which.
@@ -141,7 +171,7 @@ func (dd Date) Month() Month {
 // only if Date has not been created manually but using constructors
 // like NewDate(), Event.Date(), Timestamp.Date(), Timestamp.Split(), etc.
 func (dd Date) Day() Day {
-	return Day(dd >> _DATE_OFFSET_DAY) & _DATE_MASK_DAY
+	return Day(dd>>_DATE_OFFSET_DAY) & _DATE_MASK_DAY
 }
 
 // DaysInMonth returns how much days the month contains the current Date includes which.
@@ -158,7 +188,7 @@ func (dd Date) DaysInMonth() Day {
 // Returns -1, if Year and Month not in their allowed ranges.
 func DaysInMonth(y Year, m Month) Day {
 	if _YEAR_MIN <= y && y <= _YEAR_MAX &&
-			MONTH_JANUARY <= m && m <= MONTH_DECEMBER {
+		MONTH_JANUARY <= m && m <= MONTH_DECEMBER {
 		d := _Table0[m-1]
 		if m == MONTH_FEBRUARY && y.IsLeap() {
 			d++
@@ -181,8 +211,8 @@ func DaysInMonthIgnoreYear(m Month) Day {
 
 // Weekday returns the current Date's day of week.
 func (dd Date) Weekday() Weekday {
-	if w := Weekday(dd >> _DATE_OFFSET_WEEKDAY) & _DATE_MASK_WEEKDAY; w > 0 {
-		return w-1
+	if w := Weekday(dd>>_DATE_OFFSET_WEEKDAY) & _DATE_MASK_WEEKDAY; w > 0 {
+		return w - 1
 	} else {
 		return dd.WithTime(0, 0, 0).Weekday()
 	}
@@ -200,7 +230,7 @@ func (dd Date) ISOWeek() WeekNumber {
 	if dow == 0 {
 		dow = 7
 	}
-	thu := d + Day(4 - dow) // nearest thursday
+	thu := d + Day(4-dow) // nearest thursday
 	if m == MONTH_DECEMBER && thu > 31 {
 		return 1
 	}
@@ -209,14 +239,14 @@ func (dd Date) ISOWeek() WeekNumber {
 		m = MONTH_DECEMBER
 		thu += 31
 	}
-	doy := math.Floor(275 * float64(m) / 9) + float64(thu - 31)
+	doy := math.Floor(275*float64(m)/9) + float64(thu-31)
 	if m > MONTH_FEBRUARY {
 		if IsLeap(y) {
 			doy++
 		}
 		doy -= 2
 	}
-	return WeekNumber(1 + math.Floor(doy / 7))
+	return WeekNumber(1 + math.Floor(doy/7))
 }
 
 // Split returns the year number, month number and day number the current Date
@@ -251,6 +281,23 @@ func NewDate(y Year, m Month, d Day) Date {
 	return (Date(y) << _DATE_OFFSET_YEAR) |
 		(Date(m) << _DATE_OFFSET_MONTH) |
 		(Date(d) << _DATE_OFFSET_DAY)
+}
+
+// NewDateFromDays creates a new Date object using provided year number
+// and the day of year on row.
+//
+// It's allowed to pass < 0 days
+// to construct a date less than 1 Jan of your year.
+//
+// Examples:
+//
+//  NewDateFromDays(2021, 0)  // 1 Jan 2021
+//  NewDateFromDays(2021, 1)  // 2 Jan 2021
+//  NewDateFromDays(2021, 31)  // 2 Feb 2021
+//  NewDateFromDays(2021, 253) // 11 Sep 2021
+//
+func NewDateFromDays(y Year, days Days) Date {
+	return NewDate(y, MONTH_JANUARY, 1).AddDays(days - 1)
 }
 
 // Replace returns a new Date based on the current.
@@ -431,14 +478,14 @@ func (dd Date) Days() Days {
 // AddDays returns a new Date based on the current Date.
 // It additions exactly passed days to the current Date and returns a result.
 func (dd Date) AddDays(days Days) Date {
-	return (dd.WithTime(0, 0, 0) + Timestamp(days) * SECONDS_IN_DAY).Date()
+	return (dd.WithTime(0, 0, 0) + Timestamp(days)*SECONDS_IN_DAY).Date()
 }
 
 // WithTime returns the current Date with the presented Time's hour, minute, second
 // as a new Timestamp object.
 func (dd Date) WithTime(hh Hour, mm Minute, ss Second) Timestamp {
 	y, m, d := dd.Split()
-	return UnixFrom(y, m, d, hh, mm,ss)
+	return NewTimestamp(y, m, d, hh, mm, ss)
 }
 
 // IsLeap returns true if 'y' Year is leap (e.g. 1992, 1996, 2000, 2004, etc).
@@ -486,13 +533,13 @@ func BeginningOfYear(y Year) Timestamp {
 //
 // It's up to 4.8 times faster for [1970..N+10] years, where N is current year.
 func EndOfYear(y Year) Timestamp {
-	return getBeginningOfYear(y) + InYear(y) -1 // there is no need of normalizing
+	return getBeginningOfYear(y) + InYear(y) - 1 // there is no need of normalizing
 }
 
 // BeginningAndEndOfYear is like BeginningOfYear() and EndOfYear() calls.
 func BeginningAndEndOfYear(y Year) TimestampPair {
-	by := getBeginningOfYear(y) // there is no need of normalizing
-	return TimestampPair{by, by + InYear(y) -1} // there is no need of normalizing
+	by := getBeginningOfYear(y)                  // there is no need of normalizing
+	return TimestampPair{by, by + InYear(y) - 1} // there is no need of normalizing
 }
 
 // BeginningOfMonth returns the Timestamp of the 'm' month beginning in 'y' year:
@@ -508,11 +555,11 @@ func BeginningOfMonth(y Year, m Month) Timestamp {
 //
 // It's up to 2.1 times faster for [1970..N+10] years, where N is current year.
 func EndOfMonth(y Year, m Month) Timestamp {
-	return getBeginningOfMonth(y, m) + InMonth(y, m) -1 // there is no need of normalizing
+	return getBeginningOfMonth(y, m) + InMonth(y, m) - 1 // there is no need of normalizing
 }
 
 // BeginningAndEndOfMonth is like BeginningOfMonth() and EndOfMonth() calls.
 func BeginningAndEndOfMonth(y Year, m Month) TimestampPair {
-	bm := getBeginningOfMonth(y, m) // there is no need of normalizing
-	return TimestampPair{bm, bm + InMonth(y, m) -1} // there is no need of normalizing
+	bm := getBeginningOfMonth(y, m)                  // there is no need of normalizing
+	return TimestampPair{bm, bm + InMonth(y, m) - 1} // there is no need of normalizing
 }

@@ -39,7 +39,7 @@ var (
 	// meaning that inside one minute you will get the same unix timestamp.
 	//
 	// It's useful when you do not need an exact time or time with highest precision
-	// because of Now() call more expensive than these calls (up to 8x times).
+	// because of NewTimestampNow() call more expensive than these calls (up to 8x times).
 	// -----
 
 	// OnceInMinute allows you to get an actual time once in 60 seconds (1 minute).
