@@ -11,7 +11,15 @@ import (
 	"unsafe"
 )
 
-func (bs *BitSet) DebugDump() {
+func (bs *BitSet) DebugOnesAsSlice(expectedValues uint) []uint {
+	ones := make([]uint, 0, MaxU(expectedValues, _BITSET_MINIMUM_CAPACITY) +1)
+	for v, e := bs.NextUp(0); e; v, e = bs.NextUp(v) {
+		ones = append(ones, v)
+	}
+	return ones
+}
+
+func (bs *BitSet) DebugFullDump() {
 
 	fmt.Printf("Bitset dump of [%x]\n", uintptr(unsafe.Pointer(bs)))
 	defer fmt.Printf("End of bitset dump of [%x]\n", uintptr(unsafe.Pointer(bs)))
@@ -23,7 +31,7 @@ func (bs *BitSet) DebugDump() {
 	countOnes := bs.Count()
 
 	fmt.Printf("\tIs valid:       %t\n", bs.IsValid())
-	fmt.Printf("\tChunk bit size: %d\n", _BITSET_GENERIC_BITS_PER_CHUNK)
+	fmt.Printf("\tChunk bit size: %d\n", _BITSET_BITS_PER_CHUNK)
 	fmt.Printf("\tChunk len:      %d\n", len(bs.bs))
 	fmt.Printf("\tChunk capacity: %d\n", cap(bs.bs))
 	fmt.Printf("\tCapacity:       %d\n", bs.Capacity())
@@ -32,17 +40,11 @@ func (bs *BitSet) DebugDump() {
 	fmt.Printf("\tAs chunks:      %v\n", bs.bs)
 
 	var bits strings.Builder
-	bits.Grow(len(bs.bs) * (8+1))
+	bits.Grow(int(bs.chunkSize() * (_BITSET_BITS_PER_CHUNK +1)))
 	for _, chunk := range bs.bs {
 		_, _ = fmt.Fprintf(&bits, "%b ", chunk)
 	}
 
 	fmt.Printf("\tAs bits:        [%s]\n", strings.TrimSpace(bits.String()))
-
-	ones := make([]uint, 0, countOnes +1)
-	for v, e := bs.NextUp(0); e; v, e = bs.NextUp(v+1) {
-		ones = append(ones, v)
-	}
-
-	fmt.Printf("\tAs elems:       %v\n", ones)
+	fmt.Printf("\tAs elems:       %v\n", bs.DebugOnesAsSlice(countOnes))
 }
