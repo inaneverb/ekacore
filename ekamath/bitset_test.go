@@ -135,3 +135,59 @@ func TestBitSet_Operations(t *testing.T) {
 
 	require.EqualValues(t, []uint{2, 4, 5, 8, 9, 11, 12, 13, 15, 16, 17, 18}, bs3.DebugOnesAsSlice(32))
 }
+
+func TestBitSet_CountBetween(t *testing.T) {
+
+	bs1 := ekamath.NewBitSet(32)
+
+	set1 := []uint{1, 2, 4, 5, 7, 10, 11, 17, 18, 19, 23, 25, 28, 29, 30, 31, 32}
+	for _, set1Elem := range set1 {
+		bs1.Up(set1Elem)
+	}
+
+	require.EqualValues(t, set1, bs1.DebugOnesAsSlice(32))
+
+	c := bs1.CountBetween(1, 32)
+	require.EqualValues(t, len(set1), int(c))
+
+	c = bs1.CountBetween(3, 20)
+	require.EqualValues(t, 8, int(c))
+
+	c = bs1.CountBetween(12, 16)
+	require.EqualValues(t, 0, int(c))
+
+	c = bs1.CountBetween(1, 2)
+	require.EqualValues(t, 2, int(c))
+}
+
+func TestBitSet_CountBetween2(t *testing.T) {
+
+	bs2 := ekamath.NewBitSet(256)
+
+	set2 := []uint{
+		/*   1..64  */ 3, 4, 6, 10, 15, 16, 33, 34, 36, 63, 64,
+		/*  65..128 */ 65, 67, 128,
+		/* 129..192 */ 129, 142, 145, 146,
+		/* 193..256 */ 200, 209, 210, 250,
+	}
+	for _, set2Elem := range set2 {
+		bs2.Up(set2Elem)
+	}
+
+	require.EqualValues(t, set2, bs2.DebugOnesAsSlice(256))
+
+	c := bs2.CountBetween(1, 256)
+	require.EqualValues(t, len(set2), c)
+
+	c = bs2.CountBetween(10, 66)
+	require.EqualValues(t, 9, c)
+
+	c = bs2.CountBetween(10, 144)
+	require.EqualValues(t, 13, c)
+
+	c = bs2.CountBetween(40, 210)
+	require.EqualValues(t, 12, c)
+
+	c = bs2.CountBetween(5, 205)
+	require.EqualValues(t, 17, c)
+}

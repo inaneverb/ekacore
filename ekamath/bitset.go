@@ -71,12 +71,57 @@ func (bs *BitSet) Count() uint {
 		return 0
 	}
 
-	var count uint
+	var c uint
 	for i, n := uint(0), bs.chunkSize(); i < n; i++ {
-		count += bsCountOnes(bs.bs[i])
+		c += bsCountOnes(bs.bs[i])
 	}
 
-	return count
+	return c
+}
+
+// CountBetween returns number of bits that are upped (set to 1),
+// between range [a..b]. Note: `b` IS IN the range.
+// Returns 0 if either current BitSet is invalid, `a` >= `b`
+// or any part of that range is out of bound of the BitSet.
+func (bs *BitSet) CountBetween(a, b uint) uint {
+
+	if !bs.IsValid() || a >= b {
+		return 0
+	}
+
+	c1, off1 := bsFromIdx(a - 1)
+	c2, off2 := bsFromIdx(b - 1)
+
+	if bs1size := bs.chunkSize(); c1 > bs1size || c2 > bs1size {
+		return 0
+	}
+
+	// The case when chunk is the same.
+	if c1 == c2 {
+		mask := (_BITSET_MASK_FULL >> (_BITSET_BITS_PER_CHUNK - off2 + off1 - 1)) << off1
+		return bsCountOnes(bs.bs[c1] & mask)
+	}
+
+	// There are 3 parts of counting:
+	// 1. Discard unnecessary bits and count remains of the chunk of `A` bound,
+	// 2. Discard unnecessary bits and count remains of the chunk of `B` bound,
+	// 3. Count all in the chunks between those that belongs either `A` or `B` bound.
+	var c uint
+
+	// Part 1.
+	mask := _BITSET_MASK_FULL << off1
+	c += bsCountOnes(bs.bs[c1] & mask)
+
+	// Part 2.
+	mask = _BITSET_MASK_FULL >> (_BITSET_BITS_PER_CHUNK - off2 - 1)
+	c += bsCountOnes(bs.bs[c2] & mask)
+
+	// Part 3.
+	for c1++; c1 < c2; c1++ {
+		c += bsCountOnes(bs.bs[c1])
+	}
+
+	return c
 }
 
 // ---------------------------------------------------------------------------- //
