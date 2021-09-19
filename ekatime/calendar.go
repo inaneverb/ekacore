@@ -353,7 +353,7 @@ func (c *Calendar) RunAsync() {
 }
 
 // WorkdaysFor normalizes the passed dd Date, splitting it to the Year, Month, Day
-// (name them y, m, d):
+// (name them y, m, d) and then:
 //
 // 1. Counting the number of workdays for the month m in the year y
 //    starting from the d (not from 1st day of month),

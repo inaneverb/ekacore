@@ -297,7 +297,24 @@ func NewDate(y Year, m Month, d Day) Date {
 //  NewDateFromDays(2021, 253) // 11 Sep 2021
 //
 func NewDateFromDays(y Year, days Days) Date {
-	return NewDate(y, MONTH_JANUARY, 1).AddDays(days - 1)
+	if IsValidDate(y, MONTH_JANUARY, 1) && days >= 1 && days <= 365 {
+
+		dm := _Table2[len(_Table2)-1]
+		m := MONTH_DECEMBER
+
+		for i, n := 1, len(_Table2); i < n; i++ {
+			if days < _Table2[i] {
+				m = Month(i-1)
+				dm = _Table2[i-1]
+				break
+			}
+		}
+
+		days -= dm
+
+	} else {
+		return NewDate(y, MONTH_JANUARY, 1).AddDays(days - 1)
+	}
 }
 
 // Replace returns a new Date based on the current.

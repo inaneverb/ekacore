@@ -1,22 +1,36 @@
+// Copyright © 2021. All rights reserved.
+// Author: Ilya Stroy.
+// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// License: https://opensource.org/licenses/MIT
+
 package ekatime
 
 import (
-	"github.com/bits-and-blooms/bitset"
+	"github.com/qioalice/ekago/v3/ekamath"
 )
 
 type (
 	// WorkCalendar is a RAM friendly data structure that allows you to keep
 	// a 365 days of some year with flags whether day is day off or a workday,
 	// store a reason of that and also binary/text encoding/decoding.
+	//
+	// WARNING!
+	// You MUST use NewWorkCalendar() constructor to construct this object.
+	// If you just instantiate an object it will be considered as invalid,
+	// and almost all methods will return you an unexpected, bad result.
 	WorkCalendar struct {
 
 		// The year this calendar of.
 		year Year
 
+		// Flag whether the current year is leap or not.
+		// Less computations, more RAM consumption.
+		isLeap bool
+
 		// Bitset of days in calendar.
 		// 0 means work day, 1 means day off.
 		// The index of bit is a day of year.
-		dayOff *bitset.BitSet
+		dayOff *ekamath.BitSet
 
 		// A set of Event that is used to overwrite default values of calendar.
 		// Nil if `enableCause` is false at the NewWorkCalendar() call.
@@ -37,7 +51,7 @@ func (wc *WorkCalendar) Clear() {
 		if wc.cause != nil {
 			wc.cause = make(map[Days]EventID, _CALENDAR2_CAUSE_DEFAULT_CAPACITY)
 		}
-		wc.dayOff.ClearAll()
+		wc.dayOff.Clear()
 	}
 }
 
@@ -75,7 +89,7 @@ func (wc *WorkCalendar) Year() Year {
 	return wc.year
 }
 
-// Reports whether required day is day off.
+// IsDayOff reports whether required day is day off.
 // If you have a Date object just call Date.Days() method.
 //
 // Requirements:
@@ -84,11 +98,13 @@ func (wc *WorkCalendar) Year() Year {
 //  - Requested day of year (`dayOfYear`) belongs the range [1..365/366].
 //
 // Returns false if requested day is workday or if any of requirements is failed.
-func (wc *WorkCalendar) IsDayOffDay(dayOfYear Days) bool {
-	return wc.IsValid() && dayOfYear.BelongsToYear(wc.year) && wc.dayOff.Test(uint(dayOfYear))
+func (wc *WorkCalendar) IsDayOff(dayOfYear Days) bool {
+
+	return wc.IsValid() && dayOfYear.BelongsToYear(wc.year) &&
+		wc.dayOff.IsSetUnsafe(uint(dayOfYear))
 }
 
-// Returns a next work day followed by provided day of year.
+// NextWorkDay returns a next work day followed by provided day of year.
 // If you have a Date object just call Date.Days() method.
 //
 // Requirements:
@@ -102,7 +118,7 @@ func (wc *WorkCalendar) NextWorkDay(dayOfYear Days) Date {
 	return wc.nextDay(dayOfYear, false)
 }
 
-// Returns a next day off followed by provided day of year.
+// NextDayOff returns a next day off followed by provided day of year.
 // If you have a Date object just call Date.Days() method.
 //
 // Requirements:
@@ -138,7 +154,7 @@ func (wc *WorkCalendar) EventOfDay(dayOfYear Days) Event {
 	}
 
 	dd := NewDateFromDays(wc.year, dayOfYear)
-	isDayOff := wc.dayOff.Test(uint(dayOfYear))
+	isDayOff := wc.dayOff.IsSetUnsafe(uint(dayOfYear))
 
 	return NewEvent(dd, eventID, isDayOff)
 }
@@ -166,9 +182,55 @@ func (wc *WorkCalendar) EventOfDate(dd Date) Event {
 		return _EVENT_INVALID
 	}
 
-	isDayOff := wc.dayOff.Test(uint(dayOfYear))
+	isDayOff := wc.dayOff.IsSetUnsafe(uint(dayOfYear))
 
 	return NewEvent(dd, eventID, isDayOff)
+}
+
+// WorkDays returns an array of work days of the provided Month.
+//
+// Requirements:
+//
+//  - WorkCalendar is valid and not malformed object,
+//  - Requested Month (`m`) is valid.
+//
+// WARNING:
+// It takes quite a lot of time to prepare return data, because of the way
+// the data is stored internally. So, if you need to access it often,
+// consider caching data (generate output data once per time its still valid
+// and then use it later).
+//
+// Returns an empty set if any of requirements is failed.
+func (wc *WorkCalendar) WorkDays(m Month) []Day {
+	return wc.daysIn(m, false)
+}
+
+// DaysOff returns an array of days off of the provided Month.
+//
+// See requirements, warnings and return section of WorkDays().
+// It works the same way here.
+func (wc *WorkCalendar) DaysOff(m Month) []Day {
+	return wc.daysIn(m, true)
+}
+
+// WorkDaysCount returns a number of working days in the provided Month.
+//
+// Requirements:
+//
+//  - WorkCalendar is valid and not malformed object,
+//  - Requested Month (`m`) is valid.
+//
+// Returns 0 if any of requirements is failed.
+func (wc *WorkCalendar) WorkDaysCount(m Month) Days {
+	return wc.daysInCount(m, false)
+}
+
+// DaysOffCount returns a number of days off in the provided Month.
+//
+// See requirements, warnings and return section of WorkDaysCount().
+// It works the same way here.
+func (wc *WorkCalendar) DaysOffCount(m Month) Days {
+	return wc.daysInCount(m, true)
 }
 
 // NewWorkCalendar is a WorkCalendar constructor.
@@ -204,12 +266,13 @@ func NewWorkCalendar(y Year, saturdayAndSunday, enableCause bool) *WorkCalendar 
 
 	wc := WorkCalendar{
 		year:   y,
-		dayOff: bitset.New(_CALENDAR2_DEFAULT_CAPACITY),
+		isLeap: y.IsLeap(),
+		dayOff: ekamath.NewBitSet(_CALENDAR2_DEFAULT_CAPACITY),
 		cause:  cause,
 	}
 
 	if saturdayAndSunday {
-		wc.doSaturdayAndSundayDayOff()
+		wc.DoSaturdayAndSundayDayOff()
 	}
 
 	return &wc
