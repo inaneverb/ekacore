@@ -11,9 +11,70 @@ const (
 	_CALENDAR2_CAUSE_DEFAULT_CAPACITY = 64
 )
 
-func (wc *WorkCalendar) nextDay(dayOfYear Days, isDayOff bool) Date {
+func (wc *WorkCalendar) dateToIndex(dd Date) uint {
 
-	if !(wc.IsValid() && dayOfYear.BelongsToYear(wc.year)) {
+	// WARNING!
+	// Method assumes that wc.year == dd.Year().
+
+	// WorkCalendar always works as in leap year.
+	// So, we need to increase doy +1 if it's not leap year and march+ month.
+
+	doy := dd.Days()
+	if dd.Month() >= MONTH_MARCH && !wc.isLeap {
+		doy++
+	}
+
+	return uint(doy)
+}
+
+func (wc *WorkCalendar) rangeOfMonth(m Month) (uint, uint) {
+
+	d := Days(_Table0[m-1])
+	if m == MONTH_FEBRUARY && wc.isLeap {
+		d++
+	}
+
+	d1 := _Table2[m-1]
+	d2 := d1 + d - 1 // -1 for d2 be the last day of month
+
+	return uint(d1), uint(d2)
+}
+
+func (wc *WorkCalendar) overrideDate(dd Date, eventID EventID, isDayOff, useEventID bool) {
+
+	// 3rd bool argument:
+	//
+	// A: Use provided EventID (`useEventID`),
+	// B: WorkCalendar causing is enabled (`wc.cause != nil`).
+	//
+	// Truth table:
+	// A B Res
+	// 0 0 1
+	// 0 1 1
+	// 1 0 0
+	// 1 1 1
+	//
+	// Thus, it's a material conditional (implication).
+	// Read more: https://en.wikipedia.org/wiki/Material_conditional
+
+	if !(wc.IsValid() && dd.Year() == wc.year && (!useEventID || (wc.cause != nil))) {
+		return
+	}
+
+	idx := wc.dateToIndex(dd)
+	wc.dayOff.Set(idx, isDayOff)
+
+	// SAFETY:
+	// Condition above guarantees if `useEventID` is true,
+	// `wc.cause` is also not nil.
+	if useEventID {
+		wc.cause[idx] = eventID
+	}
+}
+
+func (wc *WorkCalendar) nextDay(dd Date, isDayOff bool) Date {
+
+	if !(wc.IsValid() && dd.IsValid() && dd.Year() == wc.year) {
 		return _DATE_INVALID
 	}
 
@@ -23,9 +84,9 @@ func (wc *WorkCalendar) nextDay(dayOfYear Days, isDayOff bool) Date {
 	)
 
 	if isDayOff {
-		nextDay, exist = wc.dayOff.NextUp(uint(dayOfYear))
+		nextDay, exist = wc.dayOff.NextUp(wc.dateToIndex(dd))
 	} else {
-		nextDay, exist = wc.dayOff.NextDown(uint(dayOfYear))
+		nextDay, exist = wc.dayOff.NextDown(wc.dateToIndex(dd))
 	}
 
 	if !exist {
@@ -44,21 +105,16 @@ func (wc *WorkCalendar) daysIn(m Month, isDayOff bool) []Day {
 	// We don't use Month.DaysInForYear() method here,
 	// because it treats years not in range [1900..4095] as invalid years.
 
-	d1 := _Table2[m-1]
-	d2 := d1 + Days(m.DaysInIgnoreYear()) // d2 is the 1st day of the next month
-	if m == MONTH_FEBRUARY && wc.isLeap {
-		d2++
-	}
-
+	d1, d2 := wc.rangeOfMonth(m)
 	ret := make([]Day, 0, 31)
 
 	if isDayOff {
-		for v, e := wc.dayOff.NextUp(uint(d1 - 1)); e && v < uint(d2); v, e = wc.dayOff.NextUp(v) {
-			ret = append(ret, Day(v))
+		for v, e := wc.dayOff.NextUp(d1 - 1); e && v <= d2; v, e = wc.dayOff.NextUp(v) {
+			ret = append(ret, Day(v-d1)+1)
 		}
 	} else {
-		for v, e := wc.dayOff.NextDown(uint(d1 - 1)); e && v < uint(d2); v, e = wc.dayOff.NextDown(v) {
-			ret = append(ret, Day(v))
+		for v, e := wc.dayOff.NextDown(d1 - 1); e && v <= d2; v, e = wc.dayOff.NextDown(v) {
+			ret = append(ret, Day(v-d1)+1)
 		}
 	}
 
@@ -74,15 +130,10 @@ func (wc *WorkCalendar) daysInCount(m Month, isDayOff bool) Days {
 	// We don't use Month.DaysInForYear() method here,
 	// because it treats years not in range [1900..4095] as invalid years.
 
-	d := Days(m.DaysInIgnoreYear())
-	if m == MONTH_FEBRUARY && wc.isLeap {
-		d++
-	}
+	d1, d2 := wc.rangeOfMonth(m)
+	d := Days(d2 - d1 + 1)
 
-	d1 := _Table2[m-1]
-	d2 := d1 + d - 1 // -1 for d2 be the last day of month
-
-	c := Days(wc.dayOff.CountBetween(uint(d1), uint(d2)))
+	c := Days(wc.dayOff.CountBetween(d1, d2))
 	if !isDayOff {
 		c = d - c
 	}
@@ -90,7 +141,7 @@ func (wc *WorkCalendar) daysInCount(m Month, isDayOff bool) Days {
 	return c
 }
 
-func (wc *WorkCalendar) DoSaturdayAndSundayDayOff() {
+func (wc *WorkCalendar) doSaturdayAndSundayDayOff() {
 
 	if !wc.IsValid() {
 		return
@@ -108,6 +159,25 @@ func (wc *WorkCalendar) DoSaturdayAndSundayDayOff() {
 
 	} else {
 		idx += uint(WEEKDAY_SATURDAY.To06() - w.To06())
+	}
+
+	for ; idx <= uint(_Table2[MONTH_MARCH-1]); idx += 7 {
+		wc.dayOff.Up(idx)
+		wc.dayOff.Up(idx + 1)
+	}
+
+	if !wc.isLeap {
+		// WorkCalendar's year is always leap (29Feb).
+		// But sometimes the real year might be not leap and weekdays are:
+		// 28 feb sat and 1 mar sun.
+		// 29 feb will be marked as weekday (in loop above).
+		// Index increasing is placed below (after this condition).
+		// And the last thing we need to do is mark 1 mar sun as weekday.
+		// This is exactly what this code do.
+		if idx-6 == uint(_Table2[MONTH_MARCH-1]-1) {
+			wc.dayOff.Up(idx - 5)
+		}
+		idx++
 	}
 
 	for ; idx <= 366; idx += 7 {

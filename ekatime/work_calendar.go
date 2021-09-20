@@ -34,7 +34,7 @@ type (
 
 		// A set of Event that is used to overwrite default values of calendar.
 		// Nil if `enableCause` is false at the NewWorkCalendar() call.
-		cause map[Days]EventID
+		cause map[uint]EventID
 	}
 )
 
@@ -49,7 +49,7 @@ func (wc *WorkCalendar) IsValid() bool {
 func (wc *WorkCalendar) Clear() {
 	if wc.IsValid() {
 		if wc.cause != nil {
-			wc.cause = make(map[Days]EventID, _CALENDAR2_CAUSE_DEFAULT_CAPACITY)
+			wc.cause = make(map[uint]EventID, _CALENDAR2_CAUSE_DEFAULT_CAPACITY)
 		}
 		wc.dayOff.Clear()
 	}
@@ -69,7 +69,7 @@ func (wc *WorkCalendar) Clone() *WorkCalendar {
 	}
 
 	if wc.cause != nil {
-		cloned.cause = make(map[Days]EventID, len(wc.cause))
+		cloned.cause = make(map[uint]EventID, len(wc.cause))
 		for k, v := range wc.cause {
 			cloned.cause[k] = v
 		}
@@ -81,12 +81,34 @@ func (wc *WorkCalendar) Clone() *WorkCalendar {
 // Year returns a Year this calendar of.
 // Returns 0 if current WorkCalendar is nil or malformed.
 func (wc *WorkCalendar) Year() Year {
-
 	if !wc.IsValid() {
 		return 0
 	}
-
 	return wc.year
+}
+
+// OverrideDate allows you to change the default (or previous defined)
+// day type (day-off / workday) of the provided Date `dd` in the current WorkCalendar.
+func (wc *WorkCalendar) OverrideDate(dd Date, isDayOff bool) {
+	wc.overrideDate(dd, 0, isDayOff, false)
+}
+
+// AddEvent adds a new Event to the WorkCalendar.
+// It's the same as just OverrideDate() but provides an ability to set an EventID
+// of such overwriting rule.
+//
+// Requirements:
+//
+//  - WorkCalendar is valid and not malformed object,
+//  - Causing feature is enabled (`enableCause` being `true` at the NewWorkCalendar() call),
+//  - Provided Event (`e`) is valid and belongs to Year, this WorkCalendar of.
+//
+// Does nothing if any of requirements is failed.
+func (wc *WorkCalendar) AddEvent(e Event) {
+	if e.IsValid() {
+		eventID, dd, isDayOff := e.Split()
+		wc.overrideDate(dd, eventID, isDayOff, true)
+	}
 }
 
 // IsDayOff reports whether required day is day off.
@@ -95,68 +117,40 @@ func (wc *WorkCalendar) Year() Year {
 // Requirements:
 //
 //  - WorkCalendar is valid and not malformed object,
-//  - Requested day of year (`dayOfYear`) belongs the range [1..365/366].
+//  - Requested Date is valid and belongs to Year, this WorkCalendar of.
 //
 // Returns false if requested day is workday or if any of requirements is failed.
-func (wc *WorkCalendar) IsDayOff(dayOfYear Days) bool {
-
-	return wc.IsValid() && dayOfYear.BelongsToYear(wc.year) &&
-		wc.dayOff.IsSetUnsafe(uint(dayOfYear))
+func (wc *WorkCalendar) IsDayOff(dd Date) bool {
+	return wc.IsValid() &&
+		dd.IsValid() &&
+		dd.Year() == wc.year &&
+		wc.dayOff.IsSetUnsafe(wc.dateToIndex(dd))
 }
 
 // NextWorkDay returns a next work day followed by provided day of year.
-// If you have a Date object just call Date.Days() method.
 //
 // Requirements:
 //
 //  - WorkCalendar is valid and not malformed object,
-//  - Requested day of year (`dayOfYear`) belongs the range [1..365/366].
+//  - Requested Date is valid and belongs to Year, this WorkCalendar of.
 //
 // Returns an invalid date if there's no remaining workdays after requested
 // or if any of requirements is failed.
-func (wc *WorkCalendar) NextWorkDay(dayOfYear Days) Date {
-	return wc.nextDay(dayOfYear, false)
+func (wc *WorkCalendar) NextWorkDay(dd Date) Date {
+	return wc.nextDay(dd, false)
 }
 
 // NextDayOff returns a next day off followed by provided day of year.
-// If you have a Date object just call Date.Days() method.
 //
 // Requirements:
 //
 //  - WorkCalendar is valid and not malformed object,
-//  - Requested day of year (`dayOfYear`) belongs the range [1..365/366].
+//  - Requested Date is valid and belongs to Year, this WorkCalendar of.
 //
 // Returns an invalid date if there's no remaining days off after requested
 // or if any of requirements is failed.
-func (wc *WorkCalendar) NextDayOff(dayOfYear Days) Date {
-	return wc.nextDay(dayOfYear, true)
-}
-
-// EventOfDay returns an Event because of which the type of the current day is changed.
-//
-// Requirements:
-//
-//  - WorkCalendar is valid and not malformed object,
-//  - Causing feature is enabled (`enableCause` being `true` at the NewWorkCalendar() call),
-//  - Requested day of year (`dayOfYear`) belongs the range [1..365/366].
-//
-// Returns an invalid event if there's no registered event with passed day of year,
-// or if any of requirements is failed.
-func (wc *WorkCalendar) EventOfDay(dayOfYear Days) Event {
-
-	if !(wc.IsValid() && wc.cause != nil) {
-		return _EVENT_INVALID
-	}
-
-	eventID, ok := wc.cause[dayOfYear]
-	if !ok {
-		return _EVENT_INVALID
-	}
-
-	dd := NewDateFromDays(wc.year, dayOfYear)
-	isDayOff := wc.dayOff.IsSetUnsafe(uint(dayOfYear))
-
-	return NewEvent(dd, eventID, isDayOff)
+func (wc *WorkCalendar) NextDayOff(dd Date) Date {
+	return wc.nextDay(dd, true)
 }
 
 // EventOfDate returns an Event because of which the type of the current date is changed.
@@ -175,14 +169,13 @@ func (wc *WorkCalendar) EventOfDate(dd Date) Event {
 		return _EVENT_INVALID
 	}
 
-	dayOfYear := dd.Days()
-
-	eventID, ok := wc.cause[dayOfYear]
+	idx := wc.dateToIndex(dd)
+	eventID, ok := wc.cause[idx]
 	if !ok {
 		return _EVENT_INVALID
 	}
 
-	isDayOff := wc.dayOff.IsSetUnsafe(uint(dayOfYear))
+	isDayOff := wc.dayOff.IsSetUnsafe(idx)
 
 	return NewEvent(dd, eventID, isDayOff)
 }
@@ -239,7 +232,7 @@ func (wc *WorkCalendar) DaysOffCount(m Month) Days {
 // You MUST specify a valid Year, otherwise nil is returned.
 //
 // It's allowed to pass Year < 1900 or > 4095
-// (that Year for which IsValid() method will return false).
+// (that Year for which Year.IsValid() method will return false).
 //
 // If `saturdayAndSunday` is true, these days will be marked as days off.
 // Keep in mind, that marking all saturdays and sundays as days off is quite heavy op.
@@ -259,20 +252,19 @@ func NewWorkCalendar(y Year, saturdayAndSunday, enableCause bool) *WorkCalendar 
 		return nil
 	}
 
-	var cause map[Days]EventID = nil
-	if enableCause {
-		cause = make(map[Days]EventID, _CALENDAR2_CAUSE_DEFAULT_CAPACITY)
-	}
-
 	wc := WorkCalendar{
 		year:   y,
 		isLeap: y.IsLeap(),
 		dayOff: ekamath.NewBitSet(_CALENDAR2_DEFAULT_CAPACITY),
-		cause:  cause,
+		cause:  nil,
+	}
+
+	if enableCause {
+		wc.cause = make(map[uint]EventID, _CALENDAR2_CAUSE_DEFAULT_CAPACITY)
 	}
 
 	if saturdayAndSunday {
-		wc.DoSaturdayAndSundayDayOff()
+		wc.doSaturdayAndSundayDayOff()
 	}
 
 	return &wc

@@ -55,7 +55,7 @@ func (e Event) Weekday() Weekday {
 
 //
 func (e Event) Date() Date {
-	return Date(e >> _EVENT_OFFSET_DATE) & _DATE_MASK_DATE
+	return Date(e>>_EVENT_OFFSET_DATE) & _DATE_MASK_DATE
 }
 
 //
@@ -65,12 +65,17 @@ func (e Event) IsWorkday() bool {
 
 //
 func (e Event) IsDayOff() bool {
-	return uint8((e >> _EVENT_OFFSET_IS_WORKDAY) & _EVENT_MASK_IS_WORKDAY) > 0
+	return uint8((e>>_EVENT_OFFSET_IS_WORKDAY)&_EVENT_MASK_IS_WORKDAY) > 0
 }
 
 //
 func (e Event) ID() EventID {
 	return EventID(e >> _EVENT_OFFSET_ID & _EVENT_MASK_ID)
+}
+
+//
+func (e Event) Split() (id EventID, dd Date, isDayOff bool) {
+	return e.ID(), e.Date(), e.IsDayOff()
 }
 
 //
@@ -83,8 +88,8 @@ func NewEvent(d Date, id EventID, isDayOff bool) Event {
 
 	d = d.ensureWeekdayExist()
 
-	return Event(d & _DATE_MASK_DATE) << _EVENT_OFFSET_DATE | isDayOffBit |
-		(Event(id) & _EVENT_MASK_ID) << _EVENT_OFFSET_ID
+	return Event(d&_DATE_MASK_DATE)<<_EVENT_OFFSET_DATE | isDayOffBit |
+		(Event(id)&_EVENT_MASK_ID)<<_EVENT_OFFSET_ID
 }
 
 // String returns the current Event's string representation in the following format:

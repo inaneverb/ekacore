@@ -185,6 +185,12 @@ func TestBitSet_CountBetween2(t *testing.T) {
 	c = bs2.CountBetween(10, 144)
 	require.EqualValues(t, 13, c)
 
+	c = bs2.CountBetween(10, 36)
+	require.EqualValues(t, 6, c)
+
+	c = bs2.CountBetween(10, 200)
+	require.EqualValues(t, 16, c)
+
 	c = bs2.CountBetween(40, 210)
 	require.EqualValues(t, 12, c)
 

@@ -3,7 +3,6 @@ module github.com/qioalice/ekago/v3
 go 1.15
 
 require (
-	github.com/bits-and-blooms/bitset v1.2.1
 	github.com/ef-ds/deque v1.0.4
 	github.com/ef-ds/stack v1.0.1
 	github.com/json-iterator/go v1.1.9

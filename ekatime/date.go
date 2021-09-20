@@ -112,6 +112,38 @@ func (m Month) DaysInIgnoreYear() Day {
 	return DaysInMonthIgnoreYear(m)
 }
 
+// String returns a full capitalized month name in English.
+func (m Month) String() string {
+	switch m {
+	case MONTH_JANUARY:
+		return "January"
+	case MONTH_FEBRUARY:
+		return "February"
+	case MONTH_MARCH:
+		return "March"
+	case MONTH_APRIL:
+		return "April"
+	case MONTH_MAY:
+		return "May"
+	case MONTH_JUNE:
+		return "June"
+	case MONTH_JULY:
+		return "July"
+	case MONTH_AUGUST:
+		return "August"
+	case MONTH_SEPTEMBER:
+		return "September"
+	case MONTH_OCTOBER:
+		return "October"
+	case MONTH_NOVEMBER:
+		return "November"
+	case MONTH_DECEMBER:
+		return "December"
+	default:
+		return "Unknown"
+	}
+}
+
 // IsValid reports whether current Year is valid and between [1900..4095] years.
 func (y Year) IsValid() bool {
 	return _YEAR_MIN <= y && y <= _YEAR_MAX
@@ -187,8 +219,7 @@ func (dd Date) DaysInMonth() Day {
 // DaysInMonth returns how much days requested Month contains in passed Year.
 // Returns -1, if Year and Month not in their allowed ranges.
 func DaysInMonth(y Year, m Month) Day {
-	if _YEAR_MIN <= y && y <= _YEAR_MAX &&
-		MONTH_JANUARY <= m && m <= MONTH_DECEMBER {
+	if m.IsValid() {
 		d := _Table0[m-1]
 		if m == MONTH_FEBRUARY && y.IsLeap() {
 			d++
@@ -202,7 +233,7 @@ func DaysInMonth(y Year, m Month) Day {
 // but does not require the Year, meaning that it will be always 28 for MONTH_FEBRUARY,
 // even for leap years like 2000, 2004, etc.
 func DaysInMonthIgnoreYear(m Month) Day {
-	if MONTH_JANUARY <= m && m <= MONTH_DECEMBER {
+	if m.IsValid() {
 		return _Table0[m-1]
 	} else {
 		return -1
@@ -291,30 +322,13 @@ func NewDate(y Year, m Month, d Day) Date {
 //
 // Examples:
 //
-//  NewDateFromDays(2021, 0)  // 1 Jan 2021
-//  NewDateFromDays(2021, 1)  // 2 Jan 2021
-//  NewDateFromDays(2021, 31)  // 2 Feb 2021
-//  NewDateFromDays(2021, 253) // 11 Sep 2021
+//  NewDateFromDays(2021, 1)  // 1 Jan 2021
+//  NewDateFromDays(2021, 2)  // 2 Jan 2021
+//  NewDateFromDays(2021, 33)  // 2 Feb 2021
+//  NewDateFromDays(2021, 254) // 11 Sep 2021
 //
 func NewDateFromDays(y Year, days Days) Date {
-	if IsValidDate(y, MONTH_JANUARY, 1) && days >= 1 && days <= 365 {
-
-		dm := _Table2[len(_Table2)-1]
-		m := MONTH_DECEMBER
-
-		for i, n := 1, len(_Table2); i < n; i++ {
-			if days < _Table2[i] {
-				m = Month(i-1)
-				dm = _Table2[i-1]
-				break
-			}
-		}
-
-		days -= dm
-
-	} else {
-		return NewDate(y, MONTH_JANUARY, 1).AddDays(days - 1)
-	}
+	return NewDate(y, MONTH_JANUARY, 1).AddDays(days - 1)
 }
 
 // Replace returns a new Date based on the current.
