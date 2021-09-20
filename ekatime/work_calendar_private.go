@@ -19,7 +19,7 @@ func (wc *WorkCalendar) dateToIndex(dd Date) uint {
 	// WorkCalendar always works as in leap year.
 	// So, we need to increase doy +1 if it's not leap year and march+ month.
 
-	doy := dd.Days()
+	doy := dd.DayOfYear()
 	if dd.Month() >= MONTH_MARCH && !wc.isLeap {
 		doy++
 	}
@@ -93,7 +93,7 @@ func (wc *WorkCalendar) nextDay(dd Date, isDayOff bool) Date {
 		return _DATE_INVALID
 	}
 
-	return NewDateFromDays(wc.year, Days(nextDay))
+	return NewDateFromDayOfYear(wc.year, Days(nextDay))
 }
 
 func (wc *WorkCalendar) daysIn(m Month, isDayOff bool) []Day {

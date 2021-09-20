@@ -314,7 +314,7 @@ func NewDate(y Year, m Month, d Day) Date {
 		(Date(d) << _DATE_OFFSET_DAY)
 }
 
-// NewDateFromDays creates a new Date object using provided year number
+// NewDateFromDayOfYear creates a new Date object using provided year number
 // and the day of year on row.
 //
 // It's allowed to pass < 0 days
@@ -322,12 +322,12 @@ func NewDate(y Year, m Month, d Day) Date {
 //
 // Examples:
 //
-//  NewDateFromDays(2021, 1)  // 1 Jan 2021
-//  NewDateFromDays(2021, 2)  // 2 Jan 2021
-//  NewDateFromDays(2021, 33)  // 2 Feb 2021
-//  NewDateFromDays(2021, 254) // 11 Sep 2021
+//  NewDateFromDayOfYear(2021, 1)  // 1 Jan 2021
+//  NewDateFromDayOfYear(2021, 2)  // 2 Jan 2021
+//  NewDateFromDayOfYear(2021, 33)  // 2 Feb 2021
+//  NewDateFromDayOfYear(2021, 254) // 11 Sep 2021
 //
-func NewDateFromDays(y Year, days Days) Date {
+func NewDateFromDayOfYear(y Year, days Days) Date {
 	return NewDate(y, MONTH_JANUARY, 1).AddDays(days - 1)
 }
 
@@ -490,20 +490,29 @@ func (dd Date) Sub(y Year, m Month, d Day) Date {
 	return dd.Add(-y, -m, -d)
 }
 
-// Days returns an accumulated number of days that has been passed since 1 Jan.
+// DayOfYear returns an accumulated number of days that has been passed since 1 Jan.
 // Returns 0 if current Date is not valid.
-func (dd Date) Days() Days {
-	if !dd.IsValid() {
-		return 0
+func (dd Date) DayOfYear() Days {
+
+	// Zeller's congruence.
+	// https://en.wikipedia.org/wiki/Ordinal_date
+
+	y, m, d := dd.Split()
+	if m < MONTH_MARCH {
+		m += 12
 	}
-	d := Days(dd.Day())
-	for i := MONTH_JANUARY; i < dd.Month(); i++ {
-		d += Days(_Table0[i-1])
+
+	doy := (153*(Days(m)-3)+2)/5 + Days(d)
+	if m <= MONTH_DECEMBER {
+		doy += 59
+		if y.IsLeap() {
+			doy += 1
+		}
+	} else {
+		doy -= 306
 	}
-	if dd.Month() > MONTH_FEBRUARY && dd.Year().IsLeap() {
-		d++
-	}
-	return d
+
+	return doy
 }
 
 // AddDays returns a new Date based on the current Date.
