@@ -6,6 +6,7 @@
 package ekamath_test
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/qioalice/ekago/v3/ekamath"
@@ -196,4 +197,65 @@ func TestBitSet_CountBetween2(t *testing.T) {
 
 	c = bs2.CountBetween(5, 205)
 	require.EqualValues(t, 17, c)
+}
+
+func TestBitSet_EncodeDecode(t *testing.T) {
+
+	const MAX = uint(256)
+	belongs := func(data []uint, elem uint) bool {
+		for _, dataElem := range data {
+			if elem == dataElem {
+				return true
+			}
+		}
+		return false
+	}
+
+	bs2 := ekamath.NewBitSet(MAX)
+
+	set2 := []uint{
+		/*   1..64  */ 3, 4, 6, 10, 15, 16, 33, 34, 36, 63, 64,
+		/*  65..128 */ 65, 67, 128,
+		/* 129..192 */ 129, 142, 145, 146,
+		/* 193..256 */ 200, 209, 210, 250,
+	}
+	for _, set2Elem := range set2 {
+		bs2.Up(set2Elem)
+	}
+
+	encodedBinary, err := bs2.MarshalBinary()
+	require.NoError(t, err)
+
+	runtime.GC()
+
+	bs2 = ekamath.NewBitSet(MAX)
+	err = bs2.UnmarshalBinary(encodedBinary)
+	require.NoError(t, err)
+
+	runtime.GC()
+
+	for i := uint(1); i <= MAX; i++ {
+		have := bs2.IsSet(i)
+		must := belongs(set2, i)
+		require.True(t, have == must, "Have: %t, Must: %t, Elem: %v", have, must, i)
+	}
+
+	runtime.GC()
+
+	encodedText, err := bs2.MarshalText()
+	require.NoError(t, err)
+
+	runtime.GC()
+
+	bs2 = ekamath.NewBitSet(MAX)
+	err = bs2.UnmarshalText(encodedText)
+	require.NoError(t, err)
+
+	runtime.GC()
+
+	for i := uint(1); i <= MAX; i++ {
+		have := bs2.IsSet(i)
+		must := belongs(set2, i)
+		require.True(t, have == must, "Have: %t, Must: %t, Elem: %v", have, must, i)
+	}
 }

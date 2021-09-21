@@ -13,6 +13,11 @@
 
 package ekamath
 
+import (
+	"encoding/base64"
+	"errors"
+)
+
 type (
 	// BitSet is a bitset with variate capacity.
 	// It can be grown, depends on your cases.
@@ -27,6 +32,11 @@ type (
 	BitSet struct {
 		bs []uint
 	}
+)
+
+var (
+	ErrBitSetInvalid             = errors.New("invalid BitSet")
+	ErrBitSetInvalidDataToDecode = errors.New("invalid data to decode to BitSet")
 )
 
 // ---------------------------------------------------------------------------- //
@@ -479,6 +489,117 @@ func (bs *BitSet) SymmetricDifference(bs2 *BitSet) *BitSet {
 	}
 
 	return bs
+}
+
+// ---------------------------------------------------------------------------- //
+
+// MarshalBinary implements BinaryMarshaler interface encoding current BitSet
+// in binary form.
+//
+// It guarantees that if BitSet is valid, the MarshalBinary() cannot fail.
+// There's no guarantees about algorithm that will be used to encode/decode.
+// Returns nil if BitSet doesn't have any presented underlying chunks.
+//
+// WARNING!
+// User MUST NOT modify returned data. If you need it, clone it firstly.
+//
+// Despite of warnings and restrictions, this method has O(1) complexity.
+func (bs *BitSet) MarshalBinary() ([]byte, error) {
+
+	if !bs.IsValid() {
+		return nil, ErrBitSetInvalid
+	}
+
+	return bsUnsafeToBytesSlice(bs.bs), nil
+}
+
+// UnmarshalBinary implements BinaryUnmarshaler interface decoding provided `data`
+// from binary form.
+//
+// The current's BitSet data will be overwritten by the decoded one
+// if decoding operation has been completed successfully.
+//
+// Provided `data` MUST BE obtained by calling BitSet.MarshalBinary() method.
+// There's no guarantees about algorithm that will be used to encode/decode.
+//
+// Does nothing (and returns nil) if provided `data` is empty.
+// Returns ErrBitSetInvalidDataToDecode if provided data is invalid.
+//
+// WARNING!
+// User MUST NOT use provided `data` after passing to this method. UB otherwise.
+//
+// Despite of warnings and restrictions, this method has O(1) complexity.
+func (bs *BitSet) UnmarshalBinary(data []byte) error {
+
+	switch l := len(data); {
+	case l == 0:
+		return nil
+
+	case l&_BITSET_BYTES_PER_CHUNK != 0:
+		return ErrBitSetInvalidDataToDecode
+	}
+
+	bs.bs = bsUnsafeFromBytesSlice(data)
+	return nil
+}
+
+// MarshalText implements TextMarshaler interface encoding current BitSet
+// in text form.
+//
+// It guarantees that if BitSet is valid, the MarshalText() cannot fail.
+// Returns nil if BitSet doesn't have any presented underlying chunks.
+//
+// MarshalText guarantees that output data will be base64 encoded,
+// but NOT GUARANTEES that decoded data from base64 is user-friendly
+// and user can manually read/construct BitSet from that data.
+//
+// Provided base64 data is NO URL FRIENDLY!
+// It means, that was used something but base64.URLEncoding.
+func (bs *BitSet) MarshalText() ([]byte, error) {
+
+	binaryEncodedData, err := bs.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+
+	buf := make([]byte, base64.StdEncoding.EncodedLen(len(binaryEncodedData)))
+	base64.StdEncoding.Encode(buf, binaryEncodedData)
+
+	return buf, nil
+}
+
+// UnmarshalText implements TextUnmarshaler interface decoding provided `data`
+// from text form.
+//
+// The current's BitSet data will be overwritten by the decoded one
+// if decoding operation has been completed successfully.
+//
+// Provided `data` MUST BE obtained by calling BitSet.MarshalText() method.
+//
+// Does nothing (and returns nil) if provided `data` is empty.
+// Returns ErrBitSetInvalidDataToDecode if provided data is empty or invalid.
+//
+// WARNING!
+// User MUST NOT use provided `data` after passing to this method. UB otherwise.
+func (bs *BitSet) UnmarshalText(data []byte) error {
+
+	if len(data) == 0 {
+		return nil
+	}
+
+	buf := make([]byte, base64.StdEncoding.DecodedLen(len(data)))
+	n, err := base64.StdEncoding.Decode(buf, data)
+	if err != nil {
+		return err
+	}
+
+	buf = buf[:n]
+	if len(buf)&_BITSET_BYTES_PER_CHUNK != 0 {
+		return ErrBitSetInvalidDataToDecode
+	}
+
+	bs.bs = bsUnsafeFromBytesSlice(buf)
+	return nil
 }
 
 // ---------------------------------------------------------------------------- //

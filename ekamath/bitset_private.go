@@ -7,6 +7,8 @@ package ekamath
 
 import (
 	"math/bits"
+	"reflect"
+	"unsafe"
 )
 
 //goland:noinspection GoSnakeCaseUsage
@@ -14,7 +16,8 @@ const (
 	_BITSET_MINIMUM_CAPACITY       = 128
 	_BITSET_MINIMUM_CAPACITY_BYTES = _BITSET_MINIMUM_CAPACITY >> 3 // 16
 
-	_BITSET_BITS_PER_CHUNK = bits.UintSize // 32 or 64
+	_BITSET_BITS_PER_CHUNK  = bits.UintSize // 32 or 64
+	_BITSET_BYTES_PER_CHUNK = _BITSET_BITS_PER_CHUNK >> 3
 
 	_BITSET_CHUNK_OFFSET = 4 + (_BITSET_BITS_PER_CHUNK >> 5) // 5 or 6
 	_BITSET_CHUNK_MASK   = _BITSET_BITS_PER_CHUNK - 1        // 31 or 63
@@ -51,7 +54,7 @@ func (bs *BitSet) nextGeneric(idx uint, isDown bool) (uint, bool) {
 	if isDown {
 		v = ^v
 	}
-	if n := bs1stUp(v); n < _BITSET_BITS_PER_CHUNK - offset {
+	if n := bs1stUp(v); n < _BITSET_BITS_PER_CHUNK-offset {
 		return bsToIdx(chunk, offset+n) + 1, true
 	}
 
@@ -104,7 +107,7 @@ func bsChunksForBits(n uint) uint {
 
 	c := n >> _BITSET_CHUNK_OFFSET
 
-	if n & _BITSET_CHUNK_MASK != 0 {
+	if n&_BITSET_CHUNK_MASK != 0 {
 		c += 1
 	}
 
@@ -134,4 +137,44 @@ func bs1stUp(n uint) uint {
 // If there's no such bits, _BITSET_BITS_PER_CHUNK is returned.
 func bsLastUp(n uint) uint {
 	return uint(bits.LeadingZeros(n))
+}
+
+// Returns a []byte that has the same bytes that provided BitSet's underlying data.
+//
+// **UNSAFE**
+// Highly unsafe! User MUST NOT modify returned object.
+func bsUnsafeToBytesSlice(bsData []uint) []byte {
+
+	var ret []byte
+
+	shOrig := (*reflect.SliceHeader)(unsafe.Pointer(&bsData))
+	shRet := (*reflect.SliceHeader)(unsafe.Pointer(&ret))
+
+	shRet.Data = shOrig.Data
+	shRet.Len = shOrig.Len * _BITSET_BYTES_PER_CHUNK
+	shRet.Cap = shOrig.Cap * _BITSET_BYTES_PER_CHUNK
+
+	return ret
+}
+
+// Returns a BitSet's underlying data that has the same bytes as provided.
+//
+// **UNSAFE**
+// Highly unsafe! User MUST NOT use `data` object after passing here.
+//
+// WARNING!
+// The length of `data` must be compatible with the bytes consumption
+// of underlying chunk slice.
+func bsUnsafeFromBytesSlice(data []byte) []uint {
+
+	var ret []uint
+
+	shOrig := (*reflect.SliceHeader)(unsafe.Pointer(&data))
+	shRet := (*reflect.SliceHeader)(unsafe.Pointer(&ret))
+
+	shRet.Data = shOrig.Data
+	shRet.Len = shOrig.Len / _BITSET_BYTES_PER_CHUNK
+	shRet.Cap = shOrig.Cap / _BITSET_BYTES_PER_CHUNK
+
+	return ret
 }
