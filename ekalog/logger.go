@@ -61,10 +61,8 @@ type (
 	}
 )
 
-
 // ------------------------------ COMMON METHODS ------------------------------ //
 // ---------------------------------------------------------------------------- //
-
 
 // IsValid reports whether current Logger is valid.
 // Nil safe.
@@ -107,7 +105,6 @@ func (l *Logger) Sync() error {
 	return l.integrator.Sync()
 }
 
-
 // --------------------------- FIELDS ADDING METHODS -------------------------- //
 // ---------------------------------------------------------------------------- //
 
@@ -119,56 +116,143 @@ func (l *Logger) Sync() error {
 // you need to call Copy() manually before.
 func (l *Logger) With(f ekaletter.LetterField) *Logger { return l.addField(f) }
 
-func (l *Logger) WithBool(key string, value bool) *Logger { return l.addField(ekaletter.FBool(key, value)) }
-func (l *Logger) WithInt(key string, value int) *Logger { return l.addField(ekaletter.FInt(key, value)) }
-func (l *Logger) WithInt8(key string, value int8) *Logger { return l.addField(ekaletter.FInt8(key, value)) }
-func (l *Logger) WithInt16(key string, value int16) *Logger { return l.addField(ekaletter.FInt16(key, value)) }
-func (l *Logger) WithInt32(key string, value int32) *Logger { return l.addField(ekaletter.FInt32(key, value)) }
-func (l *Logger) WithInt64(key string, value int64) *Logger { return l.addField(ekaletter.FInt64(key, value)) }
-func (l *Logger) WithUint(key string, value uint) *Logger { return l.addField(ekaletter.FUint(key, value)) }
-func (l *Logger) WithUint8(key string, value uint8) *Logger { return l.addField(ekaletter.FUint8(key, value)) }
-func (l *Logger) WithUint16(key string, value uint16) *Logger { return l.addField(ekaletter.FUint16(key, value)) }
-func (l *Logger) WithUint32(key string, value uint32) *Logger { return l.addField(ekaletter.FUint32(key, value)) }
-func (l *Logger) WithUint64(key string, value uint64) *Logger { return l.addField(ekaletter.FUint64(key, value)) }
-func (l *Logger) WithUintptr(key string, value uintptr) *Logger { return l.addField(ekaletter.FUintptr(key, value)) }
-func (l *Logger) WithFloat32(key string, value float32) *Logger { return l.addField(ekaletter.FFloat32(key, value)) }
-func (l *Logger) WithFloat64(key string, value float64) *Logger { return l.addField(ekaletter.FFloat64(key, value)) }
-func (l *Logger) WithComplex64(key string, value complex64) *Logger { return l.addField(ekaletter.FComplex64(key, value)) }
-func (l *Logger) WithComplex128(key string, value complex128) *Logger { return l.addField(ekaletter.FComplex128(key, value)) }
-func (l *Logger) WithString(key string, value string) *Logger { return l.addField(ekaletter.FString(key, value)) }
-func (l *Logger) WithBoolp(key string, value *bool) *Logger { return l.addField(ekaletter.FBoolp(key, value)) }
-func (l *Logger) WithIntp(key string, value *int) *Logger { return l.addField(ekaletter.FIntp(key, value)) }
-func (l *Logger) WithInt8p(key string, value *int8) *Logger { return l.addField(ekaletter.FInt8p(key, value)) }
-func (l *Logger) WithInt16p(key string, value *int16) *Logger { return l.addField(ekaletter.FInt16p(key, value)) }
-func (l *Logger) WithInt32p(key string, value *int32) *Logger { return l.addField(ekaletter.FInt32p(key, value)) }
-func (l *Logger) WithInt64p(key string, value *int64) *Logger { return l.addField(ekaletter.FInt64p(key, value)) }
-func (l *Logger) WithUintp(key string, value *uint) *Logger { return l.addField(ekaletter.FUintp(key, value)) }
-func (l *Logger) WithUint8p(key string, value *uint8) *Logger { return l.addField(ekaletter.FUint8p(key, value)) }
-func (l *Logger) WithUint16p(key string, value *uint16) *Logger { return l.addField(ekaletter.FUint16p(key, value)) }
-func (l *Logger) WithUint32p(key string, value *uint32) *Logger { return l.addField(ekaletter.FUint32p(key, value)) }
-func (l *Logger) WithUint64p(key string, value *uint64) *Logger { return l.addField(ekaletter.FUint64p(key, value)) }
-func (l *Logger) WithFloat32p(key string, value *float32) *Logger { return l.addField(ekaletter.FFloat32p(key, value)) }
-func (l *Logger) WithFloat64p(key string, value *float64) *Logger { return l.addField(ekaletter.FFloat64p(key, value)) }
-func (l *Logger) WithType(key string, value interface{}) *Logger { return l.addField(ekaletter.FType(key, value)) }
-func (l *Logger) WithStringer(key string, value fmt.Stringer) *Logger { return l.addField(ekaletter.FStringer(key, value)) }
-func (l *Logger) WithAddr(key string, value interface{}) *Logger { return l.addField(ekaletter.FAddr(key, value)) }
-func (l *Logger) WithUnixFromStd(key string, value time.Time) *Logger { return l.addField(ekaletter.FUnixFromStd(key, value)) }
-func (l *Logger) WithUnixNanoFromStd(key string, value time.Time) *Logger { return l.addField(ekaletter.FUnixNanoFromStd(key, value)) }
-func (l *Logger) WithUnix(key string, value int64) *Logger { return l.addField(ekaletter.FUnix(key, value)) }
-func (l *Logger) WithUnixNano(key string, value int64) *Logger { return l.addField(ekaletter.FUnixNano(key, value)) }
-func (l *Logger) WithDuration(key string, value time.Duration) *Logger { return l.addField(ekaletter.FDuration(key, value)) }
-func (l *Logger) WithArray(key string, value interface{}) *Logger { return l.addField(ekaletter.FArray(key, value)) }
-func (l *Logger) WithObject(key string, value interface{}) *Logger { return l.addField(ekaletter.FObject(key, value)) }
-func (l *Logger) WithMap(key string, value interface{}) *Logger { return l.addField(ekaletter.FMap(key, value)) }
-func (l *Logger) WithExtractedMap(key string, value map[string]interface{}) *Logger { return l.addField(ekaletter.FExtractedMap(key, value)) }
-func (l *Logger) WithAny(key string, value interface{}) *Logger { return l.addField(ekaletter.FAny(key, value)) }
+func (l *Logger) WithBool(key string, value bool) *Logger {
+	return l.addField(ekaletter.FBool(key, value))
+}
+func (l *Logger) WithInt(key string, value int) *Logger {
+	return l.addField(ekaletter.FInt(key, value))
+}
+func (l *Logger) WithInt8(key string, value int8) *Logger {
+	return l.addField(ekaletter.FInt8(key, value))
+}
+func (l *Logger) WithInt16(key string, value int16) *Logger {
+	return l.addField(ekaletter.FInt16(key, value))
+}
+func (l *Logger) WithInt32(key string, value int32) *Logger {
+	return l.addField(ekaletter.FInt32(key, value))
+}
+func (l *Logger) WithInt64(key string, value int64) *Logger {
+	return l.addField(ekaletter.FInt64(key, value))
+}
+func (l *Logger) WithUint(key string, value uint) *Logger {
+	return l.addField(ekaletter.FUint(key, value))
+}
+func (l *Logger) WithUint8(key string, value uint8) *Logger {
+	return l.addField(ekaletter.FUint8(key, value))
+}
+func (l *Logger) WithUint16(key string, value uint16) *Logger {
+	return l.addField(ekaletter.FUint16(key, value))
+}
+func (l *Logger) WithUint32(key string, value uint32) *Logger {
+	return l.addField(ekaletter.FUint32(key, value))
+}
+func (l *Logger) WithUint64(key string, value uint64) *Logger {
+	return l.addField(ekaletter.FUint64(key, value))
+}
+func (l *Logger) WithUintptr(key string, value uintptr) *Logger {
+	return l.addField(ekaletter.FUintptr(key, value))
+}
+func (l *Logger) WithFloat32(key string, value float32) *Logger {
+	return l.addField(ekaletter.FFloat32(key, value))
+}
+func (l *Logger) WithFloat64(key string, value float64) *Logger {
+	return l.addField(ekaletter.FFloat64(key, value))
+}
+func (l *Logger) WithComplex64(key string, value complex64) *Logger {
+	return l.addField(ekaletter.FComplex64(key, value))
+}
+func (l *Logger) WithComplex128(key string, value complex128) *Logger {
+	return l.addField(ekaletter.FComplex128(key, value))
+}
+func (l *Logger) WithString(key string, value string) *Logger {
+	return l.addField(ekaletter.FString(key, value))
+}
+func (l *Logger) WithStringFromBytes(key string, value []byte) *Logger {
+	return l.addField(ekaletter.FStringFromBytes(key, value))
+}
+func (l *Logger) WithBoolp(key string, value *bool) *Logger {
+	return l.addField(ekaletter.FBoolp(key, value))
+}
+func (l *Logger) WithIntp(key string, value *int) *Logger {
+	return l.addField(ekaletter.FIntp(key, value))
+}
+func (l *Logger) WithInt8p(key string, value *int8) *Logger {
+	return l.addField(ekaletter.FInt8p(key, value))
+}
+func (l *Logger) WithInt16p(key string, value *int16) *Logger {
+	return l.addField(ekaletter.FInt16p(key, value))
+}
+func (l *Logger) WithInt32p(key string, value *int32) *Logger {
+	return l.addField(ekaletter.FInt32p(key, value))
+}
+func (l *Logger) WithInt64p(key string, value *int64) *Logger {
+	return l.addField(ekaletter.FInt64p(key, value))
+}
+func (l *Logger) WithUintp(key string, value *uint) *Logger {
+	return l.addField(ekaletter.FUintp(key, value))
+}
+func (l *Logger) WithUint8p(key string, value *uint8) *Logger {
+	return l.addField(ekaletter.FUint8p(key, value))
+}
+func (l *Logger) WithUint16p(key string, value *uint16) *Logger {
+	return l.addField(ekaletter.FUint16p(key, value))
+}
+func (l *Logger) WithUint32p(key string, value *uint32) *Logger {
+	return l.addField(ekaletter.FUint32p(key, value))
+}
+func (l *Logger) WithUint64p(key string, value *uint64) *Logger {
+	return l.addField(ekaletter.FUint64p(key, value))
+}
+func (l *Logger) WithFloat32p(key string, value *float32) *Logger {
+	return l.addField(ekaletter.FFloat32p(key, value))
+}
+func (l *Logger) WithFloat64p(key string, value *float64) *Logger {
+	return l.addField(ekaletter.FFloat64p(key, value))
+}
+func (l *Logger) WithType(key string, value interface{}) *Logger {
+	return l.addField(ekaletter.FType(key, value))
+}
+func (l *Logger) WithStringer(key string, value fmt.Stringer) *Logger {
+	return l.addField(ekaletter.FStringer(key, value))
+}
+func (l *Logger) WithAddr(key string, value interface{}) *Logger {
+	return l.addField(ekaletter.FAddr(key, value))
+}
+func (l *Logger) WithUnixFromStd(key string, value time.Time) *Logger {
+	return l.addField(ekaletter.FUnixFromStd(key, value))
+}
+func (l *Logger) WithUnixNanoFromStd(key string, value time.Time) *Logger {
+	return l.addField(ekaletter.FUnixNanoFromStd(key, value))
+}
+func (l *Logger) WithUnix(key string, value int64) *Logger {
+	return l.addField(ekaletter.FUnix(key, value))
+}
+func (l *Logger) WithUnixNano(key string, value int64) *Logger {
+	return l.addField(ekaletter.FUnixNano(key, value))
+}
+func (l *Logger) WithDuration(key string, value time.Duration) *Logger {
+	return l.addField(ekaletter.FDuration(key, value))
+}
+func (l *Logger) WithArray(key string, value interface{}) *Logger {
+	return l.addField(ekaletter.FArray(key, value))
+}
+func (l *Logger) WithObject(key string, value interface{}) *Logger {
+	return l.addField(ekaletter.FObject(key, value))
+}
+func (l *Logger) WithMap(key string, value interface{}) *Logger {
+	return l.addField(ekaletter.FMap(key, value))
+}
+func (l *Logger) WithExtractedMap(key string, value map[string]interface{}) *Logger {
+	return l.addField(ekaletter.FExtractedMap(key, value))
+}
+func (l *Logger) WithAny(key string, value interface{}) *Logger {
+	return l.addField(ekaletter.FAny(key, value))
+}
 func (l *Logger) WithMany(fields ...ekaletter.LetterField) *Logger { return l.addFields(fields) }
-func (l *Logger) WithManyAny(fields ...interface{}) *Logger { return l.addFieldsParse(fields) }
-
+func (l *Logger) WithManyAny(fields ...interface{}) *Logger        { return l.addFieldsParse(fields) }
 
 // ------------------------ CONDITIONAL LOGGING METHODS ----------------------- //
 // ---------------------------------------------------------------------------- //
-
 
 // If returns current Logger if cond is true, otherwise nop Logger is returned.
 // Thus it's useful to chaining methods - next methods in chaining will be done
@@ -185,10 +269,8 @@ func (l *Logger) If(cond bool) *Logger {
 	}
 }
 
-
 // ------------------------------ UTILITY METHODS ----------------------------- //
 // ---------------------------------------------------------------------------- //
-
 
 // ReplaceIntegrator replaces Integrator for the current Logger object
 // to the passed one.

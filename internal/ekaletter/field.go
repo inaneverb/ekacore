@@ -12,6 +12,7 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/qioalice/ekago/v3/ekastr"
 	"github.com/qioalice/ekago/v3/internal/ekaclike"
 
 	"github.com/modern-go/reflect2"
@@ -81,9 +82,9 @@ const (
 	// field.LetterFieldKind & KIND_MASK_BASE_TYPE could be any of listed below,
 	// only if field.LetterFieldKind KIND_FLAG_INTERNAL_SYS != 0 (system letter's field)
 
-	KIND_SYS_TYPE_EKAERR_UUID           = 1
-	KIND_SYS_TYPE_EKAERR_CLASS_ID       = 2
-	KIND_SYS_TYPE_EKAERR_CLASS_NAME     = 3
+	KIND_SYS_TYPE_EKAERR_UUID       = 1
+	KIND_SYS_TYPE_EKAERR_CLASS_ID   = 2
+	KIND_SYS_TYPE_EKAERR_CLASS_NAME = 3
 
 	// field.LetterFieldKind & KIND_MASK_BASE_TYPE could be any of listed below,
 	// only if field.LetterFieldKind & KIND_FLAG_INTERNAL_SYS == 0 (user's field)
@@ -134,7 +135,7 @@ var (
 	// Used for type comparison.
 	RTypeLetterField    = reflect2.RTypeOf(LetterField{})
 	RTypeLetterFieldPtr = reflect2.RTypeOf((*LetterField)(nil))
-	TypeFmtStringer    = reflect2.TypeOfPtr((*fmt.Stringer)(nil)).Elem()
+	TypeFmtStringer     = reflect2.TypeOfPtr((*fmt.Stringer)(nil)).Elem()
 )
 
 //noinspection GoErrorStringFormat
@@ -167,17 +168,17 @@ func (fk LetterFieldKind) IsValidBaseType() bool {
 //   - LetterFieldKind is nil with some base type (e.g: nil *int, nil []int, etc),
 //   - LetterFieldKind is absolutely untyped nil (Golang's nil).
 func (fk LetterFieldKind) IsNil() bool {
-	return fk & KIND_FLAG_NULL != 0
+	return fk&KIND_FLAG_NULL != 0
 }
 
 // IsSystem reports whether LetterFieldKind represents a Letter's system field.
 func (fk LetterFieldKind) IsSystem() bool {
-	return fk & KIND_FLAG_SYSTEM != 0
+	return fk&KIND_FLAG_SYSTEM != 0
 }
 
 // IsInvalid reports whether LetterFieldKind represents an invalid LetterField.
 func (fk LetterFieldKind) IsInvalid() bool {
-	return fk & KIND_TYPE_INVALID != 0
+	return fk&KIND_TYPE_INVALID != 0
 }
 
 // BaseType returns LetterField's LetterFieldKind base type.
@@ -223,10 +224,8 @@ func FieldReset(f *LetterField) {
 	f.IValue, f.SValue, f.Value = 0, "", nil
 }
 
-
 // --------------------------- EASY CASES GENERATORS -------------------------- //
 // ---------------------------------------------------------------------------- //
-
 
 // FBool constructs a field with the given key and value.
 func FBool(key string, value bool) LetterField {
@@ -318,10 +317,13 @@ func FString(key string, value string) LetterField {
 	return LetterField{Key: key, SValue: value, Kind: KIND_TYPE_STRING}
 }
 
+// FStringFromBytes constructs a field with the given key and value.
+func FStringFromBytes(key string, value []byte) LetterField {
+	return FString(key, ekastr.B2S(value))
+}
 
 // ------------------------- POINTER CASES GENERATORS ------------------------- //
 // ---------------------------------------------------------------------------- //
-
 
 // FBoolp constructs a field that carries a *bool. The returned LetterField will safely
 // and explicitly represent nil when appropriate.
@@ -440,10 +442,8 @@ func FFloat64p(key string, value *float64) LetterField {
 	return FFloat64(key, *value)
 }
 
-
 // ------------------------ COMPLEX CASES GENERATORS -------------------------- //
 // ---------------------------------------------------------------------------- //
-
 
 // FType constructs a field that holds on value's type as string.
 func FType(key string, value interface{}) LetterField {
@@ -507,10 +507,8 @@ func FDuration(key string, d time.Duration) LetterField {
 	return LetterField{Key: key, IValue: d.Nanoseconds(), Kind: KIND_TYPE_DURATION}
 }
 
-
 // ----------------------- DIFFICULT CASES GENERATORS ------------------------- //
 // ---------------------------------------------------------------------------- //
-
 
 // FArray returns a LetterField that will represent value only if it's a Golang slice.
 // Despite of the name, Golang ARRAYS DOES NOT SUPPORT.
@@ -574,13 +572,13 @@ func FExtractedMap(key string, value map[string]interface{}) LetterField {
 // and such field is skipped at the parsing.
 func FAny(key string, value interface{}) LetterField {
 	eface := ekaclike.UnpackInterface(value)
-	
+
 	if eface.Type == 0 && eface.Word == nil {
 		return FInvalid(key)
 	}
-	
+
 	typ := reflect2.TypeOf(value)
-	
+
 	switch eface.Type {
 	case ekaclike.RTypeBool:
 		var boolVal bool
@@ -702,10 +700,8 @@ func FAny(key string, value interface{}) LetterField {
 	return FInvalid(key)
 }
 
-
 // ---------------------- INTERNAL AUXILIARY FUNCTIONS ------------------------ //
 // ---------------------------------------------------------------------------- //
-
 
 // FNil creates a special field that indicates its store a nil value
 // (nil pointer) to some baseType.

@@ -172,49 +172,136 @@ func (e *Error) With(f ekaletter.LetterField) *Error { return e.addField(f) }
 
 // Methods below are code-generated.
 
-func (e *Error) WithBool(key string, value bool) *Error { return e.addField(ekaletter.FBool(key, value)) }
+func (e *Error) WithBool(key string, value bool) *Error {
+	return e.addField(ekaletter.FBool(key, value))
+}
 func (e *Error) WithInt(key string, value int) *Error { return e.addField(ekaletter.FInt(key, value)) }
-func (e *Error) WithInt8(key string, value int8) *Error { return e.addField(ekaletter.FInt8(key, value)) }
-func (e *Error) WithInt16(key string, value int16) *Error { return e.addField(ekaletter.FInt16(key, value)) }
-func (e *Error) WithInt32(key string, value int32) *Error { return e.addField(ekaletter.FInt32(key, value)) }
-func (e *Error) WithInt64(key string, value int64) *Error { return e.addField(ekaletter.FInt64(key, value)) }
-func (e *Error) WithUint(key string, value uint) *Error { return e.addField(ekaletter.FUint(key, value)) }
-func (e *Error) WithUint8(key string, value uint8) *Error { return e.addField(ekaletter.FUint8(key, value)) }
-func (e *Error) WithUint16(key string, value uint16) *Error { return e.addField(ekaletter.FUint16(key, value)) }
-func (e *Error) WithUint32(key string, value uint32) *Error { return e.addField(ekaletter.FUint32(key, value)) }
-func (e *Error) WithUint64(key string, value uint64) *Error { return e.addField(ekaletter.FUint64(key, value)) }
-func (e *Error) WithUintptr(key string, value uintptr) *Error { return e.addField(ekaletter.FUintptr(key, value)) }
-func (e *Error) WithFloat32(key string, value float32) *Error { return e.addField(ekaletter.FFloat32(key, value)) }
-func (e *Error) WithFloat64(key string, value float64) *Error { return e.addField(ekaletter.FFloat64(key, value)) }
-func (e *Error) WithComplex64(key string, value complex64) *Error { return e.addField(ekaletter.FComplex64(key, value)) }
-func (e *Error) WithComplex128(key string, value complex128) *Error { return e.addField(ekaletter.FComplex128(key, value)) }
-func (e *Error) WithString(key string, value string) *Error { return e.addField(ekaletter.FString(key, value)) }
-func (e *Error) WithBoolp(key string, value *bool) *Error { return e.addField(ekaletter.FBoolp(key, value)) }
-func (e *Error) WithIntp(key string, value *int) *Error { return e.addField(ekaletter.FIntp(key, value)) }
-func (e *Error) WithInt8p(key string, value *int8) *Error { return e.addField(ekaletter.FInt8p(key, value)) }
-func (e *Error) WithInt16p(key string, value *int16) *Error { return e.addField(ekaletter.FInt16p(key, value)) }
-func (e *Error) WithInt32p(key string, value *int32) *Error { return e.addField(ekaletter.FInt32p(key, value)) }
-func (e *Error) WithInt64p(key string, value *int64) *Error { return e.addField(ekaletter.FInt64p(key, value)) }
-func (e *Error) WithUintp(key string, value *uint) *Error { return e.addField(ekaletter.FUintp(key, value)) }
-func (e *Error) WithUint8p(key string, value *uint8) *Error { return e.addField(ekaletter.FUint8p(key, value)) }
-func (e *Error) WithUint16p(key string, value *uint16) *Error { return e.addField(ekaletter.FUint16p(key, value)) }
-func (e *Error) WithUint32p(key string, value *uint32) *Error { return e.addField(ekaletter.FUint32p(key, value)) }
-func (e *Error) WithUint64p(key string, value *uint64) *Error { return e.addField(ekaletter.FUint64p(key, value)) }
-func (e *Error) WithFloat32p(key string, value *float32) *Error { return e.addField(ekaletter.FFloat32p(key, value)) }
-func (e *Error) WithFloat64p(key string, value *float64) *Error { return e.addField(ekaletter.FFloat64p(key, value)) }
-func (e *Error) WithType(key string, value interface{}) *Error { return e.addField(ekaletter.FType(key, value)) }
-func (e *Error) WithStringer(key string, value fmt.Stringer) *Error { return e.addField(ekaletter.FStringer(key, value)) }
-func (e *Error) WithAddr(key string, value interface{}) *Error { return e.addField(ekaletter.FAddr(key, value)) }
-func (e *Error) WithUnixFromStd(key string, value time.Time) *Error { return e.addField(ekaletter.FUnixFromStd(key, value)) }
-func (e *Error) WithUnixNanoFromStd(key string, value time.Time) *Error { return e.addField(ekaletter.FUnixNanoFromStd(key, value)) }
-func (e *Error) WithUnix(key string, value int64) *Error { return e.addField(ekaletter.FUnix(key, value)) }
-func (e *Error) WithUnixNano(key string, value int64) *Error { return e.addField(ekaletter.FUnixNano(key, value)) }
-func (e *Error) WithDuration(key string, value time.Duration) *Error { return e.addField(ekaletter.FDuration(key, value)) }
-func (e *Error) WithArray(key string, value interface{}) *Error { return e.addField(ekaletter.FArray(key, value)) }
-func (e *Error) WithObject(key string, value interface{}) *Error { return e.addField(ekaletter.FObject(key, value)) }
-func (e *Error) WithMap(key string, value interface{}) *Error { return e.addField(ekaletter.FMap(key, value)) }
-func (e *Error) WithExtractedMap(key string, value map[string]interface{}) *Error { return e.addField(ekaletter.FExtractedMap(key, value)) }
-func (e *Error) WithAny(key string, value interface{}) *Error { return e.addField(ekaletter.FAny(key, value)) }
+func (e *Error) WithInt8(key string, value int8) *Error {
+	return e.addField(ekaletter.FInt8(key, value))
+}
+func (e *Error) WithInt16(key string, value int16) *Error {
+	return e.addField(ekaletter.FInt16(key, value))
+}
+func (e *Error) WithInt32(key string, value int32) *Error {
+	return e.addField(ekaletter.FInt32(key, value))
+}
+func (e *Error) WithInt64(key string, value int64) *Error {
+	return e.addField(ekaletter.FInt64(key, value))
+}
+func (e *Error) WithUint(key string, value uint) *Error {
+	return e.addField(ekaletter.FUint(key, value))
+}
+func (e *Error) WithUint8(key string, value uint8) *Error {
+	return e.addField(ekaletter.FUint8(key, value))
+}
+func (e *Error) WithUint16(key string, value uint16) *Error {
+	return e.addField(ekaletter.FUint16(key, value))
+}
+func (e *Error) WithUint32(key string, value uint32) *Error {
+	return e.addField(ekaletter.FUint32(key, value))
+}
+func (e *Error) WithUint64(key string, value uint64) *Error {
+	return e.addField(ekaletter.FUint64(key, value))
+}
+func (e *Error) WithUintptr(key string, value uintptr) *Error {
+	return e.addField(ekaletter.FUintptr(key, value))
+}
+func (e *Error) WithFloat32(key string, value float32) *Error {
+	return e.addField(ekaletter.FFloat32(key, value))
+}
+func (e *Error) WithFloat64(key string, value float64) *Error {
+	return e.addField(ekaletter.FFloat64(key, value))
+}
+func (e *Error) WithComplex64(key string, value complex64) *Error {
+	return e.addField(ekaletter.FComplex64(key, value))
+}
+func (e *Error) WithComplex128(key string, value complex128) *Error {
+	return e.addField(ekaletter.FComplex128(key, value))
+}
+func (e *Error) WithString(key string, value string) *Error {
+	return e.addField(ekaletter.FString(key, value))
+}
+func (e *Error) WithStringFromBytes(key string, value []byte) *Error {
+	return e.addField(ekaletter.FStringFromBytes(key, value))
+}
+func (e *Error) WithBoolp(key string, value *bool) *Error {
+	return e.addField(ekaletter.FBoolp(key, value))
+}
+func (e *Error) WithIntp(key string, value *int) *Error {
+	return e.addField(ekaletter.FIntp(key, value))
+}
+func (e *Error) WithInt8p(key string, value *int8) *Error {
+	return e.addField(ekaletter.FInt8p(key, value))
+}
+func (e *Error) WithInt16p(key string, value *int16) *Error {
+	return e.addField(ekaletter.FInt16p(key, value))
+}
+func (e *Error) WithInt32p(key string, value *int32) *Error {
+	return e.addField(ekaletter.FInt32p(key, value))
+}
+func (e *Error) WithInt64p(key string, value *int64) *Error {
+	return e.addField(ekaletter.FInt64p(key, value))
+}
+func (e *Error) WithUintp(key string, value *uint) *Error {
+	return e.addField(ekaletter.FUintp(key, value))
+}
+func (e *Error) WithUint8p(key string, value *uint8) *Error {
+	return e.addField(ekaletter.FUint8p(key, value))
+}
+func (e *Error) WithUint16p(key string, value *uint16) *Error {
+	return e.addField(ekaletter.FUint16p(key, value))
+}
+func (e *Error) WithUint32p(key string, value *uint32) *Error {
+	return e.addField(ekaletter.FUint32p(key, value))
+}
+func (e *Error) WithUint64p(key string, value *uint64) *Error {
+	return e.addField(ekaletter.FUint64p(key, value))
+}
+func (e *Error) WithFloat32p(key string, value *float32) *Error {
+	return e.addField(ekaletter.FFloat32p(key, value))
+}
+func (e *Error) WithFloat64p(key string, value *float64) *Error {
+	return e.addField(ekaletter.FFloat64p(key, value))
+}
+func (e *Error) WithType(key string, value interface{}) *Error {
+	return e.addField(ekaletter.FType(key, value))
+}
+func (e *Error) WithStringer(key string, value fmt.Stringer) *Error {
+	return e.addField(ekaletter.FStringer(key, value))
+}
+func (e *Error) WithAddr(key string, value interface{}) *Error {
+	return e.addField(ekaletter.FAddr(key, value))
+}
+func (e *Error) WithUnixFromStd(key string, value time.Time) *Error {
+	return e.addField(ekaletter.FUnixFromStd(key, value))
+}
+func (e *Error) WithUnixNanoFromStd(key string, value time.Time) *Error {
+	return e.addField(ekaletter.FUnixNanoFromStd(key, value))
+}
+func (e *Error) WithUnix(key string, value int64) *Error {
+	return e.addField(ekaletter.FUnix(key, value))
+}
+func (e *Error) WithUnixNano(key string, value int64) *Error {
+	return e.addField(ekaletter.FUnixNano(key, value))
+}
+func (e *Error) WithDuration(key string, value time.Duration) *Error {
+	return e.addField(ekaletter.FDuration(key, value))
+}
+func (e *Error) WithArray(key string, value interface{}) *Error {
+	return e.addField(ekaletter.FArray(key, value))
+}
+func (e *Error) WithObject(key string, value interface{}) *Error {
+	return e.addField(ekaletter.FObject(key, value))
+}
+func (e *Error) WithMap(key string, value interface{}) *Error {
+	return e.addField(ekaletter.FMap(key, value))
+}
+func (e *Error) WithExtractedMap(key string, value map[string]interface{}) *Error {
+	return e.addField(ekaletter.FExtractedMap(key, value))
+}
+func (e *Error) WithAny(key string, value interface{}) *Error {
+	return e.addField(ekaletter.FAny(key, value))
+}
 
 func (e *Error) WithMany(fields ...ekaletter.LetterField) *Error { return e.addFields(fields) }
 
