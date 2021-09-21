@@ -516,7 +516,7 @@ func (bs *BitSet) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary implements BinaryUnmarshaler interface decoding provided `data`
 // from binary form.
 //
-// The current's BitSet data will be overwritten by the decoded one
+// The current BitSet's data will be overwritten by the decoded one
 // if decoding operation has been completed successfully.
 //
 // Provided `data` MUST BE obtained by calling BitSet.MarshalBinary() method.
@@ -534,6 +534,9 @@ func (bs *BitSet) UnmarshalBinary(data []byte) error {
 	switch l := len(data); {
 	case l == 0:
 		return nil
+
+	case bs == nil:
+		return ErrBitSetInvalid
 
 	case l&_BITSET_BYTES_PER_CHUNK != 0:
 		return ErrBitSetInvalidDataToDecode
@@ -571,7 +574,7 @@ func (bs *BitSet) MarshalText() ([]byte, error) {
 // UnmarshalText implements TextUnmarshaler interface decoding provided `data`
 // from text form.
 //
-// The current's BitSet data will be overwritten by the decoded one
+// The current BitSet's data will be overwritten by the decoded one
 // if decoding operation has been completed successfully.
 //
 // Provided `data` MUST BE obtained by calling BitSet.MarshalText() method.
@@ -583,8 +586,12 @@ func (bs *BitSet) MarshalText() ([]byte, error) {
 // User MUST NOT use provided `data` after passing to this method. UB otherwise.
 func (bs *BitSet) UnmarshalText(data []byte) error {
 
-	if len(data) == 0 {
+	switch {
+	case len(data) == 0:
 		return nil
+
+	case bs == nil:
+		return ErrBitSetInvalid
 	}
 
 	buf := make([]byte, base64.StdEncoding.DecodedLen(len(data)))

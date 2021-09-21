@@ -11,12 +11,12 @@ const (
 	_CALENDAR2_CAUSE_DEFAULT_CAPACITY = 64
 )
 
-func (wc *WorkCalendar) dateToIndex(dd Date) uint {
+func (wc *Calendar) dateToIndex(dd Date) uint {
 
 	// WARNING!
 	// Method assumes that wc.year == dd.Year().
 
-	// WorkCalendar always works as in leap year.
+	// Calendar always works as in leap year.
 	// So, we need to increase doy +1 if it's not leap year and march+ month.
 
 	doy := dd.DayOfYear()
@@ -27,7 +27,7 @@ func (wc *WorkCalendar) dateToIndex(dd Date) uint {
 	return uint(doy)
 }
 
-func (wc *WorkCalendar) rangeOfMonth(m Month) (uint, uint) {
+func (wc *Calendar) rangeOfMonth(m Month) (uint, uint) {
 
 	d := Days(_Table0[m-1])
 	if m == MONTH_FEBRUARY && wc.isLeap {
@@ -40,12 +40,12 @@ func (wc *WorkCalendar) rangeOfMonth(m Month) (uint, uint) {
 	return uint(d1), uint(d2)
 }
 
-func (wc *WorkCalendar) overrideDate(dd Date, eventID EventID, isDayOff, useEventID bool) {
+func (wc *Calendar) overrideDate(dd Date, eventID EventID, isDayOff, useEventID bool) {
 
 	// 3rd bool argument:
 	//
 	// A: Use provided EventID (`useEventID`),
-	// B: WorkCalendar causing is enabled (`wc.cause != nil`).
+	// B: Calendar causing is enabled (`wc.cause != nil`).
 	//
 	// Truth table:
 	// A B Res
@@ -72,7 +72,7 @@ func (wc *WorkCalendar) overrideDate(dd Date, eventID EventID, isDayOff, useEven
 	}
 }
 
-func (wc *WorkCalendar) nextDay(dd Date, isDayOff bool) Date {
+func (wc *Calendar) nextDay(dd Date, isDayOff bool) Date {
 
 	if !(wc.IsValid() && dd.IsValid() && dd.Year() == wc.year) {
 		return _DATE_INVALID
@@ -96,7 +96,7 @@ func (wc *WorkCalendar) nextDay(dd Date, isDayOff bool) Date {
 	return NewDateFromDayOfYear(wc.year, Days(nextDay))
 }
 
-func (wc *WorkCalendar) daysIn(m Month, isDayOff bool) []Day {
+func (wc *Calendar) daysIn(m Month, isDayOff bool) []Day {
 
 	if !(wc.IsValid() && m.IsValid()) {
 		return nil
@@ -121,7 +121,7 @@ func (wc *WorkCalendar) daysIn(m Month, isDayOff bool) []Day {
 	return ret
 }
 
-func (wc *WorkCalendar) daysInCount(m Month, isDayOff bool) Days {
+func (wc *Calendar) daysInCount(m Month, isDayOff bool) Days {
 
 	if !(wc.IsValid() && m.IsValid()) {
 		return 0
@@ -141,7 +141,7 @@ func (wc *WorkCalendar) daysInCount(m Month, isDayOff bool) Days {
 	return c
 }
 
-func (wc *WorkCalendar) doSaturdayAndSundayDayOff() {
+func (wc *Calendar) doSaturdayAndSundayDayOff() {
 
 	if !wc.IsValid() {
 		return
@@ -167,7 +167,7 @@ func (wc *WorkCalendar) doSaturdayAndSundayDayOff() {
 	}
 
 	if !wc.isLeap {
-		// WorkCalendar's year is always leap (29Feb).
+		// Calendar's year is always leap (29Feb).
 		// But sometimes the real year might be not leap and weekdays are:
 		// 28 feb sat and 1 mar sun.
 		// 29 feb will be marked as weekday (in loop above).

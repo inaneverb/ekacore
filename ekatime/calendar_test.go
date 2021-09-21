@@ -11,13 +11,14 @@ import (
 	"github.com/qioalice/ekago/v3/ekatime"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestWorkCalendar2015(t *testing.T) {
+func TestCalendar2015(t *testing.T) {
 
 	const YEAR = ekatime.Year(2015)
 
-	cal := ekatime.NewWorkCalendar(YEAR, true, false)
+	cal := ekatime.NewCalendar(YEAR, true, false)
 
 	type (
 		T1 struct {
@@ -62,11 +63,11 @@ func TestWorkCalendar2015(t *testing.T) {
 	}
 }
 
-func TestWorkCalendar2020(t *testing.T) {
+func TestCalendar2020(t *testing.T) {
 
 	const YEAR = ekatime.Year(2020)
 
-	cal := ekatime.NewWorkCalendar(YEAR, true, false)
+	cal := ekatime.NewCalendar(YEAR, true, false)
 
 	type (
 		T1 struct {
@@ -120,11 +121,11 @@ func TestWorkCalendar2020(t *testing.T) {
 	}
 }
 
-func TestWorkCalendar2021(t *testing.T) {
+func TestCalendar2021(t *testing.T) {
 
 	const YEAR = ekatime.Year(2021)
 
-	cal := ekatime.NewWorkCalendar(YEAR, true, false)
+	cal := ekatime.NewCalendar(YEAR, true, false)
 
 	type (
 		T1 struct {
@@ -155,12 +156,26 @@ func TestWorkCalendar2021(t *testing.T) {
 		}
 	}
 
+	encodedBinary, err := cal.MarshalBinary()
+	require.NoError(t, err)
+
+	cal = ekatime.NewCalendar(1991, true, false)
+	err = cal.UnmarshalBinary(encodedBinary)
+	require.NoError(t, err)
+
 	workDays := []ekatime.Days{15, 19, 22, 22, 15, 21, 22, 22, 22, 21, 20, 22}
 	for i, workDays := range workDays {
 		m := ekatime.Month(i + 1)
 		assert.Equal(t, workDays, cal.WorkDaysCount(m),
 			"M: %s, WorkDays: %v", m.String(), cal.WorkDays(m))
 	}
+
+	encodedText, err := cal.MarshalText()
+	require.NoError(t, err)
+
+	cal = ekatime.NewCalendar(2031, true, false)
+	err = cal.UnmarshalText(encodedText)
+	require.NoError(t, err)
 
 	daysOff := []ekatime.Days{16, 9, 9, 8, 16, 9, 9, 9, 8, 10, 10, 9}
 	for i, daysOff := range daysOff {
