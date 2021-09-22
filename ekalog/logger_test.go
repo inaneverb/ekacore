@@ -19,7 +19,10 @@ import (
 )
 
 func foo() *ekaerr.Error {
-	return ekaerr.Interrupted.New("fwefwf").WithInt("test", 42).Throw()
+	return ekaerr.Interrupted.New("fwefwf").
+		AddMessage("custom message").
+		WithInt("test", 42).
+		Throw()
 }
 
 func TestLog(t *testing.T) {
@@ -50,7 +53,7 @@ func TestLog(t *testing.T) {
 	ekalog.Warn("test", "time", time.Now())
 	ekalog.Error("test")
 
-	ekalog.Emerge("", foo(), "log_field")
+	ekalog.Emerge("emerg", foo(), "log_field")
 }
 
 func BenchmarkLog(b *testing.B) {

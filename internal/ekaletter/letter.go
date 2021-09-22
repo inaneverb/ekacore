@@ -175,7 +175,7 @@ func LReset(l *Letter) *Letter {
 	return l
 }
 
-// ParseTo is all-in-one function that parses 'args' to extract message
+// LParseTo is all-in-one function that parses 'args' to extract message
 // (if 'onlyFields' is false) and fields to the Letter.
 //
 //  - If 'onlyField' is true then only fields tries to be extracted from 'args'

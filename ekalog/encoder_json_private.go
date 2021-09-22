@@ -50,25 +50,79 @@ func (je *CI_JSONEncoder) doBuild() *CI_JSONEncoder {
 	je.preEncodedFieldsStreamIndentX1 = je.api.BorrowStream(nil)
 	je.preEncodedFieldsStreamIndentX2 = preEncodedFieldsApi.BorrowStream(nil)
 
+	if je.fieldNames == nil {
+		je.fieldNames = make(map[CI_JSONEncoder_Field]string)
+	}
+
+	dvn := func(je *CI_JSONEncoder, v CI_JSONEncoder_Field, val string) {
+		if _, ok := je.fieldNames[v]; !ok {
+			je.fieldNames[v] = val
+		}
+	}
+
+	dvn(je, CI_JSON_ENCODER_FIELD_LEVEL,
+		CI_JSON_ENCODER_FIELD_DEFAULT_LEVEL)
+
+	dvn(je, CI_JSON_ENCODER_FIELD_LEVEL_VALUE,
+		CI_JSON_ENCODER_FIELD_DEFAULT_LEVEL_VALUE)
+
+	dvn(je, CI_JSON_ENCODER_FIELD_TIME,
+		CI_JSON_ENCODER_FIELD_DEFAULT_TIME)
+
+	dvn(je, CI_JSON_ENCODER_FIELD_MESSAGE,
+		CI_JSON_ENCODER_FIELD_DEFAULT_MESSAGE)
+
+	dvn(je, CI_JSON_ENCODER_FIELD_ERROR_ID,
+		CI_JSON_ENCODER_FIELD_DEFAULT_ERROR_ID)
+
+	dvn(je, CI_JSON_ENCODER_FIELD_ERROR_CLASS_ID,
+		CI_JSON_ENCODER_FIELD_DEFAULT_ERROR_CLASS_ID)
+
+	dvn(je, CI_JSON_ENCODER_FIELD_ERROR_CLASS_NAME,
+		CI_JSON_ENCODER_FIELD_DEFAULT_ERROR_CLASS_NAME)
+
+	dvn(je, CI_JSON_ENCODER_FIELD_STACKTRACE,
+		CI_JSON_ENCODER_FIELD_DEFAULT_STACKTRACE)
+
+	dvn(je, CI_JSON_ENCODER_FIELD_1DL_STACKTRACE_MESSAGES,
+		CI_JSON_ENCODER_FIELD_DEFAULT_1DL_STACKTRACE_MESSAGES)
+
+	dvn(je, CI_JSON_ENCODER_FIELD_FIELDS,
+		CI_JSON_ENCODER_FIELD_DEFAULT_FIELDS)
+
+	dvn(je, CI_JSON_ENCODER_FIELD_1DL_LOG_FIELDS_PREFIX,
+		CI_JSON_ENCODER_FIELD_DEFAULT_1DL_LOG_FIELDS_PREFIX)
+
+	dvn(je, CI_JSON_ENCODER_FIELD_1DL_STACKTRACE_FIELDS_PREFIX,
+		CI_JSON_ENCODER_FIELD_DEFAULT_1DL_STACKTRACE_FIELDS_PREFIX)
+
+	if je.timeFormatter == nil {
+		je.timeFormatter = je.timeFormatterDefault
+	}
+
 	return je
+}
+
+func (_ *CI_JSONEncoder) timeFormatterDefault(t time.Time) string {
+	return t.Format(time.RFC3339)
 }
 
 // encodeBase encodes Entry's level, timestamp, message to s.
 func (je *CI_JSONEncoder) encodeBase(s *jsoniter.Stream, e *Entry) {
 
-	s.WriteObjectField("level")
+	s.WriteObjectField(je.fieldNames[CI_JSON_ENCODER_FIELD_LEVEL])
 	s.WriteString(e.Level.String())
 	s.WriteMore()
 
-	s.WriteObjectField("level_value")
+	s.WriteObjectField(je.fieldNames[CI_JSON_ENCODER_FIELD_LEVEL_VALUE])
 	s.WriteUint8(uint8(e.Level))
 	s.WriteMore()
 
-	s.WriteObjectField("time")
-	s.WriteString(e.Time.Format(time.RFC3339))
+	s.WriteObjectField(je.fieldNames[CI_JSON_ENCODER_FIELD_TIME])
+	s.WriteString(je.timeFormatter(e.Time))
 
 	s.WriteMore()
-	s.WriteObjectField("message")
+	s.WriteObjectField(je.fieldNames[CI_JSON_ENCODER_FIELD_MESSAGE])
 	s.WriteString(e.LogLetter.Messages[0].Body)
 
 	if e.ErrLetter != nil {
@@ -88,15 +142,15 @@ func (je *CI_JSONEncoder) encodeErrorHeader(s *jsoniter.Stream, errLetter *ekale
 		switch errLetter.SystemFields[i].BaseType() {
 
 		case ekaletter.KIND_SYS_TYPE_EKAERR_UUID:
-			s.WriteObjectField("error_id")
+			s.WriteObjectField(je.fieldNames[CI_JSON_ENCODER_FIELD_ERROR_ID])
 			s.WriteString(errLetter.SystemFields[i].SValue)
 
 		case ekaletter.KIND_SYS_TYPE_EKAERR_CLASS_ID:
-			s.WriteObjectField("error_class_id")
+			s.WriteObjectField(je.fieldNames[CI_JSON_ENCODER_FIELD_ERROR_CLASS_ID])
 			s.WriteInt64(errLetter.SystemFields[i].IValue)
 
 		case ekaletter.KIND_SYS_TYPE_EKAERR_CLASS_NAME:
-			s.WriteObjectField("error_class_name")
+			s.WriteObjectField(je.fieldNames[CI_JSON_ENCODER_FIELD_ERROR_CLASS_NAME])
 			s.WriteString(errLetter.SystemFields[i].SValue)
 
 		default:
@@ -127,8 +181,6 @@ func (je *CI_JSONEncoder) encodeStacktrace(s *jsoniter.Stream, e *Entry) (wasAdd
 	}
 
 	var (
-		fi       = 0 // fi for fields' index
-		mi       = 0 // mi for messages' index
 		fields   []ekaletter.LetterField
 		messages []ekaletter.LetterMessage
 	)
@@ -138,46 +190,127 @@ func (je *CI_JSONEncoder) encodeStacktrace(s *jsoniter.Stream, e *Entry) (wasAdd
 		messages = e.ErrLetter.Messages
 	}
 
-	s.WriteObjectField("stacktrace")
-	s.WriteArrayStart()
+	if je.oneDepthLevel {
+		var sb strings.Builder
 
-	for i := int16(0); i < n; i++ {
-		messageForStackFrame := ekaletter.LetterMessage{}
-		fieldsForStackFrame := []ekaletter.LetterField(nil)
-		fiEnd := 0
+		s.WriteObjectField(je.fieldNames[CI_JSON_ENCODER_FIELD_STACKTRACE])
+		s.WriteArrayStart()
 
-		//goland:noinspection GoNilness
-		if mi < len(messages) && messages[mi].StackFrameIdx == i {
-			messageForStackFrame = messages[mi]
-			mi++
-		}
+		for i := int16(0); i < n; i++ {
+			frame := &stacktrace[i]
+			frame.DoFormat()
 
-		if fi < len(fields) && fields[fi].StackFrameIdx == i {
-			fiEnd = fi + 1
-			for fiEnd < len(fields) && fields[fiEnd].StackFrameIdx == i {
-				fiEnd++
+			sb.Reset()
+			sb.Grow(len(frame.Format) + 3)
+			sb.WriteString(frame.Format[frame.FormatFullPathOffset:])
+			sb.WriteByte('/')
+			sb.WriteString(frame.Format[:frame.FormatFileOffset-1])
+			sb.WriteByte(' ')
+			sb.WriteString(frame.Format[frame.FormatFileOffset : frame.FormatFullPathOffset-1])
+
+			s.WriteString(sb.String())
+
+			if i < n-1 {
+				s.WriteMore()
 			}
 		}
 
-		if fiEnd != 0 {
-			fieldsForStackFrame = fields[fi:fiEnd]
-		}
+		s.WriteArrayEnd()
 
-		je.encodeStackFrame(s, stacktrace[i], fieldsForStackFrame, messageForStackFrame)
-
-		if i < n-1 {
+		if len(messages) > 0 && messages[0].Body != "" {
 			s.WriteMore()
+			s.WriteObjectField(je.fieldNames[CI_JSON_ENCODER_FIELD_1DL_STACKTRACE_MESSAGES])
+			s.WriteArrayStart()
+
+			mi := 0
+			for i, n := int16(0), int16(len(stacktrace)); i < n; i++ {
+				if mi < len(messages) && messages[mi].StackFrameIdx == i {
+					s.WriteString(messages[mi].Body)
+					mi++
+				} else {
+					s.WriteString("")
+				}
+				if i < n-1 {
+					s.WriteMore()
+				}
+			}
+
+			s.WriteArrayEnd()
 		}
+
+		if len(fields) > 0 {
+			s.WriteMore()
+
+			for i, n := 0, len(fields); i < n; i++ {
+				keyBak := fields[i].Key
+
+				key := je.fieldNames[CI_JSON_ENCODER_FIELD_1DL_STACKTRACE_FIELDS_PREFIX]
+				key = strings.Replace(key, "{{num}}", strconv.Itoa(int(fields[i].StackFrameIdx)), 1)
+				key += fields[i].Key
+
+				fields[i].Key = key
+
+				if wasAdded := je.encodeField(s, fields[i]); wasAdded {
+					s.WriteMore()
+				}
+
+				fields[i].Key = keyBak
+			}
+
+			to := s.Buffer()
+			if l := len(to); to[l-1] == ',' {
+				s.SetBuffer(to[:l-1])
+			}
+		}
+
+	} else {
+		fi := 0 // fi for fields' index
+		mi := 0 // mi for messages' index
+
+		s.WriteObjectField(je.fieldNames[CI_JSON_ENCODER_FIELD_STACKTRACE])
+		s.WriteArrayStart()
+
+		for i := int16(0); i < n; i++ {
+			frame := &stacktrace[i]
+
+			messageForStackFrame := ekaletter.LetterMessage{}
+			fieldsForStackFrame := []ekaletter.LetterField(nil)
+			fiEnd := 0
+
+			//goland:noinspection GoNilness
+			if mi < len(messages) && messages[mi].StackFrameIdx == i {
+				messageForStackFrame = messages[mi]
+				mi++
+			}
+
+			if fi < len(fields) && fields[fi].StackFrameIdx == i {
+				fiEnd = fi + 1
+				for fiEnd < len(fields) && fields[fiEnd].StackFrameIdx == i {
+					fiEnd++
+				}
+			}
+
+			if fiEnd != 0 {
+				fieldsForStackFrame = fields[fi:fiEnd]
+			}
+
+			je.encodeStackFrame(s, frame, fieldsForStackFrame, messageForStackFrame)
+
+			if i < n-1 {
+				s.WriteMore()
+			}
+		}
+
+		s.WriteArrayEnd()
 	}
 
-	s.WriteArrayEnd()
 	return true
 }
 
 func (je *CI_JSONEncoder) encodeStackFrame(
 
 	s *jsoniter.Stream,
-	frame ekasys.StackFrame,
+	frame *ekasys.StackFrame,
 	fields []ekaletter.LetterField,
 	message ekaletter.LetterMessage,
 
@@ -222,19 +355,33 @@ func (je *CI_JSONEncoder) encodeFields(s *jsoniter.Stream, fs, addFs []ekaletter
 
 	var (
 		unnamedFieldIdx, writtenFields int16
+		prefix                         string
 	)
 
-	s.WriteObjectField("fields")
-	s.WriteObjectStart()
+	if je.oneDepthLevel {
+		prefix = je.fieldNames[CI_JSON_ENCODER_FIELD_1DL_LOG_FIELDS_PREFIX]
+	} else {
+		s.WriteObjectField(je.fieldNames[CI_JSON_ENCODER_FIELD_FIELDS])
+		s.WriteObjectStart()
+	}
 
-	addField := func(s *jsoniter.Stream, f *ekaletter.LetterField, unnamedFieldIdx, writtenFields *int16) {
+	addField := func(s *jsoniter.Stream, f *ekaletter.LetterField, prefix string, unnamedFieldIdx, writtenFields *int16) {
 		if f.IsZero() || f.Kind.IsInvalid() {
 			return
 		}
 		keyBak := f.Key
+
+		var sb strings.Builder
+		sb.Grow(len(prefix) + len(f.Key) + 10)
+		sb.WriteString(prefix)
+
 		if f.Key == "" && !f.IsSystem() {
-			f.Key = f.KeyOrUnnamed(unnamedFieldIdx)
+			sb.WriteString(f.KeyOrUnnamed(unnamedFieldIdx))
+		} else {
+			sb.WriteString(f.Key)
 		}
+		f.Key = sb.String()
+
 		if wasAdded = je.encodeField(s, *f); wasAdded {
 			s.WriteMore()
 			*writtenFields++
@@ -243,10 +390,10 @@ func (je *CI_JSONEncoder) encodeFields(s *jsoniter.Stream, fs, addFs []ekaletter
 	}
 
 	for i, n := int16(0), int16(len(fs)); i < n; i++ {
-		addField(s, &fs[i], &unnamedFieldIdx, &writtenFields)
+		addField(s, &fs[i], prefix, &unnamedFieldIdx, &writtenFields)
 	}
 	for i, n := int16(0), int16(len(addFs)); i < n; i++ {
-		addField(s, &addFs[i], &unnamedFieldIdx, &writtenFields)
+		addField(s, &addFs[i], prefix, &unnamedFieldIdx, &writtenFields)
 	}
 
 	to := s.Buffer()
@@ -263,16 +410,21 @@ func (je *CI_JSONEncoder) encodeFields(s *jsoniter.Stream, fs, addFs []ekaletter
 		i--
 	}
 
-	// Maybe no fields were added?
-	if writtenFields == 0 {
-		for i >= 0 && to[i] != 'f' { // start of "fields"
-			i--
+	if !je.oneDepthLevel {
+		// Maybe no fields were added?
+		if writtenFields == 0 {
+			for i >= 0 && to[i] != 'f' { // start of "fields"
+				i--
+			}
 		}
 	}
 
 	s.SetBuffer(to[:i+1])
 
-	s.WriteObjectEnd()
+	if !je.oneDepthLevel {
+		s.WriteObjectEnd()
+	}
+
 	return true
 }
 
