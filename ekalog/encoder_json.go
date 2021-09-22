@@ -1,6 +1,6 @@
 // Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekalog
@@ -56,6 +56,11 @@ type (
 	}
 )
 
+var (
+	// Make sure we won't break API.
+	_ CI_Encoder = (*CI_JSONEncoder)(nil)
+)
+
 // SetIndent sets an indentation of JSON encoding format.
 // Any value <= 0 meaning "no indentation".
 //
@@ -97,7 +102,7 @@ func (je *CI_JSONEncoder) PreEncodeField(f ekaletter.LetterField) {
 	}
 
 	stream := je.preEncodedFieldsStreamIndentX2
-	if f.Kind & ekaletter.KIND_FLAG_USER_DEFINED != 0 {
+	if f.Kind&ekaletter.KIND_FLAG_USER_DEFINED != 0 {
 		stream = je.preEncodedFieldsStreamIndentX1
 	}
 
@@ -160,7 +165,7 @@ func (je *CI_JSONEncoder) EncodeEntry(e *Entry) []byte {
 	s.WriteObjectEnd()
 
 	b = s.Buffer()
-	copied := make([]byte, len(b) +1)
+	copied := make([]byte, len(b)+1)
 	copy(copied, b)
 
 	copied[len(copied)-1] = '\n'

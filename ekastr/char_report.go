@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekastr
@@ -9,8 +9,8 @@ package ekastr
 const (
 
 	/*
-	There are constants for CharReport function.
-	CharReport may return any of these variables.
+		There are constants for CharReport function.
+		CharReport may return any of these variables.
 	*/
 
 	CR_NUMBER            = int8(1)

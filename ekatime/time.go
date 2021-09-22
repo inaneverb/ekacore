@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekatime
@@ -40,7 +40,7 @@ func (t Time) IsValid() bool {
 // only if Time has not been created manually but using constructors
 // like NewTime(), Timestamp.Time(), Timestamp.Split(), etc.
 func (t Time) Hour() Hour {
-	return Hour(t >> _TIME_OFFSET_HOUR) & _TIME_MASK_HOUR
+	return Hour(t>>_TIME_OFFSET_HOUR) & _TIME_MASK_HOUR
 }
 
 // Minute returns the minute number the current Time includes which.
@@ -49,7 +49,7 @@ func (t Time) Hour() Hour {
 // only if Time has not been created manually but using constructors
 // like NewTime(), Timestamp.Time(), Timestamp.Split(), etc.
 func (t Time) Minute() Minute {
-	return Minute(t >> _TIME_OFFSET_MINUTE) & _TIME_MASK_MINUTE
+	return Minute(t>>_TIME_OFFSET_MINUTE) & _TIME_MASK_MINUTE
 }
 
 // Second returns the second number the current Time includes which.
@@ -58,7 +58,7 @@ func (t Time) Minute() Minute {
 // only if Time has not been created manually but using constructors
 // like NewTime(), Timestamp.Time(), Timestamp.Split(), etc.
 func (t Time) Second() Second {
-	return Second(t >> _TIME_OFFSET_SECOND) & _TIME_MASK_SECOND
+	return Second(t>>_TIME_OFFSET_SECOND) & _TIME_MASK_SECOND
 }
 
 // Split returns the hour number, minutes number and seconds number the current Date

@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekastr_test
@@ -16,7 +16,7 @@ import (
 
 type (
 	/*
-	_TITC is Interpolation's test cases
+		_TITC is Interpolation's test cases
 	*/
 	_TITC struct {
 		str      string
@@ -24,7 +24,7 @@ type (
 	}
 
 	/*
-	_TITCSP is Interpolation test cases' string parts
+		_TITCSP is Interpolation test cases' string parts
 	*/
 	_TITCSP struct {
 		part   string
@@ -86,7 +86,7 @@ func TestInterpolateb(t *testing.T) {
 func BenchmarkInterpolate(b *testing.B) {
 	const S = "This is some {{kind}} of string that must be {{interpolated}}."
 	b.ReportAllocs()
-	cb := func(_ string){}
+	cb := func(_ string) {}
 	for i := 0; i < b.N; i++ {
 		ekastr.Interpolate(S, cb, cb)
 	}
@@ -95,7 +95,7 @@ func BenchmarkInterpolate(b *testing.B) {
 func BenchmarkInterpolateb(b *testing.B) {
 	const S = "This is some {{kind}} of string that must be {{interpolated}}."
 	b.ReportAllocs()
-	cb := func(_[]byte){}
+	cb := func(_ []byte) {}
 	for i := 0; i < b.N; i++ {
 		arr := ekastr.S2B(S)
 		ekastr.Interpolateb(arr, cb, cb)

@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekatime_test
@@ -27,7 +27,8 @@ func TestTime_String(t *testing.T) {
 
 func BenchmarkTime_String_Cached(b *testing.B) {
 	t0 := ekatime.NewTime(14, 2, 13)
-	b.ResetTimer(); b.ReportAllocs()
+	b.ResetTimer()
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		_ = t0.String()
 	}
@@ -35,7 +36,8 @@ func BenchmarkTime_String_Cached(b *testing.B) {
 
 func BenchmarkTime_String_FmtSprintf(b *testing.B) {
 	hh, mm, ss := ekatime.NewTime(14, 2, 13).Split()
-	b.ResetTimer(); b.ReportAllocs()
+	b.ResetTimer()
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		_ = fmt.Sprintf("%02d:%02d:%02d", hh, mm, ss)
 	}
@@ -48,7 +50,9 @@ func TestTime_ParseFrom(t *testing.T) {
 	bt4 := []byte("23:5959")  // invalid
 	bt5 := []byte("2359:5")   // invalid
 
-	var (t1, t2, t3, t4, t5 ekatime.Time)
+	var (
+		t1, t2, t3, t4, t5 ekatime.Time
+	)
 
 	err1 := t1.ParseFrom(bt1)
 	err2 := t2.ParseFrom(bt2)
@@ -69,7 +73,8 @@ func TestTime_ParseFrom(t *testing.T) {
 func BenchmarkTime_ParseFrom(b *testing.B) {
 	bt0 := []byte("23:59:59")
 	var tt ekatime.Time
-	b.ResetTimer(); b.ReportAllocs()
+	b.ResetTimer()
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		_ = tt.ParseFrom(bt0)
 	}

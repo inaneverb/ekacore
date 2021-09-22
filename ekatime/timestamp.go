@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekatime
@@ -169,7 +169,7 @@ func NewTimestampFromStd(t time.Time) Timestamp {
 // In most cases you don't need to use this method, but use any of predefined
 // instead: BeginningOfDay(), BeginningAndEndOfMonth(), etc.
 func (ts Timestamp) BeginningAndEndOf(range_ Timestamp) TimestampPair {
-	x := ts + (range_- ts % range_)
+	x := ts + (range_ - ts%range_)
 	return TimestampPair{x - range_, x - 1}
 }
 

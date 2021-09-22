@@ -1,6 +1,6 @@
 // Copyright © 2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekamath
@@ -12,7 +12,7 @@ import (
 )
 
 func (bs *BitSet) DebugOnesAsSlice(expectedValues uint) []uint {
-	ones := make([]uint, 0, MaxU(expectedValues, _BITSET_MINIMUM_CAPACITY) +1)
+	ones := make([]uint, 0, MaxU(expectedValues, _BITSET_MINIMUM_CAPACITY)+1)
 	for v, e := bs.NextUp(0); e; v, e = bs.NextUp(v) {
 		ones = append(ones, v)
 	}
@@ -40,7 +40,7 @@ func (bs *BitSet) DebugFullDump() {
 	fmt.Printf("\tAs chunks:      %v\n", bs.bs)
 
 	var bits strings.Builder
-	bits.Grow(int(bs.chunkSize() * (_BITSET_BITS_PER_CHUNK +1)))
+	bits.Grow(int(bs.chunkSize() * (_BITSET_BITS_PER_CHUNK + 1)))
 	for _, chunk := range bs.bs {
 		_, _ = fmt.Fprintf(&bits, "%b ", chunk)
 	}

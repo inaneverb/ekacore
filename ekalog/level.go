@@ -1,6 +1,6 @@
 // Copyright © 2018-2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekalog
@@ -37,15 +37,24 @@ const (
 // Returns an empty string if it's unexpected log level.
 func (l Level) String() string {
 	switch l {
-	case LEVEL_EMERGENCY: return "Emergency"
-	case LEVEL_ALERT:     return "Alert"
-	case LEVEL_CRITICAL:  return "Critical"
-	case LEVEL_ERROR:     return "Error"
-	case LEVEL_WARNING:   return "Warning"
-	case LEVEL_NOTICE:    return "Notice"
-	case LEVEL_INFO:      return "Info"
-	case LEVEL_DEBUG:     return "Debug"
-	default:              return ""
+	case LEVEL_EMERGENCY:
+		return "Emergency"
+	case LEVEL_ALERT:
+		return "Alert"
+	case LEVEL_CRITICAL:
+		return "Critical"
+	case LEVEL_ERROR:
+		return "Error"
+	case LEVEL_WARNING:
+		return "Warning"
+	case LEVEL_NOTICE:
+		return "Notice"
+	case LEVEL_INFO:
+		return "Info"
+	case LEVEL_DEBUG:
+		return "Debug"
+	default:
+		return ""
 	}
 }
 
@@ -54,74 +63,119 @@ func (l Level) String() string {
 // Returns an empty string if it's unexpected log level.
 func (l Level) String3() string {
 	switch l {
-	case LEVEL_EMERGENCY: return "Emerg"
-	case LEVEL_ALERT:     return "Ale"
-	case LEVEL_CRITICAL:  return "Cri"
-	case LEVEL_ERROR:     return "Err"
-	case LEVEL_WARNING:   return "War"
-	case LEVEL_NOTICE:    return "Noe"
-	case LEVEL_INFO:      return "Inf"
-	case LEVEL_DEBUG:     return "Deb"
-	default:              return ""
+	case LEVEL_EMERGENCY:
+		return "Emerg"
+	case LEVEL_ALERT:
+		return "Ale"
+	case LEVEL_CRITICAL:
+		return "Cri"
+	case LEVEL_ERROR:
+		return "Err"
+	case LEVEL_WARNING:
+		return "War"
+	case LEVEL_NOTICE:
+		return "Noe"
+	case LEVEL_INFO:
+		return "Inf"
+	case LEVEL_DEBUG:
+		return "Deb"
+	default:
+		return ""
 	}
 }
 
 // ToUpper returns an uppercase variant of String() call.
 func (l Level) ToUpper() string {
 	switch l {
-	case LEVEL_EMERGENCY: return "EMERGENCY"
-	case LEVEL_ALERT:     return "ALERT"
-	case LEVEL_CRITICAL:  return "CRITICAL"
-	case LEVEL_ERROR:     return "ERROR"
-	case LEVEL_WARNING:   return "WARNING"
-	case LEVEL_NOTICE:    return "NOTICE"
-	case LEVEL_INFO:      return "INFO"
-	case LEVEL_DEBUG:     return "DEBUG"
-	default:              return ""
+	case LEVEL_EMERGENCY:
+		return "EMERGENCY"
+	case LEVEL_ALERT:
+		return "ALERT"
+	case LEVEL_CRITICAL:
+		return "CRITICAL"
+	case LEVEL_ERROR:
+		return "ERROR"
+	case LEVEL_WARNING:
+		return "WARNING"
+	case LEVEL_NOTICE:
+		return "NOTICE"
+	case LEVEL_INFO:
+		return "INFO"
+	case LEVEL_DEBUG:
+		return "DEBUG"
+	default:
+		return ""
 	}
 }
 
 // ToLower returns a lowercase variant of String() call.
 func (l Level) ToLower() string {
 	switch l {
-	case LEVEL_EMERGENCY: return "emergency"
-	case LEVEL_ALERT:     return "alert"
-	case LEVEL_CRITICAL:  return "critical"
-	case LEVEL_ERROR:     return "error"
-	case LEVEL_WARNING:   return "warning"
-	case LEVEL_NOTICE:    return "notice"
-	case LEVEL_INFO:      return "info"
-	case LEVEL_DEBUG:     return "debug"
-	default:              return ""
+	case LEVEL_EMERGENCY:
+		return "emergency"
+	case LEVEL_ALERT:
+		return "alert"
+	case LEVEL_CRITICAL:
+		return "critical"
+	case LEVEL_ERROR:
+		return "error"
+	case LEVEL_WARNING:
+		return "warning"
+	case LEVEL_NOTICE:
+		return "notice"
+	case LEVEL_INFO:
+		return "info"
+	case LEVEL_DEBUG:
+		return "debug"
+	default:
+		return ""
 	}
 }
 
 // ToUpper3 returns an uppercase variant of String3() call.
 func (l Level) ToUpper3() string {
 	switch l {
-	case LEVEL_EMERGENCY: return "EMERG"
-	case LEVEL_ALERT:     return "ALE"
-	case LEVEL_CRITICAL:  return "CRI"
-	case LEVEL_ERROR:     return "ERR"
-	case LEVEL_WARNING:   return "WAR"
-	case LEVEL_NOTICE:    return "NOE"
-	case LEVEL_INFO:      return "INF"
-	case LEVEL_DEBUG:     return "DEB"
-	default:              return ""
+	case LEVEL_EMERGENCY:
+		return "EMERG"
+	case LEVEL_ALERT:
+		return "ALE"
+	case LEVEL_CRITICAL:
+		return "CRI"
+	case LEVEL_ERROR:
+		return "ERR"
+	case LEVEL_WARNING:
+		return "WAR"
+	case LEVEL_NOTICE:
+		return "NOE"
+	case LEVEL_INFO:
+		return "INF"
+	case LEVEL_DEBUG:
+		return "DEB"
+	default:
+		return ""
 	}
 }
 
 // ToLower3 returns an uppercase variant of String3() call.
 func (l Level) ToLower3() string {
 	switch l {
-	case LEVEL_EMERGENCY: return "emerg"
-	case LEVEL_ALERT:     return "ale"
-	case LEVEL_CRITICAL:  return "cri"
-	case LEVEL_ERROR:     return "err"
-	case LEVEL_WARNING:   return "war"
-	case LEVEL_NOTICE:    return "noe"
-	case LEVEL_INFO:      return "inf"
-	case LEVEL_DEBUG:     return "deb"
-	default:              return ""
+	case LEVEL_EMERGENCY:
+		return "emerg"
+	case LEVEL_ALERT:
+		return "ale"
+	case LEVEL_CRITICAL:
+		return "cri"
+	case LEVEL_ERROR:
+		return "err"
+	case LEVEL_WARNING:
+		return "war"
+	case LEVEL_NOTICE:
+		return "noe"
+	case LEVEL_INFO:
+		return "inf"
+	case LEVEL_DEBUG:
+		return "deb"
+	default:
+		return ""
 	}
 }

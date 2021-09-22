@@ -1,6 +1,6 @@
 // Copyright © 2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekatyp
@@ -186,7 +186,7 @@ func (u ULID) MarshalJSON() ([]byte, error) {
 	buf := make([]byte, ulid.EncodedSize+2)
 	buf[0], buf[len(buf)-1] = '"', '"'
 
-	if err := ulid.ULID(u).MarshalTextTo(buf[1:len(buf)-1]); err != nil {
+	if err := ulid.ULID(u).MarshalTextTo(buf[1 : len(buf)-1]); err != nil {
 		return nil, err
 	}
 
@@ -202,11 +202,11 @@ func (u *ULID) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	if len(data) != ulid.EncodedSize + 2 {
+	if len(data) != ulid.EncodedSize+2 {
 		return ulid.ErrDataSize
 	}
 
-	return (*ulid.ULID)(u).UnmarshalText(data[1:len(data)-1])
+	return (*ulid.ULID)(u).UnmarshalText(data[1 : len(data)-1])
 }
 
 // ----------------------- UUID BINARY ENCODER/DECODER ------------------------ //

@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekaclike_test
@@ -19,7 +19,7 @@ type t1 struct {
 	i int
 }
 
-func (v *t1) Foo() int { return v.i }
+func (v *t1) Foo() int         { return v.i }
 func (v *t1) Bar(newI int) int { v.i = newI; return v.i }
 
 func newT(i int) t1 { return t1{i: i} }
@@ -81,7 +81,8 @@ func TestTakeCallableAddr2(t *testing.T) {
 	assert.Equal(t, 20, foo())
 }
 
-type CustomError struct {}
+type CustomError struct{}
+
 func (_ *CustomError) Error() string { return "<custom error>" }
 
 func TestTakeRealAddrForError(t *testing.T) {
@@ -108,6 +109,6 @@ func TestTakeCallableAddr3(t *testing.T) {
 		return x
 	}
 
-	z := (*(*func(float32)int32)(ekaclike.TakeCallableAddr(f)))(-1*12345678e-4)
+	z := (*(*func(float32) int32)(ekaclike.TakeCallableAddr(f)))(-1 * 12345678e-4)
 	assert.Equal(t, int32(-996519381), z)
 }

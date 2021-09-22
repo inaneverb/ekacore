@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekaunsafe
@@ -298,6 +298,7 @@ but it also is true for
 func RTypeIsAnyNumeric(rtype uintptr) bool {
 	return RTypeIsIntAny(rtype) || RTypeIsUintAny(rtype)
 }
+
 /*
 RTypeIsAnyReal returns true if passed rtype is any of signed or unsigned integers
 or floats.

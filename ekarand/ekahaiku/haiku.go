@@ -1,6 +1,6 @@
 // Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekahaiku
@@ -35,13 +35,13 @@ func HaikunateWithRange(from, to uint) string {
 	}
 
 	var (
-		n = ekastr.PItoa64(int64(to)) // bytes required for max number
-		rn = mrand.Uint64() % uint64(to-from)
+		n   = ekastr.PItoa64(int64(to)) // bytes required for max number
+		rn  = mrand.Uint64() % uint64(to-from)
 		rnn = ekastr.PItoa64(int64(rn)) // bytes required for generated number
-		b bytes.Buffer
+		b   bytes.Buffer
 	)
 
-	b.Grow(n+32)
+	b.Grow(n + 32)
 	b.WriteString(adjectives[mrand.Int31n(int32(len(adjectives)))])
 	b.WriteByte('-')
 	b.WriteString(nouns[mrand.Int31n(int32(len(nouns)))])

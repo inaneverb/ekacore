@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekalog
@@ -269,4 +269,3 @@ func Emergew(msg string, err *ekaerr.Error, fields ...ekaletter.LetterField) (th
 func Emergeww(msg string, err *ekaerr.Error, fields []ekaletter.LetterField) (this *Logger) {
 	return baseLogger.log(LEVEL_EMERGENCY, msg, err, nil, fields)
 }
-

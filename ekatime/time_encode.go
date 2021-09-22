@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekatime
@@ -43,7 +43,7 @@ func (t Time) AppendTo(b []byte, separator byte) []byte {
 		b[5] = separator
 	}
 
-	if c, l := cap(b), len(b); c - l >= 8 {
+	if c, l := cap(b), len(b); c-l >= 8 {
 		b = b[:l+8]
 		f(b[l:])
 		return b
@@ -72,7 +72,8 @@ func (t *Time) ParseFrom(b []byte) error {
 	}
 
 	var i = 0
-	for n := len(b); i < n && b[i] <= ' '; i++ { }
+	for n := len(b); i < n && b[i] <= ' '; i++ {
+	}
 
 	// Minimum required len: 4 (hhmm - w/o separators, w/o seconds).
 	if len(b[i:]) < 4 {
@@ -124,7 +125,6 @@ func (t *Time) ParseFrom(b []byte) error {
 		}
 		ss = Second(x)
 	}
-
 
 	if !IsValidTime(hh, mm, ss) {
 		return _ERR_BAD_CORRESP_TIME
@@ -194,6 +194,6 @@ func (t *Time) UnmarshalJSON(b []byte) error {
 		return _ERR_BAD_JSON_TIME_QUO
 
 	default:
-		return t.ParseFrom(b[1:l-1])
+		return t.ParseFrom(b[1 : l-1])
 	}
 }

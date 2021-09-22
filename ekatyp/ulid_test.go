@@ -1,6 +1,6 @@
 // Copyright © 2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekatyp_test
@@ -21,7 +21,7 @@ type (
 )
 
 func TestULID_MarshalJSON(t *testing.T) {
-	x := T{ ULID: ekatyp.ULID_New_OrPanic() }
+	x := T{ULID: ekatyp.ULID_New_OrPanic()}
 	encoded, err := jsoniter.Marshal(x)
 	fmt.Println(string(encoded), err)
 }

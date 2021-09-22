@@ -1,6 +1,6 @@
 // Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekaerr
@@ -20,7 +20,7 @@ func init() {
 	ekaletter.BridgeErrorSetStackIdx = bridgeSetStackIdx
 
 	// It's prohibited to use some types as Error's fields.
-	ignoredTypes := []uintptr {
+	ignoredTypes := []uintptr{
 		reflect2.RTypeOf(Class{}), reflect2.RTypeOf((*Class)(nil)),
 		reflect2.RTypeOf(Namespace{}), reflect2.RTypeOf((*Namespace)(nil)),
 		reflect2.RTypeOf(Error{}), reflect2.RTypeOf((*Error)(nil)),

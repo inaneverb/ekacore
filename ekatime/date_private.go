@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekatime
@@ -15,18 +15,18 @@ import (
 
 //noinspection GoSnakeCaseUsage
 const (
-	_DATE_OFFSET_DAY     uint8   = 0
-	_DATE_OFFSET_MONTH   uint8   = _DATE_OFFSET_DAY + 5
-	_DATE_OFFSET_YEAR    uint8   = _DATE_OFFSET_MONTH + 4
-	_DATE_OFFSET_WEEKDAY uint8   = _DATE_OFFSET_YEAR + 12
-	_DATE_OFFSET_UNUSED  uint8   = _DATE_OFFSET_WEEKDAY + 3
+	_DATE_OFFSET_DAY     uint8 = 0
+	_DATE_OFFSET_MONTH   uint8 = _DATE_OFFSET_DAY + 5
+	_DATE_OFFSET_YEAR    uint8 = _DATE_OFFSET_MONTH + 4
+	_DATE_OFFSET_WEEKDAY uint8 = _DATE_OFFSET_YEAR + 12
+	_DATE_OFFSET_UNUSED  uint8 = _DATE_OFFSET_WEEKDAY + 3
 
-	_DATE_MASK_DAY       Day     = 0x1F
-	_DATE_MASK_MONTH     Month   = 0x0F
-	_DATE_MASK_YEAR      Year    = 0x0FFF
-	_DATE_MASK_WEEKDAY   Weekday = 0x07
+	_DATE_MASK_DAY     Day     = 0x1F
+	_DATE_MASK_MONTH   Month   = 0x0F
+	_DATE_MASK_YEAR    Year    = 0x0FFF
+	_DATE_MASK_WEEKDAY Weekday = 0x07
 
-	_DATE_MASK_DATE      Date    = (Date(1) << _DATE_OFFSET_UNUSED) - 1
+	_DATE_MASK_DATE Date = (Date(1) << _DATE_OFFSET_UNUSED) - 1
 )
 
 //goland:noinspection GoSnakeCaseUsage
@@ -46,8 +46,8 @@ const (
 
 //noinspection GoSnakeCaseUsage
 var (
-	_YEAR_AS_NUM_STR [_YEAR_AS_NUM_STR_MAX-_YEAR_AS_NUM_STR_MIN+1][]byte
-	_DAY_AS_NUM_STR [31][]byte
+	_YEAR_AS_NUM_STR [_YEAR_AS_NUM_STR_MAX - _YEAR_AS_NUM_STR_MIN + 1][]byte
+	_DAY_AS_NUM_STR  [31][]byte
 )
 
 // normalizeDate shifts Date, 'y', 'm', and 'd' represents which if they are not

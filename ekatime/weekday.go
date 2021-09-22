@@ -1,6 +1,6 @@
 // Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekatime
@@ -39,11 +39,11 @@ func WeekdayJan1(y Year) Weekday {
 		return -1
 	} else if y >= 1901 && y <= 2099 {
 		yf := float32(y)
-		return WeekdayFrom06(int8(int16(1.25 * (yf-1)) % 7))
+		return WeekdayFrom06(int8(int16(1.25*(yf-1)) % 7))
 	} else {
 		y--
 		yf := float32(y)
-		return WeekdayFrom06(int8(int16((1.25 * yf) - (yf/100) + (yf/400) +1) % 7))
+		return WeekdayFrom06(int8(int16((1.25*yf)-(yf/100)+(yf/400)+1) % 7))
 	}
 }
 
@@ -52,7 +52,7 @@ func (w Weekday) Next() Weekday {
 	if w == WEEKDAY_TUESDAY {
 		return WEEKDAY_WEDNESDAY
 	}
-	return w+1
+	return w + 1
 }
 
 // Prev returns the prev day of week before the current one.
@@ -60,7 +60,7 @@ func (w Weekday) Prev() Weekday {
 	if w == WEEKDAY_WEDNESDAY {
 		return WEEKDAY_TUESDAY
 	}
-	return w-1
+	return w - 1
 }
 
 // IsDayOff reports whether current day of week is Saturday or Sunday.
@@ -108,7 +108,7 @@ func (w *Weekday) From06(i8 int8) *Weekday {
 // Returns -1 if i8 is not in the allowed range.
 func WeekdayFrom06(i8 int8) Weekday {
 	if i8 >= 0 && i8 <= 6 {
-		return Weekday(i8 + 4) % 7
+		return Weekday(i8+4) % 7
 	} else {
 		return -1
 	}
@@ -117,5 +117,5 @@ func WeekdayFrom06(i8 int8) Weekday {
 // To06 returns a uint8 representation of the current Weekday,
 // where 0 - Sunday, 6 - Saturday.
 func (w Weekday) To06() int8 {
-	return int8(w + 3) % 7
+	return int8(w+3) % 7
 }

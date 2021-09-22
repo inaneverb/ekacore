@@ -1,6 +1,6 @@
 // Copyright © 2018-2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekalog
@@ -135,11 +135,11 @@ func (l *Logger) addFieldsParse(fs []interface{}) *Logger {
 // 4. Finally write a message and call then death.Die() if it's fatal level.
 func (l *Logger) log(
 
-	lvl      Level,
-	format   string,
-	err      *ekaerr.Error,
-	args     []interface{},
-	fields   []ekaletter.LetterField,
+	lvl Level,
+	format string,
+	err *ekaerr.Error,
+	args []interface{},
+	fields []ekaletter.LetterField,
 
 ) *Logger {
 
@@ -166,7 +166,7 @@ func (l *Logger) log(
 
 	var (
 		onlyFields = false
-		errLetter = ekaletter.BridgeErrorGetLetter(unsafe.Pointer(err))
+		errLetter  = ekaletter.BridgeErrorGetLetter(unsafe.Pointer(err))
 	)
 
 	// Try to use ekaerr.Error's last message or first arg from args
@@ -177,7 +177,7 @@ func (l *Logger) log(
 			format = ekaletter.LPopLastMessage(errLetter)
 		} else if len(args) > 0 {
 			var (
-				typ1stArg = reflect2.TypeOf(args[0])
+				typ1stArg   = reflect2.TypeOf(args[0])
 				rtype1stArg = uintptr(0)
 			)
 

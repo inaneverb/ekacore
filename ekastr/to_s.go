@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekastr
@@ -45,13 +45,13 @@ func ToStringUnsafe(rtype uintptr, word unsafe.Pointer, mask uint8) string {
 		case ekaclike.RTypeBool, ekaclike.RTypeString, ekaclike.RTypeBytes:
 			return ""
 		case ekaclike.RTypeInt,
-		ekaclike.RTypeInt8, ekaclike.RTypeInt16,
-		ekaclike.RTypeInt32, ekaclike.RTypeInt64,
-		ekaclike.RTypeUint,
-		ekaclike.RTypeUint8, ekaclike.RTypeUint16,
-		ekaclike.RTypeUint32, ekaclike.RTypeUint64,
-		ekaclike.RTypeFloat32, ekaclike.RTypeFloat64,
-		ekaclike.RTypeComplex64, ekaclike.RTypeComplex128:
+			ekaclike.RTypeInt8, ekaclike.RTypeInt16,
+			ekaclike.RTypeInt32, ekaclike.RTypeInt64,
+			ekaclike.RTypeUint,
+			ekaclike.RTypeUint8, ekaclike.RTypeUint16,
+			ekaclike.RTypeUint32, ekaclike.RTypeUint64,
+			ekaclike.RTypeFloat32, ekaclike.RTypeFloat64,
+			ekaclike.RTypeComplex64, ekaclike.RTypeComplex128:
 			return "0"
 		}
 		switch reflect2.TypeOf(ekaclike.Interface{Type: rtype}.Pack()).Kind() {
@@ -125,15 +125,15 @@ func ToStringUnsafe(rtype uintptr, word unsafe.Pointer, mask uint8) string {
 	)
 
 	switch {
-	case kind == reflect.Array && mask & TO_S_HANDLE_ARRAYS == 0:
+	case kind == reflect.Array && mask&TO_S_HANDLE_ARRAYS == 0:
 		return ""
-	case kind == reflect.Slice && mask & TO_S_HANDLE_ARRAYS == 0:
+	case kind == reflect.Slice && mask&TO_S_HANDLE_ARRAYS == 0:
 		return ""
-	case kind == reflect.Struct && mask & TO_S_HANDLE_STRUCTS == 0:
+	case kind == reflect.Struct && mask&TO_S_HANDLE_STRUCTS == 0:
 		return ""
-	case kind == reflect.Map && mask & TO_S_HANDLE_MAPS == 0:
+	case kind == reflect.Map && mask&TO_S_HANDLE_MAPS == 0:
 		return ""
-	case kind == reflect.Ptr && mask & TO_S_DEREFERENCE_PTR == 0:
+	case kind == reflect.Ptr && mask&TO_S_DEREFERENCE_PTR == 0:
 		return ""
 	}
 

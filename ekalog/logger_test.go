@@ -1,6 +1,6 @@
 // Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekalog_test
@@ -46,7 +46,7 @@ func TestLog(t *testing.T) {
 	ekalog.Debug("test %s %d", "hello", 25, "arg", 42)
 
 	ekalog.Debug("test", "field1", 42, "field2", nil)
-	ekalog.Info("test", "dur", time.Minute * 20 + time.Second * 12, "i64", int64(3234234))
+	ekalog.Info("test", "dur", time.Minute*20+time.Second*12, "i64", int64(3234234))
 	ekalog.Warn("test", "time", time.Now())
 	ekalog.Error("test")
 

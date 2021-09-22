@@ -1,6 +1,6 @@
 // Copyright © 2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekatime
@@ -60,14 +60,14 @@ type (
 		/* 4b */ t Time // cached current Time
 		/* -- */ repeatDelay Timestamp
 	}
-	
+
 	// onceInExeElem represents an execution element of "OnceIn" concept.
 	// It contains a function that should be called and a time as unix timestamp
 	// of when that function should be called.
 	onceInExeElem struct {
 		when, repeatDelay, afterDelay Timestamp
-		cb OnceInCallback
-		cbPanic OnceInPanicCallback
+		cb                            OnceInCallback
+		cbPanic                       OnceInPanicCallback
 	}
 )
 
@@ -98,7 +98,7 @@ var (
 	onceInShutdownConfirmed chan struct{}
 )
 
-// updateAll updates the cached data inside the current onceInUpdater 
+// updateAll updates the cached data inside the current onceInUpdater
 // to the provided actual ones using atomic operations.
 func (oiu *onceInUpdater) updateAll(ts Timestamp, dd Date, t Time) {
 	atomic.StoreInt64((*int64)(&oiu.ts), int64(ts))
@@ -188,21 +188,21 @@ func onceInRegister(cb OnceInCallback, panicCb []OnceInPanicCallback, repeatDela
 	if doLock {
 		onceInFibHeapMu.Lock()
 	}
-	
+
 	panicCb_ := OnceInPanicCallback(nil)
 	if len(panicCb) > 0 && panicCb[0] != nil {
 		panicCb_ = panicCb[0]
 	}
-	
+
 	if afterDelay < 0 {
 		afterDelay = 0
 	}
-	
-	oie := onceInExeElem{NewTimestampNow(), repeatDelay, afterDelay, cb, panicCb_ }
+
+	oie := onceInExeElem{NewTimestampNow(), repeatDelay, afterDelay, cb, panicCb_}
 	if !invokeNow {
 		oie.when += oie.when.tillNext(repeatDelay) + afterDelay
 	}
-	
+
 	onceInFibHeap.Insert(oie)
 
 	if doLock {
@@ -220,18 +220,18 @@ func initOnceIn() {
 		atomic.StoreInt32(&onceInShutdownRequested, 1)
 		<-onceInShutdownConfirmed
 	})
-	
+
 	now := NewTimestampNow()
 
 	OnceInMinute.init(now, SECONDS_IN_MINUTE)
-	OnceIn10Minutes.init(now, SECONDS_IN_MINUTE * 10)
-	OnceIn15Minutes.init(now, SECONDS_IN_MINUTE * 15)
-	OnceIn30Minutes.init(now, SECONDS_IN_MINUTE * 30)
+	OnceIn10Minutes.init(now, SECONDS_IN_MINUTE*10)
+	OnceIn15Minutes.init(now, SECONDS_IN_MINUTE*15)
+	OnceIn30Minutes.init(now, SECONDS_IN_MINUTE*30)
 	OnceInHour.init(now, SECONDS_IN_HOUR)
-	OnceIn2Hour.init(now, SECONDS_IN_HOUR * 2)
-	OnceIn3Hour.init(now, SECONDS_IN_HOUR * 3)
-	OnceIn6Hour.init(now, SECONDS_IN_HOUR * 6)
-	OnceIn12Hours.init(now, SECONDS_IN_HOUR * 12)
+	OnceIn2Hour.init(now, SECONDS_IN_HOUR*2)
+	OnceIn3Hour.init(now, SECONDS_IN_HOUR*3)
+	OnceIn6Hour.init(now, SECONDS_IN_HOUR*6)
+	OnceIn12Hours.init(now, SECONDS_IN_HOUR*12)
 	OnceInDay.init(now, SECONDS_IN_DAY)
 
 	go onceInWorker()

@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Yuryevich.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekaerr
@@ -21,9 +21,9 @@ const (
 	// en embedded Letter's SystemFields array.
 	// See https://github.com/qioalice/ekago/internal/letter/letter.go for more details.
 
-	_ERR_SYS_FIELD_IDX_CLASS_ID       = 0
-	_ERR_SYS_FIELD_IDX_CLASS_NAME     = 1
-	_ERR_SYS_FIELD_IDX_ERROR_ID       = 2
+	_ERR_SYS_FIELD_IDX_CLASS_ID   = 0
+	_ERR_SYS_FIELD_IDX_CLASS_NAME = 1
+	_ERR_SYS_FIELD_IDX_ERROR_ID   = 2
 )
 
 // prepare prepares current Error for being used assuming that Error has been
@@ -251,12 +251,12 @@ func (e *Error) construct(baseMessage string, legacyErr error) *Error {
 //  4. Parse passed 'args' and also add it as first stack frame's fields.
 //  5. Mark first stack frame if generated message (p.3) is not empty.
 func newError(
-	lightweight   bool,
-	classID       ClassID,
-	namespaceID   NamespaceID,
-	legacyErr     error,
-	message       string,
-	args          []interface{},
+	lightweight bool,
+	classID ClassID,
+	namespaceID NamespaceID,
+	legacyErr error,
+	message string,
+	args []interface{},
 
 ) *Error {
 

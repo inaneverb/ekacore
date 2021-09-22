@@ -1,6 +1,6 @@
 // Copyright © 2019-2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekadeath
@@ -60,7 +60,7 @@ import (
 type (
 	// DestructorSimple is an alias to the function that you may register
 	// using Reg() function to be executed after Die() or Exit() is called.
-	DestructorSimple = func()
+	DestructorSimple       = func()
 	DestructorWithExitCode = func(code int)
 )
 

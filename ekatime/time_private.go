@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekatime
@@ -19,11 +19,11 @@ const (
 	_TIME_OFFSET_SECOND uint8 = _TIME_OFFSET_MINUTE + 6
 	_TIME_OFFSET_UNUSED uint8 = _TIME_OFFSET_SECOND + 6
 
-	_TIME_MASK_HOUR     Hour   = 0x1F
-	_TIME_MASK_MINUTE   Minute = 0x3F
-	_TIME_MASK_SECOND   Second = 0x3F
+	_TIME_MASK_HOUR   Hour   = 0x1F
+	_TIME_MASK_MINUTE Minute = 0x3F
+	_TIME_MASK_SECOND Second = 0x3F
 
-	_TIME_MASK_TIME     Time   = (Time(1) << _TIME_OFFSET_UNUSED) - 1
+	_TIME_MASK_TIME Time = (Time(1) << _TIME_OFFSET_UNUSED) - 1
 )
 
 //noinspection GoSnakeCaseUsage

@@ -1,6 +1,6 @@
 // Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekaerr
@@ -59,7 +59,6 @@ var (
 	// and its copy is returned by EPS() function.
 	eps ErrorPoolStat
 )
-
 
 // allocError creates a new Error object, creates a new ekaletter.Letter object inside,
 // performs base initialization and returns it.

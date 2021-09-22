@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekatime
@@ -19,5 +19,5 @@ func batoi(b1, b2 byte) (i int16, valid bool) {
 	if b1 = b1 - '0'; b1 > 9 {
 		return 0, false
 	}
-	return int16(b1) * 10 + i, true
+	return int16(b1)*10 + i, true
 }

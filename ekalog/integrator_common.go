@@ -1,6 +1,6 @@
 // Copyright © 2018-2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekalog
@@ -141,10 +141,8 @@ type (
 	}
 )
 
-
 // --------------------- IMPLEMENT Integrator INTERFACE ----------------------- //
 // ---------------------------------------------------------------------------- //
-
 
 // MinLevelEnabled returns minimum level an Integrator will handle Entry with.
 // E.g. if minimum level is LEVEL_WARNING then LEVEL_DEBUG, LEVEL_INFO logs will be dropped.
@@ -254,10 +252,8 @@ func (ci *CommonIntegrator) Sync() error {
 	return nil
 }
 
-
 // -------------------- CommonIntegrator BUILDING METHODS --------------------- //
 // ---------------------------------------------------------------------------- //
-
 
 // WithEncoder marks that all next registered writers by WriteTo() method
 // will be associated with passed CI_Encoder encoder.

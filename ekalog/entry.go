@@ -1,6 +1,6 @@
 // Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekalog
@@ -20,7 +20,6 @@ type (
 	// You MUST NOT instantiate this object manually.
 	// It's exposed only for custom encoders.
 	Entry struct {
-
 		l *Logger // The logger this entry created by or belongs to.
 
 		// LogLetter contains message, fields, stacktrace of Entry.

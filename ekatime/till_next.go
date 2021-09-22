@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekatime
@@ -48,8 +48,8 @@ func (ts Timestamp) TillNext12h() time.Duration {
 // TillNextNoon returns how much ns (as time.Duration) must be passed until
 // next noon (12.00 PM) (for the current Timestamp 'ts') will came.
 func (ts Timestamp) TillNextNoon() time.Duration {
-	d := ts.TillNext(SECONDS_IN_DAY) + 12 * time.Hour
-	if d >= 24 * time.Hour {
+	d := ts.TillNext(SECONDS_IN_DAY) + 12*time.Hour
+	if d >= 24*time.Hour {
 		d -= 24 * time.Hour
 	}
 	return d
@@ -120,6 +120,6 @@ func TillNextYear() time.Duration {
 	return NewTimestampNow().TillNextYear()
 }
 
-func(ts Timestamp) tillNext(range_ Timestamp) Timestamp {
-	return ts + (range_- ts % range_) - ts
+func (ts Timestamp) tillNext(range_ Timestamp) Timestamp {
+	return ts + (range_ - ts%range_) - ts
 }

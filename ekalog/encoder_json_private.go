@@ -1,6 +1,6 @@
 // Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekalog
@@ -42,7 +42,7 @@ func (je *CI_JSONEncoder) doBuild() *CI_JSONEncoder {
 	}.Froze()
 
 	preEncodedFieldsApi := jsoniter.Config{
-		IndentionStep:                 je.indent*2,
+		IndentionStep:                 je.indent * 2,
 		MarshalFloatWith6Digits:       true,
 		ObjectFieldMustBeSimpleString: true,
 	}.Froze()
@@ -127,9 +127,9 @@ func (je *CI_JSONEncoder) encodeStacktrace(s *jsoniter.Stream, e *Entry) (wasAdd
 	}
 
 	var (
-		fi = 0 // fi for fields' index
-		mi = 0 // mi for messages' index
-		fields []ekaletter.LetterField
+		fi       = 0 // fi for fields' index
+		mi       = 0 // mi for messages' index
+		fields   []ekaletter.LetterField
 		messages []ekaletter.LetterMessage
 	)
 
@@ -153,7 +153,7 @@ func (je *CI_JSONEncoder) encodeStacktrace(s *jsoniter.Stream, e *Entry) (wasAdd
 		}
 
 		if fi < len(fields) && fields[fi].StackFrameIdx == i {
-			fiEnd = fi+1
+			fiEnd = fi + 1
 			for fiEnd < len(fields) && fields[fiEnd].StackFrameIdx == i {
 				fiEnd++
 			}
@@ -176,10 +176,10 @@ func (je *CI_JSONEncoder) encodeStacktrace(s *jsoniter.Stream, e *Entry) (wasAdd
 
 func (je *CI_JSONEncoder) encodeStackFrame(
 
-	s          *jsoniter.Stream,
-	frame      ekasys.StackFrame,
-	fields     []ekaletter.LetterField,
-	message    ekaletter.LetterMessage,
+	s *jsoniter.Stream,
+	frame ekasys.StackFrame,
+	fields []ekaletter.LetterField,
+	message ekaletter.LetterMessage,
 
 ) {
 	frame.DoFormat()
@@ -220,7 +220,9 @@ func (je *CI_JSONEncoder) encodeFields(s *jsoniter.Stream, fs, addFs []ekaletter
 		return false
 	}
 
-	var (unnamedFieldIdx, writtenFields int16)
+	var (
+		unnamedFieldIdx, writtenFields int16
+	)
 
 	s.WriteObjectField("fields")
 	s.WriteArrayStart()
@@ -254,7 +256,7 @@ func (je *CI_JSONEncoder) encodeFields(s *jsoniter.Stream, fs, addFs []ekaletter
 		to = bufw2(to, je.preEncodedFieldsStreamIndentX2.Buffer())
 	}
 
-	i := len(to)-1
+	i := len(to) - 1
 
 	// Remove last comma.
 	if to[i] == ',' {
@@ -321,15 +323,15 @@ func (je *CI_JSONEncoder) encodeFieldValue(s *jsoniter.Stream, f ekaletter.Lette
 			s.SetBuffer(b)
 
 		case ekaletter.KIND_TYPE_INT,
-				ekaletter.KIND_TYPE_INT_8, ekaletter.KIND_TYPE_INT_16,
-				ekaletter.KIND_TYPE_INT_32, ekaletter.KIND_TYPE_INT_64:
+			ekaletter.KIND_TYPE_INT_8, ekaletter.KIND_TYPE_INT_16,
+			ekaletter.KIND_TYPE_INT_32, ekaletter.KIND_TYPE_INT_64:
 			b := s.Buffer()
 			b = strconv.AppendInt(b, f.IValue, 10)
 			s.SetBuffer(b)
 
 		case ekaletter.KIND_TYPE_UINT,
-				ekaletter.KIND_TYPE_UINT_8, ekaletter.KIND_TYPE_UINT_16,
-				ekaletter.KIND_TYPE_UINT_32, ekaletter.KIND_TYPE_UINT_64:
+			ekaletter.KIND_TYPE_UINT_8, ekaletter.KIND_TYPE_UINT_16,
+			ekaletter.KIND_TYPE_UINT_32, ekaletter.KIND_TYPE_UINT_64:
 			b := s.Buffer()
 			b = strconv.AppendUint(b, uint64(f.IValue), 10)
 			s.SetBuffer(b)
@@ -381,7 +383,7 @@ func (je *CI_JSONEncoder) encodeFieldValue(s *jsoniter.Stream, f ekaletter.Lette
 			s.WriteString(time.Duration(f.IValue).String())
 
 		case ekaletter.KIND_TYPE_MAP, ekaletter.KIND_TYPE_EXTMAP,
-				ekaletter.KIND_TYPE_STRUCT, ekaletter.KIND_TYPE_ARRAY:
+			ekaletter.KIND_TYPE_STRUCT, ekaletter.KIND_TYPE_ARRAY:
 			// TODO: Add support of extracted maps.
 			s.WriteVal(f.Value)
 

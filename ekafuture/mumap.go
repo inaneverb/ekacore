@@ -1,7 +1,7 @@
 // Copyright © 2020. All rights reserved.
 // Author: Eagle Chen. Modifier: Ilya Stroy.
 // Original: https://github.com/EagleChen/mapmutex (c133e97)
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekafuture
@@ -20,11 +20,11 @@ type (
 		// m is the whole MuMap's mutex. Each lock/unlock operation captures this mutex,
 		// but it's not captured when Lock() / TryLock() is waiting for some delay
 		// between key's capturing attempts.
-		m         *sync.Mutex
+		m *sync.Mutex
 
 		// key's "mutexes"
 		// map's key it's key; value is a counter.
-		locks     map[interface{}]int8
+		locks map[interface{}]int8
 
 		maxRetry  int // how much TryLock() will tries to capture key's "mutex"
 		maxRetryR int // how much RTryLock() will tries to capture key's "mutex"
@@ -32,8 +32,8 @@ type (
 		maxDelay  time.Duration // maximum delay between key's "mutex" capturing attempts
 		baseDelay time.Duration // base delay between key's "mutex" capturing attempts
 
-		factor    float64 // multiplier of delay between key's "mutex" capturing attempts
-		jitter    float64 // random for factor
+		factor float64 // multiplier of delay between key's "mutex" capturing attempts
+		jitter float64 // random for factor
 	}
 )
 
@@ -99,7 +99,8 @@ func (m *MuMap) lock(key interface{}, untilSuccess, readOnly bool) (gotLock bool
 		return false
 	}
 
-	for !m.lockIter(key, m.maxRetry, readOnly) { }
+	for !m.lockIter(key, m.maxRetry, readOnly) {
+	}
 	return true
 }
 
@@ -197,7 +198,7 @@ func (m *MuMap) unlock(key interface{}, readOnly bool) {
 
 // NewMapMutex returns a mapmutex with default configs
 func NewMuMap() *MuMap {
-	return NewMuMapCustom(180, 1 * time.Second, 10 * time.Nanosecond, 1.1, 0.2)
+	return NewMuMapCustom(180, 1*time.Second, 10*time.Nanosecond, 1.1, 0.2)
 }
 
 // NewCustomizedMapMutex returns a customized mapmutex

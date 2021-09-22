@@ -1,6 +1,6 @@
 // Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekalog
@@ -72,9 +72,14 @@ type (
 		sf _CICE_StacktraceFormat // parts of stacktrace formatting
 		ef _CICE_ErrorFormat      // parts of attached error formatting
 
-		preEncodedFields []byte
+		preEncodedFields        []byte
 		preEncodedFieldsWritten int16
 	}
+)
+
+var (
+	// Make sure we won't break API.
+	_ CI_Encoder = (*CI_ConsoleEncoder)(nil)
 )
 
 // SetFormat allows you to set format string that will be used as a template
@@ -403,7 +408,7 @@ func (ce *CI_ConsoleEncoder) PreEncodeField(f ekaletter.LetterField) {
 
 	// Avoid calls of PreEncodeField() when CI_ConsoleEncoder has not built yet.
 	if f.Key == "" || len(ce.formatParts) == 0 || f.IsInvalid() ||
-			f.RemoveVary() && f.IsZero() {
+		f.RemoveVary() && f.IsZero() {
 		return
 	}
 
@@ -440,14 +445,22 @@ func (ce *CI_ConsoleEncoder) EncodeEntry(e *Entry) []byte {
 	for _, part := range ce.formatParts {
 		switch part.typ.Type() {
 
-		case _CICE_FPT_VERB_JUST_TEXT:       to = ce.encodeJustText(to, part)
-		case _CICE_FPT_VERB_COLOR_CUSTOM:    to = ce.encodeColor(to, part)
-		case _CICE_FPT_VERB_COLOR_FOR_LEVEL: to = ce.encodeColorForLevel(to, e)
-		case _CICE_FPT_VERB_BODY:            to = ce.encodeBody(to, e)
-		case _CICE_FPT_VERB_TIME:            to = ce.encodeTime(e, part, to)
-		case _CICE_FPT_VERB_LEVEL:           to = ce.encodeLevel(to, part, e)
-		case _CICE_FPT_VERB_STACKTRACE:      to = ce.encodeStacktrace(to, e)
-		case _CICE_FPT_VERB_CALLER:          to = ce.encodeCaller(to, e)
+		case _CICE_FPT_VERB_JUST_TEXT:
+			to = ce.encodeJustText(to, part)
+		case _CICE_FPT_VERB_COLOR_CUSTOM:
+			to = ce.encodeColor(to, part)
+		case _CICE_FPT_VERB_COLOR_FOR_LEVEL:
+			to = ce.encodeColorForLevel(to, e)
+		case _CICE_FPT_VERB_BODY:
+			to = ce.encodeBody(to, e)
+		case _CICE_FPT_VERB_TIME:
+			to = ce.encodeTime(e, part, to)
+		case _CICE_FPT_VERB_LEVEL:
+			to = ce.encodeLevel(to, part, e)
+		case _CICE_FPT_VERB_STACKTRACE:
+			to = ce.encodeStacktrace(to, e)
+		case _CICE_FPT_VERB_CALLER:
+			to = ce.encodeCaller(to, e)
 
 		case _CICE_FPT_VERB_FIELDS:
 			errLetterSystemFields := []ekaletter.LetterField(nil)
@@ -491,5 +504,5 @@ func (ce *CI_ConsoleEncoder) EncodeEntry(e *Entry) []byte {
 // Keep in mind, it's not "free" operation. It allocates RAM buffer,
 // writes raw data to, parses it, droppings colors and rewrites cleared raw data.
 func CICE_DropColors(dest io.Writer) io.Writer {
-	return &_CICE_DropColors{ dest: dest }
+	return &_CICE_DropColors{dest: dest}
 }

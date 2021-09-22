@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekatime
@@ -52,7 +52,6 @@ func (ts Timestamp) AppendTo(b []byte, separatorDate, separatorTime byte) []byte
 // Skips leading spaces, ignores all next data after the day has been scanned.
 func (ts *Timestamp) ParseFrom(b []byte) error {
 
-
 	if ts == nil {
 		return _ERR_NIL_TIMESTAMP_RECEIVER
 	}
@@ -67,7 +66,8 @@ func (ts *Timestamp) ParseFrom(b []byte) error {
 	// So, skip spaces manually.
 
 	var i = 0
-	for n := len(b); i < n && b[i] <= ' '; i++ { }
+	for n := len(b); i < n && b[i] <= ' '; i++ {
+	}
 
 	if err := d.ParseFrom(b[i:]); err != nil {
 		return err
@@ -195,6 +195,6 @@ func (ts *Timestamp) UnmarshalJSON(b []byte) error {
 		return _ERR_BAD_JSON_TIMESTAMP_QUO
 
 	default:
-		return ts.ParseFrom(b[1:l-1])
+		return ts.ParseFrom(b[1 : l-1])
 	}
 }

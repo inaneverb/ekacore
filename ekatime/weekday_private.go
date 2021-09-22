@@ -1,6 +1,6 @@
 // Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekatime
@@ -11,7 +11,7 @@ import (
 
 var (
 	// _WeekdayStr is just English names of days of week.
-	_WeekdayStr = [...]string {
+	_WeekdayStr = [...]string{
 		"Unknown",
 		"Wednesday",
 		"Thursday",
@@ -48,7 +48,7 @@ func (w *Weekday) byteSliceDecode(data []byte) error {
 	if data != nil {
 		for i, n := 1, len(_WeekdayBytes); i < n; i++ {
 			if bytes.Equal(data, _WeekdayBytes[i]) {
-				*w = Weekday(i-1)
+				*w = Weekday(i - 1)
 				return nil
 			}
 		}

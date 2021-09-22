@@ -1,3 +1,9 @@
+// Copyright © 2020. All rights reserved.
+// Author: Eagle Chen. Modifier: Ilya Stroy.
+// Original: https://github.com/EagleChen/mapmutex (c133e97)
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
+// License: https://opensource.org/licenses/MIT
+
 package ekafuture_test
 
 import (
@@ -33,7 +39,7 @@ func TestLock(t *testing.T) {
 
 func TestLockFail(t *testing.T) {
 	// fail fast
-	m := ekafuture.NewMuMapCustom(1, 1 * time.Nanosecond, 1 * time.Nanosecond, 2, 0.1)
+	m := ekafuture.NewMuMapCustom(1, 1*time.Nanosecond, 1*time.Nanosecond, 2, 0.1)
 
 	c := make(chan bool)
 	finish := make(chan bool)

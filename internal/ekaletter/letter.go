@@ -1,6 +1,6 @@
 // Copyright © 2020-2021. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekaletter
@@ -76,7 +76,7 @@ type (
 var (
 	// RTypesBeingIgnoredForParsing is an array of RTypes that will be ignored
 	// at the arguments parsing in LParseTo() function.
-	RTypesBeingIgnoredForParsing = []uintptr{ RTypeLetterField, RTypeLetterFieldPtr }
+	RTypesBeingIgnoredForParsing = []uintptr{RTypeLetterField, RTypeLetterFieldPtr}
 )
 
 // LAddField just adds passed LetterField at the end of provided Letter.
@@ -122,7 +122,7 @@ func LGetMessage(l *Letter) string {
 // LPopLastMessage returns last not empty message from provided Letter,
 // replacing it by empty string when found.
 func LPopLastMessage(l *Letter) string {
-	for i := len(l.Messages)-1; i >= 0; i-- {
+	for i := len(l.Messages) - 1; i >= 0; i-- {
 		if l.Messages[i].Body != "" {
 			ret := l.Messages[i].Body
 			l.Messages[i].Body = ""
@@ -211,8 +211,8 @@ func LReset(l *Letter) *Letter {
 func LParseTo(l *Letter, args []interface{}, onlyFields bool) {
 
 	var (
-		message = LGetMessage(l)
-		messageArgs []interface{}
+		message          = LGetMessage(l)
+		messageArgs      []interface{}
 		messageNeedsArgs int
 	)
 
@@ -247,7 +247,7 @@ func LParseTo(l *Letter, args []interface{}, onlyFields bool) {
 	for i, n := 0, len(args); i < n; i++ {
 
 		var (
-			typeArg = reflect2.TypeOf(args[i])
+			typeArg  = reflect2.TypeOf(args[i])
 			rtypeArg = uintptr(0)
 		)
 

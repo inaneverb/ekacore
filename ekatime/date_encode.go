@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekatime
@@ -50,7 +50,7 @@ func (dd Date) AppendTo(b []byte, separator byte) []byte {
 		b[7] = separator
 	}
 
-	if c, l := cap(b), len(b); c - l >= 10 {
+	if c, l := cap(b), len(b); c-l >= 10 {
 		b = b[:l+10]
 		f(b[l:])
 		return b
@@ -82,7 +82,8 @@ func (dd *Date) ParseFrom(b []byte) error {
 	}
 
 	var i = 0
-	for n := len(b); i < n && b[i] <= ' '; i++ { }
+	for n := len(b); i < n && b[i] <= ' '; i++ {
+	}
 
 	// Minimum required len: 8 (YYYYMMDD - w/o separators).
 	if len(b[i:]) < 8 {
@@ -195,6 +196,6 @@ func (dd *Date) UnmarshalJSON(b []byte) error {
 		return _ERR_BAD_JSON_DATE_QUO
 
 	default:
-		return dd.ParseFrom(b[1:l-1])
+		return dd.ParseFrom(b[1 : l-1])
 	}
 }

@@ -1,13 +1,13 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekastr
 
 /*
 
-*/
+ */
 func Interpolate(s string, cbVerbFound, cbTextFound func(v string)) {
 	f1 := func(v []byte) { cbVerbFound(B2S(v)) }
 	f2 := func(v []byte) { cbTextFound(B2S(v)) }
@@ -16,7 +16,7 @@ func Interpolate(s string, cbVerbFound, cbTextFound func(v string)) {
 
 /*
 
-*/
+ */
 func Interpolateb(p []byte, cbVerbFound, cbTextFound func(v []byte)) {
 
 	var (
@@ -40,7 +40,7 @@ func Interpolateb(p []byte, cbVerbFound, cbTextFound func(v []byte)) {
 
 /*
 
-*/
+ */
 // parseFirstVerb parses 'format', extracts first verb (even if it's "just text"
 // verb), saves it to ce.formatParts and then returns the rest of 'format' string.
 func i9nGetNext(p []byte) (part, nextP []byte, isVerb bool) {

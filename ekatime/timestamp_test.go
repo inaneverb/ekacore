@@ -1,6 +1,6 @@
 // Copyright © 2020. All rights reserved.
 // Author: Ilya Stroy.
-// Contacts: qioalice@gmail.com, https://github.com/qioalice
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
 package ekatime_test
@@ -148,7 +148,7 @@ func Benchmark_BeginningAndEndOfMonth_NonCachedYear(b *testing.B) {
 // =========================================================================== //
 
 func TestTimestamp_String(t *testing.T) {
-	ts1 := ekatime.NewTimestamp(2020, 9, 1,14, 2, 13)
+	ts1 := ekatime.NewTimestamp(2020, 9, 1, 14, 2, 13)
 	ts2 := ekatime.NewTimestamp(1812, 11, 24, 23, 59, 59)
 	ts3 := ekatime.NewTimestamp(2100, 2, 15, 0, 0, 0)
 
@@ -158,20 +158,22 @@ func TestTimestamp_String(t *testing.T) {
 }
 
 func BenchmarkTimestamp_String_Cached(b *testing.B) {
-	ts0 := ekatime.NewTimestamp(2020, 9, 1,14, 2, 13)
-	b.ResetTimer(); b.ReportAllocs()
+	ts0 := ekatime.NewTimestamp(2020, 9, 1, 14, 2, 13)
+	b.ResetTimer()
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		_ = ts0.String()
 	}
 }
 
 func BenchmarkTimestamp_String_FmtSprintf(b *testing.B) {
-	dd, tt := ekatime.NewTimestamp(2020, 9, 1,14, 2, 13).Split()
+	dd, tt := ekatime.NewTimestamp(2020, 9, 1, 14, 2, 13).Split()
 	y, m, d := dd.Split()
 	hh, mm, ss := tt.Split()
-	b.ResetTimer(); b.ReportAllocs()
+	b.ResetTimer()
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_ = fmt.Sprintf("%04d/%02d/%02d %02d:%02d:%02d",y, m, d, hh, mm, ss)
+		_ = fmt.Sprintf("%04d/%02d/%02d %02d:%02d:%02d", y, m, d, hh, mm, ss)
 	}
 }
 
@@ -191,7 +193,9 @@ func TestTimestamp_ParseFrom(t *testing.T) {
 	orig3 := ekatime.NewTimestamp(2020, 9, 1, 23, 59, 59)
 	orig4 := ekatime.NewTimestamp(2020, 9, 1, 12, 13, 14)
 
-	var (ts1, ts2, ts3, ts4, ts5 ekatime.Timestamp)
+	var (
+		ts1, ts2, ts3, ts4, ts5 ekatime.Timestamp
+	)
 
 	err1 := ts1.ParseFrom(bd1)
 	err2 := ts2.ParseFrom(bd2)
@@ -214,7 +218,8 @@ func TestTimestamp_ParseFrom(t *testing.T) {
 func BenchmarkTimestamp_ParseFrom(b *testing.B) {
 	bd0 := []byte("2020-09-01T12:13:14")
 	var ts ekatime.Timestamp
-	b.ResetTimer(); b.ReportAllocs()
+	b.ResetTimer()
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		_ = ts.ParseFrom(bd0)
 	}
