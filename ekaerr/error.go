@@ -175,7 +175,9 @@ func (e *Error) With(f ekaletter.LetterField) *Error { return e.addField(f) }
 func (e *Error) WithBool(key string, value bool) *Error {
 	return e.addField(ekaletter.FBool(key, value))
 }
-func (e *Error) WithInt(key string, value int) *Error { return e.addField(ekaletter.FInt(key, value)) }
+func (e *Error) WithInt(key string, value int) *Error {
+	return e.addField(ekaletter.FInt(key, value))
+}
 func (e *Error) WithInt8(key string, value int8) *Error {
 	return e.addField(ekaletter.FInt8(key, value))
 }
@@ -303,9 +305,17 @@ func (e *Error) WithAny(key string, value interface{}) *Error {
 	return e.addField(ekaletter.FAny(key, value))
 }
 
-func (e *Error) WithMany(fields ...ekaletter.LetterField) *Error { return e.addFields(fields) }
+func (e *Error) WithMany(fields ...ekaletter.LetterField) *Error {
+	return e.addFields(fields)
+}
 
-func (e *Error) WithManyAny(fields ...interface{}) *Error { return e.addFieldsParse(fields, true) }
+func (e *Error) WithManyAny(fields ...interface{}) *Error {
+	return e.addFieldsParse(fields, true)
+}
+
+func (e *Error) WithDescription(description string) *Error {
+	return e.WithString("description", description)
+}
 
 // Apply calls f callback passing the current Error object into and returning
 // the Error object, callback is return what.

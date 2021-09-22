@@ -34,11 +34,15 @@ func Sync() error {
 
 // Methods below are code-generated.
 
-func With(f ekaletter.LetterField) *Logger { return baseLogger.addField(f) }
+func With(f ekaletter.LetterField) *Logger {
+	return baseLogger.addField(f)
+}
 func WithBool(key string, value bool) *Logger {
 	return baseLogger.addField(ekaletter.FBool(key, value))
 }
-func WithInt(key string, value int) *Logger { return baseLogger.addField(ekaletter.FInt(key, value)) }
+func WithInt(key string, value int) *Logger {
+	return baseLogger.addField(ekaletter.FInt(key, value))
+}
 func WithInt8(key string, value int8) *Logger {
 	return baseLogger.addField(ekaletter.FInt8(key, value))
 }
@@ -165,8 +169,12 @@ func WithExtractedMap(key string, value map[string]interface{}) *Logger {
 func WithAny(key string, value interface{}) *Logger {
 	return baseLogger.addField(ekaletter.FAny(key, value))
 }
-func WithMany(fields ...ekaletter.LetterField) *Logger { return baseLogger.addFields(fields) }
-func WithManyAny(fields ...interface{}) *Logger        { return baseLogger.addFieldsParse(fields) }
+func WithMany(fields ...ekaletter.LetterField) *Logger {
+	return baseLogger.addFields(fields)
+}
+func WithManyAny(fields ...interface{}) *Logger {
+	return baseLogger.addFieldsParse(fields)
+}
 
 // ------------------------ CONDITIONAL LOGGING METHODS ----------------------- //
 // ---------------------------------------------------------------------------- //

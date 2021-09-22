@@ -114,7 +114,9 @@ func (l *Logger) Sync() error {
 // With DO NOT makes a copy of current Logger and adds field in-place.
 // If you need to construct an logger with your own fields that will be used later,
 // you need to call Copy() manually before.
-func (l *Logger) With(f ekaletter.LetterField) *Logger { return l.addField(f) }
+func (l *Logger) With(f ekaletter.LetterField) *Logger {
+	return l.addField(f)
+}
 
 func (l *Logger) WithBool(key string, value bool) *Logger {
 	return l.addField(ekaletter.FBool(key, value))
@@ -248,8 +250,12 @@ func (l *Logger) WithExtractedMap(key string, value map[string]interface{}) *Log
 func (l *Logger) WithAny(key string, value interface{}) *Logger {
 	return l.addField(ekaletter.FAny(key, value))
 }
-func (l *Logger) WithMany(fields ...ekaletter.LetterField) *Logger { return l.addFields(fields) }
-func (l *Logger) WithManyAny(fields ...interface{}) *Logger        { return l.addFieldsParse(fields) }
+func (l *Logger) WithMany(fields ...ekaletter.LetterField) *Logger {
+	return l.addFields(fields)
+}
+func (l *Logger) WithManyAny(fields ...interface{}) *Logger {
+	return l.addFieldsParse(fields)
+}
 
 // ------------------------ CONDITIONAL LOGGING METHODS ----------------------- //
 // ---------------------------------------------------------------------------- //
