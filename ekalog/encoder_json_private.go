@@ -201,7 +201,12 @@ func (je *CI_JSONEncoder) encodeStacktrace(s *jsoniter.Stream, e *Entry) (wasAdd
 			frame.DoFormat()
 
 			sb.Reset()
-			sb.Grow(len(frame.Format) + 3)
+			sb.Grow(len(frame.Format) + 10)
+
+			sb.WriteByte('[')
+			sb.WriteString(strconv.Itoa(int(i)))
+			sb.WriteString("]: ")
+
 			sb.WriteString(frame.Format[frame.FormatFullPathOffset:])
 			sb.WriteByte('/')
 			sb.WriteString(frame.Format[:frame.FormatFileOffset-1])
