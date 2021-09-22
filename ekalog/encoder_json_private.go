@@ -223,6 +223,7 @@ func (je *CI_JSONEncoder) encodeStacktrace(s *jsoniter.Stream, e *Entry) (wasAdd
 		s.WriteArrayEnd()
 
 		if len(messages) > 0 && messages[0].Body != "" {
+
 			s.WriteMore()
 			s.WriteObjectField(je.fieldNames[CI_JSON_ENCODER_FIELD_1DL_STACKTRACE_MESSAGES])
 			s.WriteArrayStart()
@@ -230,16 +231,25 @@ func (je *CI_JSONEncoder) encodeStacktrace(s *jsoniter.Stream, e *Entry) (wasAdd
 			mi := 0
 			for i, n := int16(0), int16(len(stacktrace)); i < n; i++ {
 				if mi < len(messages) && messages[mi].StackFrameIdx == i {
-					s.WriteString(messages[mi].Body)
+					sb.Reset()
+					sb.Grow(len(messages[mi].Body) + 10)
+
+					sb.WriteByte('[')
+					sb.WriteString(strconv.Itoa(int(i)))
+					sb.WriteString("]: ")
+					sb.WriteString(messages[mi].Body)
+
+					s.WriteString(sb.String())
 					mi++
-				} else {
-					s.WriteString("")
-				}
-				if i < n-1 {
+
 					s.WriteMore()
 				}
 			}
 
+			to := s.Buffer()
+			if l := len(to); to[l-1] == ',' {
+				s.SetBuffer(to[:l-1])
+			}
 			s.WriteArrayEnd()
 		}
 

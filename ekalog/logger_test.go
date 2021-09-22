@@ -27,7 +27,7 @@ func foo() *ekaerr.Error {
 
 func TestLog(t *testing.T) {
 
-	consoleEncoder := new(ekalog.CI_JSONEncoder)
+	consoleEncoder := new(ekalog.CI_JSONEncoder).SetOneDepthLevel(true)
 	b := bytes.NewBuffer(nil)
 
 	stdoutConsoleIntegrator := new(ekalog.CommonIntegrator).
