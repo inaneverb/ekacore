@@ -24,7 +24,7 @@ func foo() *ekaerr.Error {
 
 func TestLog(t *testing.T) {
 
-	consoleEncoder := new(ekalog.CI_ConsoleEncoder)
+	consoleEncoder := new(ekalog.CI_JSONEncoder)
 	b := bytes.NewBuffer(nil)
 
 	stdoutConsoleIntegrator := new(ekalog.CommonIntegrator).
@@ -50,7 +50,7 @@ func TestLog(t *testing.T) {
 	ekalog.Warn("test", "time", time.Now())
 	ekalog.Error("test")
 
-	ekalog.Emerge("", foo())
+	ekalog.Emerge("", foo(), "log_field")
 }
 
 func BenchmarkLog(b *testing.B) {

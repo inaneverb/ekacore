@@ -225,7 +225,7 @@ func (je *CI_JSONEncoder) encodeFields(s *jsoniter.Stream, fs, addFs []ekaletter
 	)
 
 	s.WriteObjectField("fields")
-	s.WriteArrayStart()
+	s.WriteObjectStart()
 
 	addField := func(s *jsoniter.Stream, f *ekaletter.LetterField, unnamedFieldIdx, writtenFields *int16) {
 		if f.IsZero() || f.Kind.IsInvalid() {
@@ -272,7 +272,7 @@ func (je *CI_JSONEncoder) encodeFields(s *jsoniter.Stream, fs, addFs []ekaletter
 
 	s.SetBuffer(to[:i+1])
 
-	s.WriteArrayEnd()
+	s.WriteObjectEnd()
 	return true
 }
 
