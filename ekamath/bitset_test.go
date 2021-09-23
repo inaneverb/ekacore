@@ -6,6 +6,7 @@
 package ekamath_test
 
 import (
+	"fmt"
 	"runtime"
 	"testing"
 
@@ -246,6 +247,8 @@ func TestBitSet_EncodeDecode(t *testing.T) {
 	require.NoError(t, err)
 
 	runtime.GC()
+	fmt.Println("Encoded data:", string(encodedText))
+	bs2.DebugFullDump()
 
 	bs2 = ekamath.NewBitSet(MAX)
 	err = bs2.UnmarshalText(encodedText)

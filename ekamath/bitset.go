@@ -171,7 +171,7 @@ func (bs *BitSet) GrowUnsafeUpTo(idx uint) *BitSet {
 	n := bsChunksForBits(idx)
 
 	if l, c := bs.chunkSize(), bs.chunkCapacity(); c == 0 {
-		bs.bs = make([]uint, MaxU(_BITSET_MINIMUM_CAPACITY_BYTES, n))
+		bs.bs = make([]uint, n)
 
 	} else if l <= n {
 		if c >= n {
