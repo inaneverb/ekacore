@@ -7,8 +7,9 @@ package ekatime
 
 //goland:noinspection GoSnakeCaseUsage
 const (
-	_CALENDAR2_DEFAULT_CAPACITY       = 366
-	_CALENDAR2_CAUSE_DEFAULT_CAPACITY = 64
+	_CALENDAR2_DEFAULT_CAPACITY                    = 366
+	_CALENDAR2_CAUSE_DEFAULT_CAPACITY              = 64
+	_CALENDAR2_EVENT_DESCRIPTIONS_DEFAULT_CAPACITY = 16
 )
 
 func (wc *Calendar) dateToIndex(dd Date) uint {

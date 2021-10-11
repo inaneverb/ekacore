@@ -184,3 +184,35 @@ func TestCalendar2021(t *testing.T) {
 			"M: %s, DaysOff: %v", m.String(), cal.DaysOff(m))
 	}
 }
+
+func TestCalendar_EventDescription(t *testing.T) {
+
+	//goland:noinspection GoSnakeCaseUsage
+	const (
+		YEAR              = 2021
+		DAY_OF_YEAR       = 145
+		EVENT_ID          = 42
+		EVENT_DESCRIPTION = "some event"
+	)
+
+	cal := ekatime.NewCalendar(YEAR, true, true)
+
+	dd := ekatime.NewDateFromDayOfYear(YEAR, DAY_OF_YEAR)
+	ev := ekatime.NewEvent(dd, EVENT_ID, true)
+
+	cal.AddEvent(ev)
+	cal.AddEventDescription(ev.ID(), EVENT_DESCRIPTION)
+
+	require.True(t, cal.EventOfDate(dd).IsValid())
+	require.Equal(t, ev.ID(), cal.EventOfDate(dd).ID())
+	require.Equal(t, EVENT_DESCRIPTION, cal.DescriptionOfEvent(ev.ID()))
+
+	dd = ekatime.NewDateFromDayOfYear(YEAR, DAY_OF_YEAR-1)
+	require.False(t, cal.EventOfDate(dd).IsValid())
+
+	dd = ekatime.NewDateFromDayOfYear(YEAR, DAY_OF_YEAR+1)
+	require.False(t, cal.EventOfDate(dd).IsValid())
+
+	require.Empty(t, cal.DescriptionOfEvent(EVENT_ID-1))
+	require.Empty(t, cal.DescriptionOfEvent(EVENT_ID+1))
+}

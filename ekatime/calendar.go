@@ -56,6 +56,10 @@ type (
 		// A set of Event that is used to overwrite default values of calendar.
 		// Nil if `enableCause` is false at the NewCalendar() call.
 		cause map[uint]EventID
+
+		// A map of EventID's descriptions.
+		// Nil if `enableCause` is false at the NewCalendar() call.
+		eventDescriptions map[EventID]string
 	}
 )
 
@@ -78,6 +82,7 @@ func (wc *Calendar) Clear() {
 	if wc.IsValid() {
 		if wc.cause != nil {
 			wc.cause = make(map[uint]EventID, _CALENDAR2_CAUSE_DEFAULT_CAPACITY)
+			wc.eventDescriptions = make(map[EventID]string, _CALENDAR2_EVENT_DESCRIPTIONS_DEFAULT_CAPACITY)
 		}
 		wc.dayOff.Clear()
 	}
@@ -100,6 +105,10 @@ func (wc *Calendar) Clone() *Calendar {
 		cloned.cause = make(map[uint]EventID, len(wc.cause))
 		for k, v := range wc.cause {
 			cloned.cause[k] = v
+		}
+		cloned.eventDescriptions = make(map[EventID]string, len(wc.eventDescriptions))
+		for k, v := range wc.eventDescriptions {
+			cloned.eventDescriptions[k] = v
 		}
 	}
 
@@ -134,7 +143,22 @@ func (wc *Calendar) OverrideDate(dd Date, isDayOff bool) {
 func (wc *Calendar) AddEvent(e Event) {
 	if e.IsValid() {
 		eventID, dd, isDayOff := e.Split()
-		wc.overrideDate(dd, eventID, isDayOff, true)
+		wc.overrideDate(dd, eventID, isDayOff, true) // contains all checks
+	}
+}
+
+// AddEventDescription adds a new EventID's description to the Calendar.
+// Using that you can describe your EventID and figure out event's name.
+//
+// Requirements:
+//  - Calendar is valid and not malformed object,
+//  - Causing feature is enabled (`enableCause` being `true` at the NewCalendar() call),
+//  - Provided EventID's name (`desc`) is not empty
+//
+// Does nothing if any of requirements is failed.
+func (wc *Calendar) AddEventDescription(eid EventID, desc string) {
+	if wc.IsValid() && wc.cause != nil && desc != "" {
+		wc.eventDescriptions[eid] = desc
 	}
 }
 
@@ -201,6 +225,24 @@ func (wc *Calendar) EventOfDate(dd Date) Event {
 	isDayOff := wc.dayOff.IsSetUnsafe(idx)
 
 	return NewEvent(dd, eventID, isDayOff)
+}
+
+// DescriptionOfEvent returns an EventID's description (name).
+//
+// Requirements:
+//  - Calendar is valid and not malformed object,
+//  - Causing feature is enabled (`enableCause` being `true` at the NewCalendar() call),
+//  - Calendar has at least one Event with requested EventID,
+//
+// Returns an empty string if there's no registered such EventID,
+// or if any of requirements is failed.
+func (wc *Calendar) DescriptionOfEvent(eid EventID) string {
+
+	if !(wc.IsValid() && wc.cause != nil) {
+		return ""
+	}
+
+	return wc.eventDescriptions[eid]
 }
 
 // WorkDays returns an array of work days of the provided Month.
@@ -321,6 +363,7 @@ func (wc *Calendar) UnmarshalBinary(data []byte) error {
 	// see Calendar's internal docs (at the Calendar struct declaration).
 
 	wc.cause = nil
+	wc.eventDescriptions = nil
 	wc.year = Year(binary.BigEndian.Uint16(data[4:]))
 	wc.isLeap = data[6] == 1
 
@@ -422,11 +465,11 @@ func NewCalendar(y Year, saturdayAndSunday, enableCause bool) *Calendar {
 		year:   y,
 		isLeap: y.IsLeap(),
 		dayOff: ekamath.NewBitSet(_CALENDAR2_DEFAULT_CAPACITY),
-		cause:  nil,
 	}
 
 	if enableCause {
 		wc.cause = make(map[uint]EventID, _CALENDAR2_CAUSE_DEFAULT_CAPACITY)
+		wc.eventDescriptions = make(map[EventID]string, _CALENDAR2_EVENT_DESCRIPTIONS_DEFAULT_CAPACITY)
 	}
 
 	if saturdayAndSunday {
