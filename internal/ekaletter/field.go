@@ -77,7 +77,7 @@ const (
 	KIND_FLAG_NULL         = 0b_0100_0000
 	KIND_FLAG_SYSTEM       = 0b_1000_0000
 
-	KIND_TYPE_INVALID = 0 // can't be handled in almost all cases
+	KIND_TYPE_INVALID = ^LetterFieldKind(0) // can't be handled in almost all cases
 
 	// field.LetterFieldKind & KIND_MASK_BASE_TYPE could be any of listed below,
 	// only if field.LetterFieldKind KIND_FLAG_INTERNAL_SYS != 0 (system letter's field)
@@ -133,6 +133,7 @@ const (
 
 var (
 	// Used for type comparison.
+
 	RTypeLetterField    = reflect2.RTypeOf(LetterField{})
 	RTypeLetterFieldPtr = reflect2.RTypeOf((*LetterField)(nil))
 	TypeFmtStringer     = reflect2.TypeOfPtr((*fmt.Stringer)(nil)).Elem()
@@ -178,7 +179,7 @@ func (fk LetterFieldKind) IsSystem() bool {
 
 // IsInvalid reports whether LetterFieldKind represents an invalid LetterField.
 func (fk LetterFieldKind) IsInvalid() bool {
-	return fk&KIND_TYPE_INVALID != 0
+	return fk == KIND_TYPE_INVALID
 }
 
 // BaseType returns LetterField's LetterFieldKind base type.
@@ -574,7 +575,7 @@ func FAny(key string, value interface{}) LetterField {
 	eface := ekaclike.UnpackInterface(value)
 
 	if eface.Type == 0 && eface.Word == nil {
-		return FInvalid(key)
+		return FNil(key, 0)
 	}
 
 	typ := reflect2.TypeOf(value)

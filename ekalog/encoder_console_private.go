@@ -885,18 +885,22 @@ func (ce *CI_ConsoleEncoder) encodeFields(to []byte, fs, addFs []ekaletter.Lette
 	)
 
 	addField := func(to []byte, f *ekaletter.LetterField, isErrors bool, unnamedFieldIex, writtenFields *int16) []byte {
-		if f.IsZero() || f.Kind.IsInvalid() {
+		if strings.HasPrefix(f.Key, "sys.") {
 			return to
 		}
+
 		keyBak := f.Key
+
 		if f.Key == "" && !f.IsSystem() {
 			f.Key = f.KeyOrUnnamed(&unnamedFieldIdx)
 		}
+
 		toLenBak := len(to)
 		to = ce.encodeField(to, *f, isErrors, *writtenFields)
 		if len(to) != toLenBak {
 			*writtenFields++
 		}
+
 		f.Key = keyBak
 		return to
 	}
@@ -918,25 +922,28 @@ func (ce *CI_ConsoleEncoder) encodeFields(to []byte, fs, addFs []ekaletter.Lette
 		to = bufw2(to, ce.preEncodedFields)
 	}
 
-	// remove last "after value" and write "after fields"
-	if ce.ff.afterValue != "" {
-		to = to[:len(to)-len(ce.ff.afterValue)]
-	}
-	if !isErrors && ce.ff.afterFields != "" {
-		to = bufw(to, ce.ff.afterFields)
+	if writtenFields > 0 {
+
+		// remove last "after value" and write "after fields"
+		if ce.ff.afterValue != "" {
+			to = to[:len(to)-len(ce.ff.afterValue)]
+		}
+
+		if !isErrors && ce.ff.afterFields != "" {
+			to = bufw(to, ce.ff.afterFields)
+		}
+
+	} else {
+
+		// no fields were written
+		// remove 'beforeFields' part
+		to = to[:len(to)-len(ce.ff.beforeFields)]
 	}
 
 	return to
 }
 
 func (ce *CI_ConsoleEncoder) encodeField(to []byte, f ekaletter.LetterField, isErrors bool, fieldNum int16) []byte {
-
-	// Maybe field must be skipped? Field should be skipped if it's vary field
-	// (the name has '?' at the end and the value is zero).
-	// Also fields that is started from "sys." is skipped.
-	if f.Kind.IsInvalid() || strings.HasPrefix(f.Key, "sys.") {
-		return to
-	}
 
 	// Maybe field wants to be started with new line?
 	oldKey := f.Key

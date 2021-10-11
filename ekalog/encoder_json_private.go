@@ -381,9 +381,10 @@ func (je *CI_JSONEncoder) encodeFields(s *jsoniter.Stream, fs, addFs []ekaletter
 	}
 
 	addField := func(s *jsoniter.Stream, f *ekaletter.LetterField, prefix string, unnamedFieldIdx, writtenFields *int16) {
-		if f.IsZero() || f.Kind.IsInvalid() {
+		if strings.HasPrefix(f.Key, "sys.") {
 			return
 		}
+
 		keyBak := f.Key
 
 		var sb strings.Builder
@@ -401,6 +402,7 @@ func (je *CI_JSONEncoder) encodeFields(s *jsoniter.Stream, fs, addFs []ekaletter
 			s.WriteMore()
 			*writtenFields++
 		}
+
 		f.Key = keyBak
 	}
 
@@ -425,36 +427,26 @@ func (je *CI_JSONEncoder) encodeFields(s *jsoniter.Stream, fs, addFs []ekaletter
 		i--
 	}
 
-	if !je.oneDepthLevel {
+	if !je.oneDepthLevel && writtenFields == 0 {
 		// Maybe no fields were added?
-		if writtenFields == 0 {
-			for i >= 0 && to[i] != 'f' { // start of "fields"
-				i--
-			}
+		for i >= 0 && to[i] != 'f' { // start of "fields"
+			i--
 		}
+		i -= 2 // we need also ignore quote (-1) and also (-1) because of +1 below
 	}
 
 	s.SetBuffer(to[:i+1])
 
-	if !je.oneDepthLevel {
+	if !je.oneDepthLevel && writtenFields > 0 {
 		s.WriteObjectEnd()
 	}
 
-	return true
+	return writtenFields > 0
 }
 
 func (je *CI_JSONEncoder) encodeField(s *jsoniter.Stream, f ekaletter.LetterField) (wasAdded bool) {
-
-	// Maybe field must be skipped? Field should be skipped if it's vary field
-	// (the name has '?' at the end and the value is zero).
-	// Also fields that is started from "sys." is skipped.
-	if f.Kind.IsInvalid() || strings.HasPrefix(f.Key, "sys.") {
-		return false
-	}
-
 	s.WriteObjectField(f.Key)
 	je.encodeFieldValue(s, f)
-
 	return true
 }
 

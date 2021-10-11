@@ -272,8 +272,7 @@ var (
 //    - "v<text>": Places <text> before EACH field's value.
 //    - "e<text>": Places <text> after EACH field's value (last field excluded).
 //    - "l<text>": Places <text> at the each new line of log Entry's fields part.
-//    - "le<text>": Places <text> at the each new line
-//      of attached ekaerr.Error fields part.
+//    - "le<text>": Places <text> at the each new line of attached ekaerr.Error fields part.
 //    - "*<number>": <number> is how much fields are placed at the one line.
 //      (By default: 4. Use <= 0 value to place all fields at the one line).
 //
