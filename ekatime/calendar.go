@@ -15,7 +15,7 @@ import (
 
 type (
 	// Calendar is a RAM friendly data structure that allows you to keep
-	// a 365 days of some year with flags whether day is day off or a workday,
+	// 365 days of some year with flags whether day is day off or a workday,
 	// store a reason of that and also binary/text encoding/decoding.
 	//
 	// WARNING!
@@ -45,7 +45,7 @@ type (
 		year Year
 
 		// Flag whether the current year is leap or not.
-		// Less computations, more RAM consumption.
+		// Fewer computations, more RAM consumption.
 		isLeap bool
 
 		// Bitset of days in calendar.
@@ -366,6 +366,10 @@ func (wc *Calendar) UnmarshalBinary(data []byte) error {
 	wc.eventDescriptions = nil
 	wc.year = Year(binary.BigEndian.Uint16(data[4:]))
 	wc.isLeap = data[6] == 1
+
+	if wc.dayOff == nil {
+		wc.dayOff = new(ekamath.BitSet)
+	}
 
 	return wc.dayOff.UnmarshalBinary(data[8:])
 }
