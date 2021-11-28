@@ -140,7 +140,9 @@ func (e *Error) init(classID ClassID, namespaceID NamespaceID, lightweight bool)
 
 	skip := 3 // init(), newError(), [Class.New(), Class.Wrap(), Class.LightNew(), Class.LightWrap()]
 
-	e.letter.StackTrace = ekasys.GetStackTrace(skip, -1).ExcludeInternal()
+	if !lightweight {
+		e.letter.StackTrace = ekasys.GetStackTrace(skip, -1).ExcludeInternal()
+	}
 
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_ID].IValue = int64(classID)
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_NAME].SValue =
@@ -251,15 +253,15 @@ func (e *Error) construct(baseMessage string, legacyErr error) *Error {
 //  4. Parse passed 'args' and also add it as first stack frame's fields.
 //  5. Mark first stack frame if generated message (p.3) is not empty.
 func newError(
+
 	lightweight bool,
-	classID ClassID,
-	namespaceID NamespaceID,
-	legacyErr error,
-	message string,
-	args []interface{},
+	classID ClassID, namespaceID NamespaceID,
+	legacyErr error, message string, args []interface{},
 
 ) *Error {
 
-	return acquireError().init(classID, namespaceID, lightweight).
-		construct(message, legacyErr).addFieldsParse(args, false)
+	return acquireError().
+		init(classID, namespaceID, lightweight).
+		construct(message, legacyErr).
+		addFieldsParse(args, false)
 }

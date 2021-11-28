@@ -97,11 +97,22 @@ func LAddFieldWithCheck(l *Letter, f LetterField) {
 // that is relevant for the current stack frame idx.
 func LSetMessage(l *Letter, msg string, overwrite bool) {
 	switch lm := len(l.Messages); {
-	case lm == 0 || lm > 0 && l.Messages[lm-1].StackFrameIdx < l.stackFrameIdx:
+
+	case lm == 0:
+		// This is the first message.
+		fallthrough
+
+	case len(l.StackTrace) == 0:
+		// This isn't the first message but it's a lightweight error.
+		// So add message anyway.
+		fallthrough
+
+	case l.Messages[lm-1].StackFrameIdx < l.stackFrameIdx:
 		l.Messages = append(l.Messages, LetterMessage{
 			Body:          msg,
 			StackFrameIdx: l.stackFrameIdx,
 		})
+
 	case overwrite:
 		// Prev cond can be false only if l.Messages[lm-1].StackFrameIdx == l.stackFrameIdx
 		// meaning that message for the current stackframe is presented.
@@ -167,10 +178,7 @@ func LReset(l *Letter) *Letter {
 
 	l.stackFrameIdx = 0
 	l.Fields = l.Fields[:0]
-	l.Messages = l.Messages[:1]
-
-	m := &l.Messages[0]
-	m.Body, m.StackFrameIdx = "", 0
+	l.Messages = l.Messages[:0]
 
 	return l
 }

@@ -66,7 +66,7 @@ func allocError() interface{} {
 
 	e := new(Error)
 	e.letter = new(ekaletter.Letter)
-	e.letter.Messages = make([]ekaletter.LetterMessage, 1)
+	e.letter.Messages = make([]ekaletter.LetterMessage, 0, 8)
 	e.letter.Fields = make([]ekaletter.LetterField, 0, 16)
 
 	runtime.SetFinalizer(e, releaseErrorForFinalizer)
