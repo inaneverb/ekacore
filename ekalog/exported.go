@@ -7,6 +7,7 @@ package ekalog
 
 import (
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/qioalice/ekago/v3/internal/ekaletter"
@@ -203,4 +204,12 @@ func If(cond bool) (defaultLogger *Logger) {
 // that are might be added already to the current Integrator.
 func ReplaceIntegrator(newIntegrator Integrator) {
 	baseLogger.ReplaceIntegrator(newIntegrator)
+}
+
+// ReplaceEncoder is an alias for creating a new CommonIntegrator,
+// setting provided CI_Encoder for them and register it as a new integrator.
+// The synced stdout is used as writer if writer's set is empty.
+func ReplaceEncoder(cie CI_Encoder, writers ...io.Writer) {
+	ci := new(CommonIntegrator).WithEncoder(cie).WriteTo(writers...)
+	baseLogger.ReplaceIntegrator(ci)
 }
