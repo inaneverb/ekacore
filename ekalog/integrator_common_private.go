@@ -7,6 +7,11 @@ package ekalog
 
 import (
 	"io"
+	"os"
+	"unsafe"
+
+	"github.com/qioalice/ekago/v3/internal/ekaclike"
+	"github.com/qioalice/ekago/v3/internal/ekasys"
 )
 
 //noinspection GoSnakeCaseUsage
@@ -66,9 +71,31 @@ func (ci *CommonIntegrator) build() {
 		panic("Failed to build CommonIntegrator. There is no valid io.Writer.")
 	}
 
-	// Only last one ci.output could have empty writers set. Fix it then.
-	if !ci.isRegistered && len(ci.output[ci.idx].writers) == 0 {
-		ci.output = ci.output[:ci.idx]
+	// Use stdout (synced) as writer for last encoder if user forgot/omit
+	// to specify it explicitly AND if it has not been specified yet.
+
+	if len(ci.output[ci.idx].writers) == 0 {
+
+		// Try to find stdout in the previous writers.
+
+		stdoutNormal := unsafe.Pointer(os.Stdout)
+		stdoutSynced := unsafe.Pointer(ekasys.Stdout)
+
+		found := false
+
+		for i := 0; i < ci.idx && !found; i++ {
+			for j, n := 0, len(ci.output[i].writers); j < n && !found; j++ {
+				writerPtr := ekaclike.TakeRealAddr(ci.output[i].writers[j])
+				found = writerPtr == stdoutNormal || writerPtr == stdoutSynced
+			}
+		}
+
+		if found {
+			// If stdout was used already, drop the last encoder.
+			ci.output = ci.output[:ci.idx]
+		} else {
+			ci.output[ci.idx].writers = append(ci.output[ci.idx].writers, ekasys.Stdout)
+		}
 	}
 
 	ci.oll = LEVEL_WARNING

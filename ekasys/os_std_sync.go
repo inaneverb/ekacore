@@ -7,6 +7,8 @@ package ekasys
 
 import (
 	"io"
+
+	"github.com/qioalice/ekago/v3/internal/ekasys"
 )
 
 type (
@@ -16,5 +18,5 @@ type (
 )
 
 func Stdout() IStdSynced {
-	return stdout
+	return ekasys.Stdout
 }

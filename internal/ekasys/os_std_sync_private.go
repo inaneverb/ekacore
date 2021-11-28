@@ -1,4 +1,4 @@
-// Copyright © 2020. All rights reserved.
+// Copyright © 2021. All rights reserved.
 // Author: Ilya Stroy.
 // Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
@@ -18,7 +18,7 @@ type (
 )
 
 var (
-	stdout *stdSynced
+	Stdout *stdSynced
 )
 
 func (ss *stdSynced) Write(b []byte) (n int, err error) {
@@ -29,6 +29,6 @@ func (ss *stdSynced) Write(b []byte) (n int, err error) {
 }
 
 func initStdoutSynced() {
-	stdout = new(stdSynced)
-	stdout.f = os.Stdout
+	Stdout = new(stdSynced)
+	Stdout.f = os.Stdout
 }
