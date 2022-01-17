@@ -58,6 +58,7 @@ type (
 		/* 8b */ ts Timestamp // cached current Timestamp
 		/* 4b */ d Date // cached current Date
 		/* 4b */ t Time // cached current Time
+		/* 4b */ cbNum uint32 // number of associated callbacks
 		/* -- */ repeatDelay Timestamp
 	}
 
@@ -65,9 +66,12 @@ type (
 	// It contains a function that should be called and a time as unix timestamp
 	// of when that function should be called.
 	onceInExeElem struct {
-		when, repeatDelay, afterDelay Timestamp
-		cb                            OnceInCallback
-		cbPanic                       OnceInPanicCallback
+		when        Timestamp
+		repeatDelay Timestamp
+		afterDelay  Timestamp
+		cb          OnceInCallback
+		cbPanic     OnceInPanicCallback
+		cbNum       uint32
 	}
 )
 
@@ -113,9 +117,11 @@ func (oiu *onceInUpdater) update(ts Timestamp) {
 
 // init calls update() and then register this using onceInFibHeap to be updated.
 func (oiu *onceInUpdater) init(now, repeatDelay Timestamp) {
-	oiu.update(now)
-	oiu.repeatDelay = repeatDelay
-	onceInRegister(oiu.update, nil, repeatDelay, -1, false, false)
+	// Init by 1, because 0 callback is the oiu.update (see last function's line).
+	oiu.cbNum = 1                 // 1 because of -----------------
+	oiu.update(now)               //                              |
+	oiu.repeatDelay = repeatDelay //                              v
+	onceInRegister(oiu.update, nil, repeatDelay, 0, false, false, 0)
 }
 
 // Compare implements `go-heaps.Item` interface.
@@ -126,7 +132,20 @@ func (oiu *onceInUpdater) init(now, repeatDelay Timestamp) {
 // 0 if they are the same,
 // 1 if current onceInExeElem's time > anotherElem's time.
 func (oie onceInExeElem) Compare(anotherOie heap.Item) int {
-	return oie.when.Cmp(anotherOie.(onceInExeElem).when)
+	oie2 := anotherOie.(onceInExeElem)
+
+	if whenCmp := oie.when.Cmp(oie2.when); whenCmp != 0 {
+		return whenCmp
+
+	} else if repeatDelayCmp := oie.repeatDelay.Cmp(oie2.repeatDelay); repeatDelayCmp != 0 {
+		return repeatDelayCmp
+
+	} else if afterDelayCmp := oie.afterDelay.Cmp(oie2.afterDelay); afterDelayCmp != 0 {
+		return afterDelayCmp
+
+	} else {
+		return Timestamp(oie.cbNum).Cmp(Timestamp(oie2.cbNum))
+	}
 }
 
 // invoke invokes onceInExeElem's callback passing provided Timestamp,
@@ -143,9 +162,26 @@ func (oie onceInExeElem) invoke(ts Timestamp) {
 	oie.cb(ts)
 }
 
+// newOnceInExeElem is onceInExeElem constructor.
+func newOnceInExeElem(
+	repeatDelay, afterDelay Timestamp,
+	cb OnceInCallback, cbPanic OnceInPanicCallback, cbNum uint32,
+
+) onceInExeElem {
+
+	return onceInExeElem{
+		when:        NewTimestampNow(),
+		repeatDelay: repeatDelay,
+		afterDelay:  afterDelay,
+		cb:          cb,
+		cbPanic:     cbPanic,
+		cbNum:       cbNum,
+	}
+}
+
 // onceInWorker is a special worker that is running in a background goroutine,
 // pulls nearest (by time) onceInExeElem from onceInFibHeap pool,
-// checks whether it time has come and if it so, executes a function.
+// checks whether its time has come and if it so, executes a function.
 // Otherwise sleeps goroutine for _ONCE_IN_SLEEP_TIME duration.
 func onceInWorker() {
 
@@ -167,7 +203,9 @@ func onceInWorker() {
 
 		// Register next call.
 		nearestOieCopy := nearestOie.(onceInExeElem)
-		nearestOieCopy.when = ts + ts.tillNext(nearestOieCopy.repeatDelay) + nearestOieCopy.afterDelay
+		nearestOieCopy.when +=
+			nearestOieCopy.when.tillNext(nearestOieCopy.repeatDelay) +
+				nearestOieCopy.afterDelay
 		onceInFibHeap.Insert(nearestOieCopy)
 
 		onceInFibHeapMu.Unlock()
@@ -184,9 +222,15 @@ func onceInWorker() {
 // waiting for `afterDelay` when time has come, calling `cb` and if it panics,
 // call then `panicCb[0]`. Calls right now if `invokeNow` is true.
 // Protects access to onceInFibHeap using associated sync.Mutex if `doLock` is true.
-func onceInRegister(cb OnceInCallback, panicCb []OnceInPanicCallback, repeatDelay, afterDelay Timestamp, invokeNow, doLock bool) {
+func onceInRegister(
+	cb OnceInCallback, panicCb []OnceInPanicCallback,
+	repeatDelay, afterDelay Timestamp,
+	invokeNow, doLock bool,
+	cbNum uint32,
+) {
 	if doLock {
 		onceInFibHeapMu.Lock()
+		defer onceInFibHeapMu.Unlock()
 	}
 
 	panicCb_ := OnceInPanicCallback(nil)
@@ -194,20 +238,12 @@ func onceInRegister(cb OnceInCallback, panicCb []OnceInPanicCallback, repeatDela
 		panicCb_ = panicCb[0]
 	}
 
-	if afterDelay < 0 {
-		afterDelay = 0
-	}
-
-	oie := onceInExeElem{NewTimestampNow(), repeatDelay, afterDelay, cb, panicCb_}
+	oie := newOnceInExeElem(repeatDelay, afterDelay, cb, panicCb_, cbNum)
 	if !invokeNow {
 		oie.when += oie.when.tillNext(repeatDelay) + afterDelay
 	}
 
 	onceInFibHeap.Insert(oie)
-
-	if doLock {
-		onceInFibHeapMu.Unlock()
-	}
 }
 
 // initOnceIn initializes all package level onceInUpdater global variables,

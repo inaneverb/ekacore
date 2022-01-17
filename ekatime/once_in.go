@@ -114,7 +114,8 @@ func (oiu *onceInUpdater) Time() Time {
 // "go callback(ts, dd, t)" call (spawn a separate goroutine).
 func (oiu *onceInUpdater) Call(invokeNow bool, cb OnceInCallback, panicCb ...OnceInPanicCallback) {
 	if cb != nil {
-		onceInRegister(cb, panicCb, oiu.repeatDelay, -1, invokeNow, true)
+		cbNum := atomic.AddUint32(&oiu.cbNum, 1) - 1
+		onceInRegister(cb, panicCb, oiu.repeatDelay, 1, invokeNow, true, cbNum)
 	}
 }
 
@@ -123,7 +124,13 @@ func (oiu *onceInUpdater) Call(invokeNow bool, cb OnceInCallback, panicCb ...Onc
 // Does nothing if dur >= OnceIn's delayer time.
 // It means, you cannot delay up to 1h function execution using OnceInHour.
 func (oiu *onceInUpdater) After(delayInSec Timestamp, invokeNow bool, cb OnceInCallback, panicCb ...OnceInPanicCallback) {
+
+	if delayInSec < 1 {
+		delayInSec = 1
+	}
+
 	if cb != nil && delayInSec < oiu.repeatDelay {
-		onceInRegister(cb, panicCb, oiu.repeatDelay, delayInSec, invokeNow, true)
+		cbNum := atomic.AddUint32(&oiu.cbNum, 1) - 1
+		onceInRegister(cb, panicCb, oiu.repeatDelay, delayInSec, invokeNow, true, cbNum)
 	}
 }
