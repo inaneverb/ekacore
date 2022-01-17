@@ -873,7 +873,7 @@ func (ce *CI_ConsoleEncoder) encodeCaller(to []byte, e *Entry) []byte {
 
 func (ce *CI_ConsoleEncoder) encodeFields(to []byte, fs, addFs []ekaletter.LetterField, isErrors, addPreEncoded bool) []byte {
 
-	if len(fs) == 0 {
+	if len(fs) == 0 && len(addFs) == 0 {
 		return to
 	}
 
@@ -945,6 +945,10 @@ func (ce *CI_ConsoleEncoder) encodeFields(to []byte, fs, addFs []ekaletter.Lette
 }
 
 func (ce *CI_ConsoleEncoder) encodeField(to []byte, f ekaletter.LetterField, isErrors bool, fieldNum int16) []byte {
+
+	if f.IsSystem() && f.BaseType() == ekaletter.KIND_SYS_TYPE_EKAERR_CLASS_ID {
+		return to
+	}
 
 	// Maybe field wants to be started with new line?
 	oldKey := f.Key

@@ -18,8 +18,14 @@ import (
 	"github.com/qioalice/ekago/v3/ekalog"
 )
 
-func foo() *ekaerr.Error {
-	return ekaerr.Interrupted.New("fwefwf").
+func foo(isLightWeight bool) *ekaerr.Error {
+
+	gen := ekaerr.Interrupted.New
+	if isLightWeight {
+		gen = ekaerr.Interrupted.LightNew
+	}
+
+	return gen("fwefwf").
 		AddMessage("custom message").
 		WithInt("test", 42).
 		Throw()
@@ -54,7 +60,8 @@ func TestLog(t *testing.T) {
 	ekalog.Error("test")
 	ekalog.Error("test", "sys.field", 0)
 
-	ekalog.Emerge("emerg", foo(), "log_field")
+	ekalog.Alerte("", foo(true), "log_field")
+	ekalog.Emerge("emerg", foo(false), "log_field")
 }
 
 func BenchmarkLog(b *testing.B) {
