@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/qioalice/ekago/v3/ekamath"
 	"github.com/qioalice/ekago/v3/ekasys"
 	"github.com/qioalice/ekago/v3/internal/ekaletter"
 
@@ -854,14 +855,14 @@ func (ce *CI_ConsoleEncoder) encodeBody(to []byte, e *Entry) []byte {
 
 func (ce *CI_ConsoleEncoder) encodeCaller(to []byte, e *Entry) []byte {
 
-	var frame ekasys.StackFrame
+	var frame *ekasys.StackFrame
 
 	switch {
 	case len(e.LogLetter.StackTrace) > 0:
-		frame = e.LogLetter.StackTrace[0]
+		frame = &e.LogLetter.StackTrace[0]
 
 	case e.ErrLetter != nil:
-		frame = e.ErrLetter.StackTrace[0]
+		frame = &e.ErrLetter.StackTrace[0]
 
 	default:
 		return to
@@ -1086,13 +1087,16 @@ func (ce *CI_ConsoleEncoder) encodeFieldValue(to []byte, f ekaletter.LetterField
 
 func (ce *CI_ConsoleEncoder) encodeStacktrace(to []byte, e *Entry) []byte {
 
-	stacktrace := e.LogLetter.StackTrace
-	if len(stacktrace) == 0 && e.ErrLetter != nil {
-		stacktrace = e.ErrLetter.StackTrace
+	trace := e.LogLetter.StackTrace
+	isLightweightError := false
+
+	if len(trace) == 0 && e.ErrLetter != nil {
+		trace = e.ErrLetter.StackTrace
+		isLightweightError = len(trace) == 0
 	}
 
-	n := int16(len(stacktrace))
-	if n == 0 {
+	n := int16(len(trace))
+	if n == 0 && !isLightweightError {
 		return to
 	}
 
@@ -1101,10 +1105,11 @@ func (ce *CI_ConsoleEncoder) encodeStacktrace(to []byte, e *Entry) []byte {
 	}
 
 	var (
-		fi       = 0 // fi for fields' index
-		mi       = 0 // mi for messages' index
-		fields   []ekaletter.LetterField
-		messages []ekaletter.LetterMessage
+		fi = 0 // fi for fields' index
+		mi = 0 // mi for messages' index
+
+		fields   []ekaletter.LetterField   // We don't use log's fields and messages here
+		messages []ekaletter.LetterMessage // 'cause they will be written in a different place.
 	)
 
 	if e.ErrLetter != nil {
@@ -1112,14 +1117,31 @@ func (ce *CI_ConsoleEncoder) encodeStacktrace(to []byte, e *Entry) []byte {
 		messages = e.ErrLetter.Messages
 	}
 
+	// Simulate stacktrace's length if it's a lightweight error.
+
+	if isLightweightError {
+
+		var fieldGreatestFrameIdx int16 = 0
+		if nf := len(fields); nf > 0 {
+			fieldGreatestFrameIdx = fields[nf-1].StackFrameIdx
+		}
+
+		var messageGreatestFrameIdx int16 = 0
+		if nm := len(messages); nm > 0 {
+			messageGreatestFrameIdx = messages[nm-1].StackFrameIdx
+		}
+
+		n = ekamath.MaxI16(fieldGreatestFrameIdx, messageGreatestFrameIdx)
+	}
+
 	for i := int16(0); i < n; i++ {
-		messageForStackFrame := ekaletter.LetterMessage{}
-		fieldsForStackFrame := []ekaletter.LetterField(nil)
+		messageForFrame := ekaletter.LetterMessage{}
+		fieldsForFrame := []ekaletter.LetterField(nil)
 		fiEnd := 0
 
 		//goland:noinspection GoNilness
 		if mi < len(messages) && messages[mi].StackFrameIdx == i {
-			messageForStackFrame = messages[mi]
+			messageForFrame = messages[mi]
 			mi++
 		}
 
@@ -1131,14 +1153,19 @@ func (ce *CI_ConsoleEncoder) encodeStacktrace(to []byte, e *Entry) []byte {
 		}
 
 		if fiEnd != 0 {
-			fieldsForStackFrame = fields[fi:fiEnd]
+			fieldsForFrame = fields[fi:fiEnd]
 		}
 
-		to = ce.encodeStackFrame(to, stacktrace[i], fieldsForStackFrame, messageForStackFrame)
-
-		if i < n-1 {
-			to = bufw(to, "\n")
+		var frame *ekasys.StackFrame = nil
+		if !isLightweightError {
+			frame = &trace[i]
 		}
+
+		to = ce.encodeStackFrame(to, frame, fieldsForFrame, messageForFrame)
+	}
+
+	if nt := len(to) - 1; to[nt] == '\n' {
+		to = to[:nt]
 	}
 
 	if ce.sf.afterStack != "" {
@@ -1151,13 +1178,19 @@ func (ce *CI_ConsoleEncoder) encodeStacktrace(to []byte, e *Entry) []byte {
 func (ce *CI_ConsoleEncoder) encodeStackFrame(
 
 	to []byte,
-	frame ekasys.StackFrame,
+	frame *ekasys.StackFrame,
 	fields []ekaletter.LetterField,
 	message ekaletter.LetterMessage,
 
 ) []byte {
 
-	if !ce.cf.isDefault {
+	lToAtStart := len(to)
+
+	switch {
+	case frame == nil:
+		// It's a lightweight error's frame. Do nothing.
+
+	case !ce.cf.isDefault:
 		// Reminder: frame.DoFormat does once:
 		// "<package>/<func> (<short_file>:<file_line>) <full_package_path>".
 
@@ -1189,12 +1222,16 @@ func (ce *CI_ConsoleEncoder) encodeStackFrame(
 				to = bufw(to, frame.Format[frame.FormatFullPathOffset:])
 			}
 		}
-	} else {
+
+	default:
 		to = bufw(to, frame.DoFormat())
 	}
 
 	if message.Body != "" || len(fields) > 0 {
-		to = bufw(to, "\n")
+
+		if frame != nil {
+			to = bufwc(to, '\n')
+		}
 
 		if ce.ff.afterNewLineForError != "" {
 			to = bufw(to, ce.ff.afterNewLineForError)
@@ -1202,16 +1239,20 @@ func (ce *CI_ConsoleEncoder) encodeStackFrame(
 
 		if message.Body != "" {
 			to = bufw(to, message.Body)
-			to = bufw(to, "\n")
+			to = bufwc(to, '\n')
 		}
 
-		lToBak := len(to)
+		lToBefore := len(to)
 		to = ce.encodeFields(to, fields, nil, true, false)
 
 		// ce.encodeFields may write no fields. Then we must clear last "\n"
-		if len(to) == lToBak {
+		if len(to) == lToBefore {
 			to = to[:len(to)-1]
 		}
+	}
+
+	if lToAtStart != len(to) {
+		to = bufwc(to, '\n')
 	}
 
 	return to

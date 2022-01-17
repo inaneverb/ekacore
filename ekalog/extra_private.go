@@ -52,3 +52,13 @@ func bufw(buf []byte, text string) []byte {
 func bufw2(buf, raw []byte) []byte {
 	return append(bufgr(buf, len(raw)), raw...)
 }
+
+// bufwc adds 'c' to 'buf', growing 'buf' if it's required to write that byte.
+// Returns grown 'buf' (if it's so) or originally 'buf'.
+// Use this function as Golang's append().
+//
+// It's a new function. In the old code a bufw or a bufw2 still may be used
+// to write a single byte. Replace them by this function.
+func bufwc(buf []byte, c byte) []byte {
+	return append(bufgr(buf, 1), c)
+}

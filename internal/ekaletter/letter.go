@@ -103,8 +103,8 @@ func LSetMessage(l *Letter, msg string, overwrite bool) {
 		fallthrough
 
 	case len(l.StackTrace) == 0:
-		// This isn't the first message but it's a lightweight error.
-		// So add message anyway.
+		// This isn't the first message, but an error is lightweight.
+		// So add a message anyway.
 		fallthrough
 
 	case l.Messages[lm-1].StackFrameIdx < l.stackFrameIdx:
@@ -149,7 +149,7 @@ func LPopLastMessage(l *Letter) string {
 // Increment won't happen (and current value is returned) if it's maximum
 // of allowed stack idx for the current len of stackframe.
 func LIncStackIdx(l *Letter) {
-	if l.stackFrameIdx+1 < int16(len(l.StackTrace)) {
+	if n := len(l.StackTrace); n == 0 || l.stackFrameIdx+1 < int16(n) {
 		l.stackFrameIdx++
 	}
 }

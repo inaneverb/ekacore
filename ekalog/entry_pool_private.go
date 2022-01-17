@@ -66,7 +66,7 @@ func allocEntry() interface{} {
 
 	e := new(Entry)
 	e.LogLetter = new(ekaletter.Letter)
-	e.LogLetter.Messages = make([]ekaletter.LetterMessage, 1)
+	e.LogLetter.Messages = make([]ekaletter.LetterMessage, 0, 1)
 
 	runtime.SetFinalizer(e, releaseEntryForFinalizer)
 	e.needSetFinalizer = false

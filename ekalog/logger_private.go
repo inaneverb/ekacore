@@ -208,7 +208,7 @@ func (l *Logger) log(
 		}
 	}
 
-	workTempEntry.LogLetter.Messages[0].Body = format
+	ekaletter.LSetMessage(workTempEntry.LogLetter, format, false)
 	workTempEntry.ErrLetter = errLetter
 
 	if lvl <= l.integrator.MinLevelForStackTrace() {
