@@ -148,7 +148,7 @@ func (e *Error) init(classID ClassID, namespaceID NamespaceID, lightweight bool)
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_NAME].SValue =
 		classByID(classID, true).fullName
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_ERROR_ID].SValue =
-		ekatyp.UUID_NewV4_OrNil().String()
+		ekatyp.ULID_New_OrNil().String()
 
 	e.classID = classID
 	e.namespaceID = namespaceID

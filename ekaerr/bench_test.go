@@ -51,7 +51,7 @@ func wrapEkagoErrLightweight(layer int) *ekaerr.Error {
 
 	err := wrapEkagoErrLightweight(layer - 1)
 	if layer&1 == 0 {
-		return err.AddMessage("Add message").Throw()
+		return err.AddMessage("Add message").WithInt("layer", layer+1).Throw()
 	} else {
 		return err.Throw()
 	}
@@ -59,7 +59,7 @@ func wrapEkagoErrLightweight(layer int) *ekaerr.Error {
 
 func TestFoo(t *testing.T) {
 
-	err := wrapEkagoErrLightweight(16)
+	err := wrapEkagoErr(16)
 	l := ekaletter.BridgeErrorGetLetter(unsafe.Pointer(err))
 
 	fmt.Printf("Messages len = %d (%d), Fields len = %d (%d), Stacktrace len = %d (%d)\n",
@@ -68,7 +68,7 @@ func TestFoo(t *testing.T) {
 		len(l.StackTrace), cap(l.StackTrace),
 	)
 
-	ekalog.ReplaceEncoder(new(ekalog.CI_JSONEncoder))
+	ekalog.ReplaceEncoder(new(ekalog.CI_JSONEncoder).SetOneDepthLevel(true))
 	ekalog.Errore("", err)
 }
 
@@ -85,18 +85,26 @@ var cases = []struct {
 func BenchmarkWrap(b *testing.B) {
 	for _, tc := range cases {
 		b.Run(fmt.Sprintf("std errors %v layers", tc.layers), func(b *testing.B) {
+			b.ReportAllocs()
 			for n := 0; n < b.N; n++ {
 				_ = wrapStdErrors(tc.layers)
 			}
-			b.StopTimer()
 		})
 
 		b.Run(fmt.Sprintf("ekaerr %v layers", tc.layers), func(b *testing.B) {
+			b.ReportAllocs()
 			for n := 0; n < b.N; n++ {
 				err := wrapEkagoErr(tc.layers)
 				ekaerr.ReleaseError(err)
 			}
-			b.StopTimer()
+		})
+
+		b.Run(fmt.Sprintf("ekaerr LIGHT %v layers", tc.layers), func(b *testing.B) {
+			b.ReportAllocs()
+			for n := 0; n < b.N; n++ {
+				err := wrapEkagoErrLightweight(tc.layers)
+				ekaerr.ReleaseError(err)
+			}
 		})
 	}
 }

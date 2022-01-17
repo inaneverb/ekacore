@@ -15,7 +15,7 @@ import (
 
 type (
 	// Error is an object representation of your abstract error.
-	// Error accumulates and stores some your data that will help you to log it later.
+	// Error accumulates and stores your data that will help you to log it later.
 	//
 	// In your code you must now use *Error as error indicating. Like
 	//     func foo() *Error
@@ -24,7 +24,7 @@ type (
 	//
 	// TLDR:
 	// - DO NOT CREATE ERROR OBJECTS MANUALLY, USE Class's CONSTRUCTORS INSTEAD.
-	// - DO NOT FORGOT TO USE Throw().
+	// - DO NOT FORGET TO USE Throw().
 	// - IF YOU WANT TO DO SOMETHING WITH YOUR ERROR, DO IT BEFORE LOGGING.
 	// - ALL ERROR OBJECTS ARE THREAD-UNSAFE. AVOID POTENTIAL DATA RACES!
 	// - NEVER USE ERROR OBJECT AS VALUE, ALWAYS USE BY REFERENCE.
@@ -32,7 +32,7 @@ type (
 	// -----
 	//
 	// ERROR OBJECTS CREATED MANUALLY CONSIDERED NOT INITIALIZED AND WILL NOT
-	// WORK PROPERLY, WILL NOT CONTAIN ANY YOUR DATA AND WILL NOT WORK AT ALL!
+	// WORK PROPERLY, WILL NOT CONTAIN ANY DATA AND WILL NOT WORK AT ALL!
 	//
 	// Use Class.New(), Class.Wrap(), Class.LightNew(), Class.LightWrap() methods
 	// to create an *Error object.
@@ -42,7 +42,7 @@ type (
 	// IS MEANINGLESS.
 	//
 	// In accordance with the above, and in pursuit of better performance
-	// (decreasing unnecessary allocations / deallocations => RAM reusing)
+	// (decreasing unnecessary allocations / freeing => RAM reusing)
 	// once allocated *Error objects may be reused in the future.
 	// Because of that, follow these rules:
 	//
@@ -58,7 +58,7 @@ type (
 	// If you do not want to log an error but want to return it manually to the pool
 	// (I don't know the case when you needed it, but whatever) you can just call
 	// ReleaseError(err).
-	// If you won't do it, an allocated Error will returned to the pool automatically
+	// If you don't do it, an allocated Error will be returned to the pool automatically
 	// when it goes out from the scope.
 	//
 	// -----
@@ -66,12 +66,12 @@ type (
 	// Lightweight errors.
 	//
 	// Lightweight errors is just the same Error but w/o stacktrace generating.
-	// You can also add fields or messages but they won't be linked to some stacktrace.
+	// You can also add fields or messages, but they won't be linked to some stacktrace.
 	// Thus, Throw() call in that case is meaningless and will do nothing.
 	//
 	// Often it's useful when you don't want to log your error but do something instead.
 	//
-	// If you will log lightweight Error, make sure your encoder supports lightweight errors.
+	// If you log lightweight Error, make sure your encoder supports lightweight errors.
 	// Both of ekalog.CI_ConsoleEncoder, ekalog.CI_JSONEncoder provides that.
 	//
 	// -----
@@ -81,7 +81,7 @@ type (
 	// Each Error object (even lightweight) has its own ID.
 	// You can use that ID to find and determine Error by its ID.
 	//
-	// Earlier and UUIDv4 was used to generate ID.
+	// Earlier an UUIDv4 was used to generate ID.
 	// Since 3.0 ver, an ULID is used instead.
 	//
 	// Read more about ULID here: https://github.com/ulid/spec
@@ -131,8 +131,10 @@ func (e *Error) IsNil() bool {
 }
 
 // Throw is an OOP style of raising an error up.
+//
 // YOU MUST CALL THIS METHOD EACH TIME YOU RETURNING AN ERROR OBJECT FROM THE FUNC.
-// THIS CALL MUST BE THE LAST ONE AT THE YOUR RETURN STATEMENT.
+// THIS CALL MUST BE THE LAST ONE AT THE RETURN STATEMENT.
+//
 // Nil safe. Returns this.
 //
 // Typically, you have two cases you must follow.

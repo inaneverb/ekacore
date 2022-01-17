@@ -76,11 +76,11 @@ func allocError() interface{} {
 
 	e.letter.SystemFields = make([]ekaletter.LetterField, 4)
 
-	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_ID].Key = "class_id"
+	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_ID].Key = "error_class_id"
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_ID].Kind |=
 		ekaletter.KIND_FLAG_SYSTEM | ekaletter.KIND_SYS_TYPE_EKAERR_CLASS_ID
 
-	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_NAME].Key = "class_name"
+	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_NAME].Key = "error_class_name"
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_NAME].Kind |=
 		ekaletter.KIND_FLAG_SYSTEM | ekaletter.KIND_SYS_TYPE_EKAERR_CLASS_NAME
 
