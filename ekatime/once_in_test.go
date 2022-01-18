@@ -3,50 +3,72 @@ package ekatime_test
 import (
 	"fmt"
 	"math/rand"
-	"sync/atomic"
 	"testing"
 	"time"
 
-	"github.com/qioalice/ekago/v3/ekadeath"
 	"github.com/qioalice/ekago/v3/ekatime"
 )
 
 func TestFoo(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 
-	var (
-		_1calls, _2calls, _3calls uint32
+	//goland:noinspection GoSnakeCaseUsage
+	const WAIT_MS_MAX = 500
+
+	//goland:noinspection GoSnakeCaseUsage
+	const (
+		INV_NOW_1 = true
+		INV_NOW_2 = true
+		INV_NOW_3 = true
+		INV_NOW_4 = false
+		INV_NOW_5 = false
+		INV_NOW_6 = true
+		INV_NOW_7 = false
+		INV_NOW_8 = false
 	)
 
-	ekatime.OnceInMinute.Call(true, func(ts ekatime.Timestamp) {
-		atomic.AddUint32(&_1calls, 1)
-		st := time.Duration(rand.Intn(3000)) * time.Millisecond
+	onceIn := &ekatime.OnceInMinute
+
+	onceIn.Call(INV_NOW_1, func(ts ekatime.Timestamp) {
+		st := time.Duration(rand.Intn(WAIT_MS_MAX)) * time.Millisecond
+		time.Sleep(st)
 		fmt.Println("Call 1", ts.String(), "sleep time", st)
-		time.Sleep(st)
 	})
-	ekatime.OnceInMinute.Call(true, func(ts ekatime.Timestamp) {
-		atomic.AddUint32(&_2calls, 1)
-		st := time.Duration(rand.Intn(3000)) * time.Millisecond
+	onceIn.Call(INV_NOW_2, func(ts ekatime.Timestamp) {
+		st := time.Duration(rand.Intn(WAIT_MS_MAX)) * time.Millisecond
+		time.Sleep(st)
 		fmt.Println("Call 2", ts.String(), "sleep time", st)
-		time.Sleep(st)
 	})
-	ekatime.OnceInMinute.Call(true, func(ts ekatime.Timestamp) {
-		atomic.AddUint32(&_3calls, 1)
-		st := time.Duration(rand.Intn(3000)) * time.Millisecond
+	onceIn.Call(INV_NOW_3, func(ts ekatime.Timestamp) {
+		st := time.Duration(rand.Intn(WAIT_MS_MAX)) * time.Millisecond
+		time.Sleep(st)
 		fmt.Println("Call 3", ts.String(), "sleep time", st)
+	})
+	onceIn.Call(INV_NOW_4, func(ts ekatime.Timestamp) {
+		st := time.Duration(rand.Intn(WAIT_MS_MAX)) * time.Millisecond
 		time.Sleep(st)
+		fmt.Println("Call 4", ts.String(), "sleep time", st)
+	})
+	onceIn.Call(INV_NOW_5, func(ts ekatime.Timestamp) {
+		st := time.Duration(rand.Intn(WAIT_MS_MAX)) * time.Millisecond
+		time.Sleep(st)
+		fmt.Println("Call 5", ts.String(), "sleep time", st)
+	})
+	onceIn.Call(INV_NOW_6, func(ts ekatime.Timestamp) {
+		st := time.Duration(rand.Intn(WAIT_MS_MAX)) * time.Millisecond
+		time.Sleep(st)
+		fmt.Println("Call 6", ts.String(), "sleep time", st)
+	})
+	onceIn.Call(INV_NOW_7, func(ts ekatime.Timestamp) {
+		st := time.Duration(rand.Intn(WAIT_MS_MAX)) * time.Millisecond
+		time.Sleep(st)
+		fmt.Println("Call 7", ts.String(), "sleep time", st)
+	})
+	onceIn.Call(INV_NOW_8, func(ts ekatime.Timestamp) {
+		st := time.Duration(rand.Intn(WAIT_MS_MAX)) * time.Millisecond
+		time.Sleep(st)
+		fmt.Println("Call FINAL", ts.String(), "sleep time", st)
 	})
 
-	i := 0
-	for range time.Tick(30 * time.Second) {
-		i++
-		fmt.Printf("Stat: [1]: %d, [2]: %d, [3]: %d\n",
-			atomic.LoadUint32(&_1calls),
-			atomic.LoadUint32(&_2calls),
-			atomic.LoadUint32(&_3calls))
-
-		if i == 10 {
-			ekadeath.Exit()
-		}
-	}
+	select {}
 }
