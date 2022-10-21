@@ -43,11 +43,12 @@ type (
 //
 // In 99% cases you don't need to know that stat,
 // and you should not to worry about that.
-func EPS() (eps EntryPoolStat) {
-	eps.AllocCalls = atomic.LoadUint64(&eps.AllocCalls)
-	eps.NewCalls = atomic.LoadUint64(&eps.NewCalls)
-	eps.ReleaseCalls = atomic.LoadUint64(&eps.ReleaseCalls)
-	return
+func EPS() EntryPoolStat {
+	return EntryPoolStat{
+		AllocCalls:   atomic.LoadUint64(&eps.AllocCalls),
+		NewCalls:     atomic.LoadUint64(&eps.NewCalls),
+		ReleaseCalls: atomic.LoadUint64(&eps.ReleaseCalls),
+	}
 }
 
 var (
