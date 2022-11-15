@@ -1,6 +1,6 @@
 package ekaarr
 
-func Reduce[T comparable, R any](
+func Reduce[T any, R any](
 	in []T, out R, cb func(acc R, value T, index int, arr []T) R) R {
 
 	for i, n := 0, len(in); i < n; i++ {
@@ -10,7 +10,7 @@ func Reduce[T comparable, R any](
 	return out
 }
 
-func Filter[T comparable](in []T, cb func(T) bool) []T {
+func Filter[T any](in []T, cb func(T) bool) []T {
 
 	// Copy on write.
 	// Meaning, there's no copy, if cb returns true for all elements.
