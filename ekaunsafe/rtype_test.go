@@ -121,7 +121,7 @@ var (
 
 func testRType(t *testing.T, tdIdx uint8) {
 	eqIdx := td1[tdIdx].eq
-	for i, z, n := 0, uint64(1), ekamath.MinI(64, len(td1)); i < n; i++ {
+	for i, z, n := 0, uint64(1), ekamath.Min(64, len(td1)); i < n; i++ {
 		if eqIdx&z > 0 {
 			assert.Equal(t, reflect2.RTypeOf(tda[i]), td1[tdIdx].f())
 		} else {
@@ -133,7 +133,7 @@ func testRType(t *testing.T, tdIdx uint8) {
 
 func testRTypeIs(t *testing.T, tdIdx uint8) {
 	eqIdx := td2[tdIdx].eq
-	for i, z, n := 0, uint64(1), ekamath.MinI(64, len(td1)); i < n; i++ {
+	for i, z, n := 0, uint64(1), ekamath.Min(64, len(td1)); i < n; i++ {
 		if eqIdx&z > 0 {
 			assert.True(t, td2[tdIdx].f(reflect2.RTypeOf(tda[i])))
 		} else {

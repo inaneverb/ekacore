@@ -65,7 +65,6 @@ func TestLog(t *testing.T) {
 }
 
 func BenchmarkLog(b *testing.B) {
-	b.StopTimer()
 	b.ReportAllocs()
 
 	devNullIntegrator := new(ekalog.CommonIntegrator).
@@ -75,8 +74,13 @@ func BenchmarkLog(b *testing.B) {
 
 	ekalog.ReplaceIntegrator(devNullIntegrator)
 
-	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		ekalog.Debug("test", "field", 41, "field2", nil)
-	}
+	b.Run("Log", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			ekalog.Debugw("test")
+			//ekalog.Debug("test", "field", 41, "field2", nil)
+		}
+	})
+
+	var eps = ekalog.EPS()
+	fmt.Printf("%+v\n", eps)
 }

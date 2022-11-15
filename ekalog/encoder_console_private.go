@@ -20,7 +20,7 @@ import (
 	"github.com/json-iterator/go"
 )
 
-//noinspection GoSnakeCaseUsage
+// noinspection GoSnakeCaseUsage
 type (
 	// _CICE_FormatPart represents built format's part (parsed RAW format string).
 	// - for 'typ' == '_CICE_FPT_VERB_JUST_TEXT', 'value' is original RAW format string's part;
@@ -83,7 +83,7 @@ type (
 	}
 )
 
-//noinspection GoSnakeCaseUsage
+// noinspection GoSnakeCaseUsage
 const (
 	// Common Integrator Console Encoder Format Part Type (CICE FPT)
 	// predefined constants.
@@ -1135,7 +1135,7 @@ func (ce *CI_ConsoleEncoder) encodeStacktrace(to []byte, e *Entry) []byte {
 			messageGreatestFrameIdx = messages[nm-1].StackFrameIdx
 		}
 
-		n = ekamath.MaxI16(fieldGreatestFrameIdx, messageGreatestFrameIdx)
+		n = ekamath.Max(fieldGreatestFrameIdx, messageGreatestFrameIdx)
 	}
 
 	for i := int16(0); i < n; i++ {

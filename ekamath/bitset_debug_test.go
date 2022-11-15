@@ -12,7 +12,7 @@ import (
 )
 
 func (bs *BitSet) DebugOnesAsSlice(expectedValues uint) []uint {
-	ones := make([]uint, 0, MaxU(expectedValues, _BITSET_MINIMUM_CAPACITY)+1)
+	ones := make([]uint, 0, Max(expectedValues, _BITSET_MINIMUM_CAPACITY)+1)
 	for v, e := bs.NextUp(0); e; v, e = bs.NextUp(v) {
 		ones = append(ones, v)
 	}

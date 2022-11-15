@@ -300,10 +300,9 @@ func (bs *BitSet) IsSetUnsafe(idx uint) bool {
 // You can use this method (and the similar methods, like NextDown(), PrevUp(), PrevDown())
 // to iterate over BitSet:
 //
-//  for v, e := bs.NextUp(0); e; v, e = bs.NextUp(v) {
-//      fmt.Printf("Elem: %d\n", v)
-//  }
-//
+//	for v, e := bs.NextUp(0); e; v, e = bs.NextUp(v) {
+//	    fmt.Printf("Elem: %d\n", v)
+//	}
 func (bs *BitSet) NextUp(idx uint) (uint, bool) {
 	if bs.isValidIdx(idx, 0, false) {
 		return bs.NextUpUnsafe(idx)
@@ -426,7 +425,7 @@ func (bs *BitSet) Intersection(bs2 *BitSet) *BitSet {
 		bs1size := bs.chunkSize()
 
 		i := uint(0)
-		for n := MinU(bs1size, bs2.chunkSize()); i < n; i++ {
+		for n := Min(bs1size, bs2.chunkSize()); i < n; i++ {
 			bs.bs[i] &= bs2.bs[i]
 		}
 
@@ -451,7 +450,7 @@ func (bs *BitSet) Difference(bs2 *BitSet) *BitSet {
 
 	if bs.IsValid() && bs2.IsValid() {
 
-		for i, n := uint(0), MinU(bs.chunkSize(), bs2.chunkSize()); i < n; i++ {
+		for i, n := uint(0), Min(bs.chunkSize(), bs2.chunkSize()); i < n; i++ {
 			bs.bs[i] &^= bs2.bs[i]
 		}
 	}
@@ -479,7 +478,7 @@ func (bs *BitSet) SymmetricDifference(bs2 *BitSet) *BitSet {
 		bs.GrowUnsafeUpTo(bs2cap)
 
 		i := uint(0)
-		for n := MinU(bs1size, bs2size); i < n; i++ {
+		for n := Min(bs1size, bs2size); i < n; i++ {
 			bs.bs[i] ^= bs2.bs[i]
 		}
 
