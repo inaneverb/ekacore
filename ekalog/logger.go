@@ -95,8 +95,8 @@ func (l *Logger) Copy() (copy *Logger) {
 // Nil safe.
 //
 // Requirements:
-//  - Logger != nil, panic otherwise;
-//  - Logger is initialized properly and has registered Integrator, panic otherwise.
+//   - Logger != nil, panic otherwise;
+//   - Logger is initialized properly and has registered Integrator, panic otherwise.
 func (l *Logger) Sync() error {
 	l.assert()
 	if l == nopLogger {
@@ -211,6 +211,9 @@ func (l *Logger) WithFloat32p(key string, value *float32) *Logger {
 func (l *Logger) WithFloat64p(key string, value *float64) *Logger {
 	return l.addField(ekaletter.FFloat64p(key, value))
 }
+func (l *Logger) WithStringp(key string, value *string) *Logger {
+	return l.addField(ekaletter.FStringp(key, value))
+}
 func (l *Logger) WithType(key string, value interface{}) *Logger {
 	return l.addField(ekaletter.FType(key, value))
 }
@@ -265,7 +268,7 @@ func (l *Logger) WithManyAny(fields ...interface{}) *Logger {
 // only if cond is true.
 //
 // Requirements:
-//  - Logger is not nil, panic otherwise.
+//   - Logger is not nil, panic otherwise.
 func (l *Logger) If(cond bool) *Logger {
 	l.assert()
 	if cond {
@@ -282,12 +285,12 @@ func (l *Logger) If(cond bool) *Logger {
 // to the passed one.
 //
 // Requirements:
-//  - Logger is not nil, panic otherwise;
-//  - Integrator is not nil (even typed nil), panic otherwise;
-//  - If Integrator is CommonIntegrator
-//    it must not be registered with some Logger before, panic otherwise;
-//  - If Integrator is CommonIntegrator
-//    it must have at least 1 registered io.Writer, panic otherwise.
+//   - Logger is not nil, panic otherwise;
+//   - Integrator is not nil (even typed nil), panic otherwise;
+//   - If Integrator is CommonIntegrator
+//     it must not be registered with some Logger before, panic otherwise;
+//   - If Integrator is CommonIntegrator
+//     it must have at least 1 registered io.Writer, panic otherwise.
 //
 // WARNING.
 // Replacing Integrator will drop all pre-encoded ekaletter.LetterField fields

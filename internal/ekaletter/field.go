@@ -68,7 +68,7 @@ type (
 	LetterFieldKind uint8
 )
 
-//noinspection GoSnakeCaseUsage
+// noinspection GoSnakeCaseUsage
 const (
 	KIND_MASK_BASE_TYPE = 0b_0001_1111
 	KIND_MASK_FLAGS     = 0b_1110_0000
@@ -139,7 +139,7 @@ var (
 	TypeFmtStringer     = reflect2.TypeOfPtr((*fmt.Stringer)(nil)).Elem()
 )
 
-//noinspection GoErrorStringFormat
+// noinspection GoErrorStringFormat
 var (
 	ErrUnsupportedKind = fmt.Errorf("LetterField: Unsupported kind of LetterField.")
 )
@@ -441,6 +441,15 @@ func FFloat64p(key string, value *float64) LetterField {
 		return FNil(key, KIND_TYPE_FLOAT_64)
 	}
 	return FFloat64(key, *value)
+}
+
+// FStringp constructs a field that carries a *string. The returned LetterField will safely
+// and explicitly represent nil when appropriate.
+func FStringp(key string, value *string) LetterField {
+	if value == nil {
+		return FNil(key, KIND_TYPE_STRING)
+	}
+	return FString(key, *value)
 }
 
 // ------------------------ COMPLEX CASES GENERATORS -------------------------- //

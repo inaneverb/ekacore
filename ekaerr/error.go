@@ -138,15 +138,15 @@ func (e *Error) IsNil() bool {
 // Nil safe. Returns this.
 //
 // Typically, you have two cases you must follow.
-// 1. An Error instantiating:
-//        func foo() *Error {
-//            return ekaerr.IllegalState.New("something happen").Throw()
-//        }
-// 2. Already existed error raising up:
-//    (an example with adding custom stack frame's message and field)
-//        if err := foo(); err != nil {
-//            return err.S("foo failed").W("id", 42).Throw()
-//        }
+//  1. An Error instantiating:
+//     func foo() *Error {
+//     return ekaerr.IllegalState.New("something happen").Throw()
+//     }
+//  2. Already existed error raising up:
+//     (an example with adding custom stack frame's message and field)
+//     if err := foo(); err != nil {
+//     return err.S("foo failed").W("id", 42).Throw()
+//     }
 //
 // Does nothing for lightweight errors.
 // Nil safe.
@@ -267,6 +267,9 @@ func (e *Error) WithFloat32p(key string, value *float32) *Error {
 func (e *Error) WithFloat64p(key string, value *float64) *Error {
 	return e.addField(ekaletter.FFloat64p(key, value))
 }
+func (e *Error) WithStringp(key string, value *string) *Error {
+	return e.addField(ekaletter.FStringp(key, value))
+}
 func (e *Error) WithType(key string, value interface{}) *Error {
 	return e.addField(ekaletter.FType(key, value))
 }
@@ -327,15 +330,17 @@ func (e *Error) WithDescription(description string) *Error {
 //
 // Why?
 // You can write your own fields appender like:
-//     func (this *YourType) errAddIdentifiers(err *ekaerr.Error) *ekaerr.Error {
-//         return err.WithManyAny("id", this.ID, "date", this.Date)
-//     }
+//
+//	func (this *YourType) errAddIdentifiers(err *ekaerr.Error) *ekaerr.Error {
+//	    return err.WithManyAny("id", this.ID, "date", this.Date)
+//	}
 //
 // And then use it like:
-//     yt := new(YourType)
-//     return ekaerr.IllegalState.New("Unexpected state of world").
-//         Apply(yt.errAddIdentifiers).
-//         Throw()
+//
+//	yt := new(YourType)
+//	return ekaerr.IllegalState.New("Unexpected state of world").
+//	    Apply(yt.errAddIdentifiers).
+//	    Throw()
 //
 // Brilliant, isn't? And most importantly it's so clean.
 func (e *Error) Apply(f func(err *Error) *Error) *Error {
