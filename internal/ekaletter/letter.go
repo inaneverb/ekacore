@@ -98,13 +98,13 @@ func LAddFieldWithCheck(l *Letter, f LetterField) {
 func LSetMessage(l *Letter, msg string, overwrite bool) {
 	switch lm := len(l.Messages); {
 
+	case lm > 0 && len(l.StackTrace) == 0 && overwrite:
+		// This isn't the first message, but an error is lightweight
+		// and overwrite is requested.
+		l.Messages[lm-1].Body += "; " + msg
+
 	case lm == 0:
 		// This is the first message.
-		fallthrough
-
-	case len(l.StackTrace) == 0 && !overwrite:
-		// This isn't the first message, but an error is lightweight.
-		// So add a message anyway.
 		fallthrough
 
 	case l.Messages[lm-1].StackFrameIdx < l.stackFrameIdx:

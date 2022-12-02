@@ -31,18 +31,6 @@ func foo(isLightWeight bool) *ekaerr.Error {
 		Throw()
 }
 
-func TestDebugLog(t *testing.T) {
-	consoleEncoder := new(ekalog.CI_ConsoleEncoder)
-
-	stdoutConsoleIntegrator := new(ekalog.CommonIntegrator).
-		WithEncoder(consoleEncoder).
-		WithMinLevel(ekalog.LEVEL_DEBUG)
-
-	ekalog.ReplaceIntegrator(stdoutConsoleIntegrator)
-
-	ekalog.Warne("", ekaerr.Interrupted.New("test"), "key", "value")
-}
-
 func TestLog(t *testing.T) {
 
 	consoleEncoder := new(ekalog.CI_ConsoleEncoder)
