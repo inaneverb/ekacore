@@ -20,7 +20,7 @@ type (
 	LetterFieldKind = ekaletter.LetterFieldKind
 )
 
-//noinspection GoSnakeCaseUsage,GoUnusedConst
+// noinspection GoSnakeCaseUsage,GoUnusedConst
 const (
 	FIELD_KIND_MASK_BASE_TYPE    = ekaletter.KIND_MASK_BASE_TYPE
 	FIELD_KIND_FLAG_USER_DEFINED = ekaletter.KIND_FLAG_USER_DEFINED
@@ -28,19 +28,19 @@ const (
 	FIELD_KIND_FLAG_SYSTEM       = ekaletter.KIND_FLAG_SYSTEM
 )
 
-//noinspection GoSnakeCaseUsage,GoUnusedConst
+// noinspection GoSnakeCaseUsage,GoUnusedConst
 const (
 	FIELD_KIND_TYPE_INVALID = ekaletter.KIND_TYPE_INVALID
 )
 
-//noinspection GoSnakeCaseUsage,GoUnusedConst
+// noinspection GoSnakeCaseUsage,GoUnusedConst
 const (
 	FIELD_KIND_SYS_TYPE_EKAERR_UUID       = ekaletter.KIND_SYS_TYPE_EKAERR_UUID
 	FIELD_KIND_SYS_TYPE_EKAERR_CLASS_ID   = ekaletter.KIND_SYS_TYPE_EKAERR_CLASS_ID
 	FIELD_KIND_SYS_TYPE_EKAERR_CLASS_NAME = ekaletter.KIND_SYS_TYPE_EKAERR_CLASS_NAME
 )
 
-//noinspection GoSnakeCaseUsage,GoUnusedConst
+// noinspection GoSnakeCaseUsage,GoUnusedConst
 const (
 	FIELD_KIND_TYPE_BOOL        = ekaletter.KIND_TYPE_BOOL
 	FIELD_KIND_TYPE_INT         = ekaletter.KIND_TYPE_INT
@@ -69,7 +69,7 @@ const (
 	FIELD_KIND_TYPE_STRUCT      = ekaletter.KIND_TYPE_STRUCT
 )
 
-//noinspection GoUnusedGlobalVariable
+// noinspection GoUnusedGlobalVariable
 var (
 	ErrFieldUnsupportedKind = ekaletter.ErrUnsupportedKind
 )
@@ -108,20 +108,20 @@ func FUint32p(key string, value *uint32) LetterField        { return ekaletter.F
 func FUint64p(key string, value *uint64) LetterField        { return ekaletter.FUint64p(key, value) }
 func FFloat32p(key string, value *float32) LetterField      { return ekaletter.FFloat32p(key, value) }
 func FFloat64p(key string, value *float64) LetterField      { return ekaletter.FFloat64p(key, value) }
-func FType(key string, value interface{}) LetterField       { return ekaletter.FType(key, value) }
+func FType(key string, value any) LetterField               { return ekaletter.FType(key, value) }
 func FStringer(key string, value fmt.Stringer) LetterField  { return ekaletter.FStringer(key, value) }
-func FAddr(key string, value interface{}) LetterField       { return ekaletter.FAddr(key, value) }
+func FAddr(key string, value any) LetterField               { return ekaletter.FAddr(key, value) }
 func FUnixFromStd(key string, t time.Time) LetterField      { return ekaletter.FUnixFromStd(key, t) }
 func FUnixNanoFromStd(key string, t time.Time) LetterField  { return ekaletter.FUnixNanoFromStd(key, t) }
 func FUnix(key string, unix int64) LetterField              { return ekaletter.FUnix(key, unix) }
 func FUnixNano(key string, unixNano int64) LetterField      { return ekaletter.FUnixNano(key, unixNano) }
 func FDuration(key string, value time.Duration) LetterField { return ekaletter.FDuration(key, value) }
-func FArray(key string, value interface{}) LetterField      { return ekaletter.FArray(key, value) }
-func FObject(key string, value interface{}) LetterField     { return ekaletter.FObject(key, value) }
-func FMap(key string, value interface{}) LetterField        { return ekaletter.FMap(key, value) }
-func FExtractedMap(key string, value map[string]interface{}) LetterField {
+func FArray(key string, value any) LetterField              { return ekaletter.FArray(key, value) }
+func FObject(key string, value any) LetterField             { return ekaletter.FObject(key, value) }
+func FMap(key string, value any) LetterField                { return ekaletter.FMap(key, value) }
+func FExtractedMap(key string, value map[string]any) LetterField {
 	return ekaletter.FExtractedMap(key, value)
 }
-func FAny(key string, value interface{}) LetterField        { return ekaletter.FAny(key, value) }
+func FAny(key string, value any) LetterField                { return ekaletter.FAny(key, value) }
 func FNil(key string, baseType LetterFieldKind) LetterField { return ekaletter.FNil(key, baseType) }
 func FInvalid(key string) LetterField                       { return ekaletter.FInvalid(key) }

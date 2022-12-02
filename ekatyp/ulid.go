@@ -57,7 +57,7 @@ func (u ULID) String() string {
 
 // ULID_OrPanic is a helper that wraps a call to a function returning (ULID, error)
 // and panics if the error is non-nil.
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func ULID_OrPanic(u ULID, err error) ULID {
 	if err != nil {
 		panic(err)
@@ -67,7 +67,7 @@ func ULID_OrPanic(u ULID, err error) ULID {
 
 // ULID_OrNil is a helper that wraps a call to a function returning (ULID, error)
 // and returns zero ULID if the error is non-nil.
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func ULID_OrNil(u ULID, err error) ULID {
 	if err != nil {
 		return ULID(_UUID_NULL)
@@ -80,7 +80,7 @@ func ULID_OrNil(u ULID, err error) ULID {
 
 // ULID_New() returns an new ULID based on the current time and math/rand entropy.
 // Thread-safety.
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func ULID_New() (ULID, error) {
 	u, err := ulid.New(ulid.Now(), (*ekarand.MathRandReader)(nil))
 	return ULID(u), err
@@ -92,7 +92,7 @@ func ULID_New() (ULID, error) {
 // Next methods are the same as just generators but it panics
 // if any error occurred while ULID been generated.
 
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func ULID_New_OrPanic() ULID {
 	return ULID_OrPanic(ULID_New())
 }
@@ -100,7 +100,7 @@ func ULID_New_OrPanic() ULID {
 // Next methods are the same as just generators but it returns
 // a zero ULID if any error is occurred while UUID been generated.
 
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func ULID_New_OrNil() ULID {
 	return ULID_OrNil(ULID_New())
 }
@@ -115,7 +115,7 @@ func ULID_New_OrNil() ULID {
 // WARNING!
 // No nil check! 'dest' must be not nil, panic otherwise.
 
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func ULID_New_To(dest *ULID) (err error) {
 	*dest, err = ULID_New()
 	return
@@ -126,7 +126,7 @@ func ULID_New_To(dest *ULID) (err error) {
 
 // ULID_FromString returns ULID parsed from string input.
 // Input is expected in a form accepted by UnmarshalText.
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func ULID_FromString(input string) (ULID, error) {
 	u, err := ulid.ParseStrict(input)
 	return ULID(u), err
@@ -136,13 +136,13 @@ func ULID_FromString(input string) (ULID, error) {
 // ---------------------------------------------------------------------------- //
 
 // ULID_FromString_OrPanic is the same as ULID_OrPanic(ULID_FromString(input)).
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func ULID_FromString_OrPanic(input string) ULID {
 	return ULID_OrPanic(ULID_FromString(input))
 }
 
 // ULID_FromString_OrNil is the same as ULID_OrNil(UUID_FromString(input)).
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func ULID_FromString_OrNil(input string) ULID {
 	return ULID_OrNil(ULID_FromString(input))
 }
@@ -242,6 +242,6 @@ func (u ULID) Value() (driver.Value, error) {
 
 // Scan implements the sql.Scanner interface. It supports scanning
 // a string or byte slice.
-func (u *ULID) Scan(src interface{}) error {
+func (u *ULID) Scan(src any) error {
 	return (*ulid.ULID)(u).Scan(src)
 }

@@ -36,7 +36,7 @@ var (
 	RTypeBytes              = reflect2.RTypeOf([]byte(nil))
 	RTypeBytesArray         = reflect2.RTypeOf([][]byte(nil))
 	RTypeMapStringString    = reflect2.RTypeOf(map[string]string(nil))
-	RTypeMapStringInterface = reflect2.RTypeOf(map[string]interface{}(nil))
+	RTypeMapStringInterface = reflect2.RTypeOf(map[string]any(nil))
 	RTypeUintptr            = reflect2.RTypeOf(uintptr(0))
 	RTypeUnsafePointer      = reflect2.RTypeOf(unsafe.Pointer(nil))
 	RTypeTimeTime           = reflect2.RTypeOf(time.Time{})

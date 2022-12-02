@@ -26,7 +26,7 @@ type (
 	// but can be used in your own code.
 	//
 	// LetterField stores some data most optimized way providing ability to use it
-	// as replacing of Golang interface{} but with more clear and optimized type
+	// as replacing of Golang any but with more clear and optimized type
 	// checks. Thus you can then write your own ekalog.Integrator
 	// and encode log ekalog.Entry's or ekaerr.Error's fields the way you want.
 	//
@@ -52,7 +52,7 @@ type (
 		IValue int64  // for all ints, uints, floats, bool, complex64, pointers
 		SValue string // for string, []byte, fmt.Stringer (called)
 
-		Value interface{} // for all not easy cases
+		Value any // for all not easy cases
 
 		// StackFrameIdx contains a number of stack frame, this LetterField
 		StackFrameIdx int16
@@ -106,7 +106,7 @@ const (
 	KIND_TYPE_FLOAT_32    = 15 // uses IValue to store float32 (bits)
 	KIND_TYPE_FLOAT_64    = 16 // uses IValue to store float64 (bits)
 	KIND_TYPE_COMPLEX_64  = 17 // uses IValue to store complex64
-	KIND_TYPE_COMPLEX_128 = 18 // uses Value (interface{}) to store complex128
+	KIND_TYPE_COMPLEX_128 = 18 // uses Value (any) to store complex128
 	KIND_TYPE_STRING      = 19 // uses SValue to store string
 	_                     = 20 // reserved
 	KIND_TYPE_ADDR        = 21 // uses IValue to store some addr (like uintptr)
@@ -115,10 +115,10 @@ const (
 	KIND_TYPE_UNIX_NANO   = 24 // uses IValue to store int64 unixtime nanosec
 	KIND_TYPE_DURATION    = 25 // uses IValue to store int64 duration in nanosec
 	_                     = 26 // reserved
-	KIND_TYPE_ARRAY       = 27 // uses Value (interface{}) to store []T or [N]T
-	KIND_TYPE_MAP         = 28 // uses Value (interface{}) to store map[T1]T2
-	KIND_TYPE_EXTMAP      = 29 // uses Value (interface{}) to store map[T1]T2
-	KIND_TYPE_STRUCT      = 30 // uses Value (interface{}) to store struct{<...>}
+	KIND_TYPE_ARRAY       = 27 // uses Value (any) to store []T or [N]T
+	KIND_TYPE_MAP         = 28 // uses Value (any) to store map[T1]T2
+	KIND_TYPE_EXTMAP      = 29 // uses Value (any) to store map[T1]T2
+	KIND_TYPE_STRUCT      = 30 // uses Value (any) to store struct{<...>}
 	_                     = 31 // reserved
 
 	// --------------------------------------------------------------------- //
@@ -456,7 +456,7 @@ func FStringp(key string, value *string) LetterField {
 // ---------------------------------------------------------------------------- //
 
 // FType constructs a field that holds on value's type as string.
-func FType(key string, value interface{}) LetterField {
+func FType(key string, value any) LetterField {
 	if value == nil {
 		return FString(key, "<nil>")
 	}
@@ -481,7 +481,7 @@ func FStringer(key string, value fmt.Stringer) LetterField {
 // WARNING!
 // The resource, value's ptr points to may be GC'ed and unavailable.
 // So it's unsafe to try to do something with that addr but comparing.
-func FAddr(key string, value interface{}) LetterField {
+func FAddr(key string, value any) LetterField {
 	if value != nil {
 		addr := ekaclike.TakeRealAddr(value)
 		return LetterField{Key: key, IValue: int64(uintptr(addr)), Kind: KIND_TYPE_ADDR}
@@ -525,7 +525,7 @@ func FDuration(key string, d time.Duration) LetterField {
 // You can covert Golang's array to Golang's slice using [:] slice operations.
 // If value is nil, returns FNil(key, KIND_FLAG_ARRAY).
 // If value is not a slice, invalid LetterField is returned.
-func FArray(key string, value interface{}) LetterField {
+func FArray(key string, value any) LetterField {
 	if value == nil {
 		return FNil(key, KIND_TYPE_ARRAY)
 	}
@@ -538,7 +538,7 @@ func FArray(key string, value interface{}) LetterField {
 // FObject returns a LetterField that will represent value only if it's struct{<...>}.
 // If value is nil, returns FNil(key, KIND_TYPE_STRUCT).
 // If value is not a struct{}, invalid LetterField is returned.
-func FObject(key string, value interface{}) LetterField {
+func FObject(key string, value any) LetterField {
 	if value == nil {
 		return FNil(key, KIND_TYPE_STRUCT)
 	}
@@ -551,7 +551,7 @@ func FObject(key string, value interface{}) LetterField {
 // FMap returns a LetterField that will represent value only if it's map[T1]T2.
 // If value is nil, returns FNil(key, KIND_TYPE_MAP).
 // If value is not a map[T1]T2, invalid LetterField is returned.
-func FMap(key string, value interface{}) LetterField {
+func FMap(key string, value any) LetterField {
 	if value == nil {
 		return FNil(key, KIND_TYPE_MAP)
 	}
@@ -566,7 +566,7 @@ func FMap(key string, value interface{}) LetterField {
 //
 // WARNING!
 // Make sure, your LetterField's worker supports extracted maps.
-func FExtractedMap(key string, value map[string]interface{}) LetterField {
+func FExtractedMap(key string, value map[string]any) LetterField {
 	if value == nil {
 		return FNil(key, KIND_TYPE_MAP)
 	}
@@ -580,7 +580,7 @@ func FExtractedMap(key string, value map[string]interface{}) LetterField {
 //
 // Value must not be Golang's nil. Otherwise an invalid LetterField will be returned
 // and such field is skipped at the parsing.
-func FAny(key string, value interface{}) LetterField {
+func FAny(key string, value any) LetterField {
 	eface := ekaclike.UnpackInterface(value)
 
 	if eface.Type == 0 && eface.Word == nil {

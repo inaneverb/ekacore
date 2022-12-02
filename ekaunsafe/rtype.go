@@ -278,7 +278,7 @@ RTypeMapStringInterface is a "constant" function.
 Always returns the same value.
 
 Returns an integer representation of pointer to the type that describes
-complex Golang "map[string]interface{}" type.
+complex Golang "map[string]any" type.
 
 Useful along with reflect2.RTypeOf() function.
 */

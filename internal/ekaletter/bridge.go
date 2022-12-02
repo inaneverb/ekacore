@@ -17,7 +17,6 @@ import (
 // as arguments to describe arguments but do not specify types.
 
 var (
-
 	// BridgeErrorGetLetter is a function that is initialized
 	// in the ekaerr package and used in the ekaunsafe package.
 	//

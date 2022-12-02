@@ -62,7 +62,7 @@ var (
 
 // allocError creates a new Error object, creates a new ekaletter.Letter object inside,
 // performs base initialization and returns it.
-func allocError() interface{} {
+func allocError() any {
 
 	e := new(Error)
 	e.letter = new(ekaletter.Letter)
@@ -74,7 +74,7 @@ func allocError() interface{} {
 
 	// SystemFields is used for saving Error's meta data.
 
-	e.letter.SystemFields = make([]ekaletter.LetterField, 4)
+	e.letter.SystemFields = make([]ekaletter.LetterField, 3)
 
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_ID].Key = "error_class_id"
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_ID].Kind |=

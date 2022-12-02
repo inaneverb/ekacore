@@ -25,10 +25,10 @@ type (
 	// This function will be called only if original OnceInCallback panics.
 	//
 	// An argument represents a recovered panic object.
-	OnceInPanicCallback func(panicObj interface{})
+	OnceInPanicCallback func(panicObj any)
 )
 
-//noinspection GoUnusedGlobalVariable
+// noinspection GoUnusedGlobalVariable
 var (
 	// -----
 	// OnceIn<period> are a special objects that allows you to get the current time
@@ -94,9 +94,9 @@ func (oiu *onceInUpdater) Time() Time {
 // Call calls cb every time when associated onceIn updater's time has come.
 // So, it means that
 //
-//     ekatime.OnceInHour.Call(func(ts Timestamp){
-//         fmt.Println(ts)
-//     })
+//	ekatime.OnceInHour.Call(func(ts Timestamp){
+//	    fmt.Println(ts)
+//	})
 //
 // will call provided callback every hour, printing the UNIX timestamp of the time
 // when that hour has come.

@@ -214,13 +214,13 @@ func (l *Logger) WithFloat64p(key string, value *float64) *Logger {
 func (l *Logger) WithStringp(key string, value *string) *Logger {
 	return l.addField(ekaletter.FStringp(key, value))
 }
-func (l *Logger) WithType(key string, value interface{}) *Logger {
+func (l *Logger) WithType(key string, value any) *Logger {
 	return l.addField(ekaletter.FType(key, value))
 }
 func (l *Logger) WithStringer(key string, value fmt.Stringer) *Logger {
 	return l.addField(ekaletter.FStringer(key, value))
 }
-func (l *Logger) WithAddr(key string, value interface{}) *Logger {
+func (l *Logger) WithAddr(key string, value any) *Logger {
 	return l.addField(ekaletter.FAddr(key, value))
 }
 func (l *Logger) WithUnixFromStd(key string, value time.Time) *Logger {
@@ -238,25 +238,25 @@ func (l *Logger) WithUnixNano(key string, value int64) *Logger {
 func (l *Logger) WithDuration(key string, value time.Duration) *Logger {
 	return l.addField(ekaletter.FDuration(key, value))
 }
-func (l *Logger) WithArray(key string, value interface{}) *Logger {
+func (l *Logger) WithArray(key string, value any) *Logger {
 	return l.addField(ekaletter.FArray(key, value))
 }
-func (l *Logger) WithObject(key string, value interface{}) *Logger {
+func (l *Logger) WithObject(key string, value any) *Logger {
 	return l.addField(ekaletter.FObject(key, value))
 }
-func (l *Logger) WithMap(key string, value interface{}) *Logger {
+func (l *Logger) WithMap(key string, value any) *Logger {
 	return l.addField(ekaletter.FMap(key, value))
 }
-func (l *Logger) WithExtractedMap(key string, value map[string]interface{}) *Logger {
+func (l *Logger) WithExtractedMap(key string, value map[string]any) *Logger {
 	return l.addField(ekaletter.FExtractedMap(key, value))
 }
-func (l *Logger) WithAny(key string, value interface{}) *Logger {
+func (l *Logger) WithAny(key string, value any) *Logger {
 	return l.addField(ekaletter.FAny(key, value))
 }
 func (l *Logger) WithMany(fields ...ekaletter.LetterField) *Logger {
 	return l.addFields(fields)
 }
-func (l *Logger) WithManyAny(fields ...interface{}) *Logger {
+func (l *Logger) WithManyAny(fields ...any) *Logger {
 	return l.addFieldsParse(fields)
 }
 

@@ -15,7 +15,7 @@ import (
 	"github.com/qioalice/ekago/v3/internal/ekaletter"
 )
 
-//noinspection GoSnakeCaseUsage
+// noinspection GoSnakeCaseUsage
 const (
 	// These constants are indexes of some Error's entities stored into
 	// en embedded Letter's SystemFields array.
@@ -76,7 +76,7 @@ func (e *Error) addFields(fs []ekaletter.LetterField) *Error {
 // addFieldsParse creates a ekaletter.LetterField objects based on passed values,
 // try to treating them as a key-value pairs of that fields.
 // Then adds generated ekaletter.LetterField to the Error only if those fields are addable.
-func (e *Error) addFieldsParse(fs []interface{}, onlyFields bool) *Error {
+func (e *Error) addFieldsParse(fs []any, onlyFields bool) *Error {
 	if e.IsValid() && len(fs) > 0 {
 		ekaletter.LParseTo(e.letter, fs, onlyFields)
 	}
@@ -256,7 +256,7 @@ func newError(
 
 	lightweight bool,
 	classID ClassID, namespaceID NamespaceID,
-	legacyErr error, message string, args []interface{},
+	legacyErr error, message string, args []any,
 
 ) *Error {
 

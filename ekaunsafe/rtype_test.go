@@ -19,33 +19,33 @@ import (
 
 //goland:noinspection GoRedundantConversion,GoBoolExpressions
 var (
-	tda = []interface{}{
+	tda = []any{
 		// DO NOT CHANGE AN ORDER OF EXISTED ELEMENTS!
 		// DO NOT CHANGE AN EXISTED ELEMENTS AT ALL!
 		// ONLY ADD A NEW ONES IF YOU NEED.
-		bool(0 == 0),                // 0
-		byte(0),                     // 1
-		rune(0),                     // 2
-		int(0),                      // 3
-		int8(0),                     // 4
-		int16(0),                    // 5
-		int32(0),                    // 6
-		int64(0),                    // 7
-		uint(0),                     // 8
-		uint8(0),                    // 9
-		uint16(0),                   // 10
-		uint32(0),                   // 11
-		uint64(0),                   // 12
-		float32(0),                  // 13
-		float64(0),                  // 14
-		string(""),                  // 15
-		[]string(nil),               // 16
-		[]byte(nil),                 // 17
-		[][]byte(nil),               // 18
-		map[string]string(nil),      // 19
-		map[string]interface{}(nil), // 20
-		complex64(0),                // 21
-		complex128(0),               // 22
+		bool(0 == 0),           // 0
+		byte(0),                // 1
+		rune(0),                // 2
+		int(0),                 // 3
+		int8(0),                // 4
+		int16(0),               // 5
+		int32(0),               // 6
+		int64(0),               // 7
+		uint(0),                // 8
+		uint8(0),               // 9
+		uint16(0),              // 10
+		uint32(0),              // 11
+		uint64(0),              // 12
+		float32(0),             // 13
+		float64(0),             // 14
+		string(""),             // 15
+		[]string(nil),          // 16
+		[]byte(nil),            // 17
+		[][]byte(nil),          // 18
+		map[string]string(nil), // 19
+		map[string]any(nil),    // 20
+		complex64(0),           // 21
+		complex128(0),          // 22
 	}
 	td1 = []struct {
 		f  func() uintptr

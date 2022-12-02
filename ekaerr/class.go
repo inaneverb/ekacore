@@ -77,7 +77,7 @@ type (
 //
 // Requirements:
 // c must be valid Class object. Otherwise nil Error is returned.
-func (c Class) New(message string, args ...interface{}) *Error {
+func (c Class) New(message string, args ...any) *Error {
 	if !isValidClassID(c.id) {
 		return nil
 	}
@@ -86,7 +86,7 @@ func (c Class) New(message string, args ...interface{}) *Error {
 
 // LightNew is the same as just New() but creates a lightweight Error instead.
 // Read more what lightweight error is in Error's doc.
-func (c Class) LightNew(message string, args ...interface{}) *Error {
+func (c Class) LightNew(message string, args ...any) *Error {
 	if !isValidClassID(c.id) {
 		return nil
 	}
@@ -101,7 +101,7 @@ func (c Class) LightNew(message string, args ...interface{}) *Error {
 // Requirements:
 // c must be valid Class object. Otherwise nil Error is returned.
 // 'err' != nil. Otherwise nil Error is returned.
-func (c Class) Wrap(err error, message string, args ...interface{}) *Error {
+func (c Class) Wrap(err error, message string, args ...any) *Error {
 	if !isValidClassID(c.id) || err == nil {
 		return nil
 	}
@@ -110,7 +110,7 @@ func (c Class) Wrap(err error, message string, args ...interface{}) *Error {
 
 // LightWrap is the same as just Wrap() but creates a lightweight Error instead.
 // Read more what lightweight error is in Error's doc.
-func (c Class) LightWrap(err error, message string, args ...interface{}) *Error {
+func (c Class) LightWrap(err error, message string, args ...any) *Error {
 	if !isValidClassID(c.id) || err == nil {
 		return nil
 	}

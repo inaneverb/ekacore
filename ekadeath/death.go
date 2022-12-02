@@ -68,10 +68,10 @@ type (
 // when Die() or Exit() is called or SIGTERM/SIGKILL received.
 //
 // You can use Reg to do:
-// 1. Just reg one or many destructor(s): Reg(foo), Reg(foo1, foo2, foo3).
-// 2. Reg destructor (one or many) to be called for special exitCode only:
-//    Reg(exitCode, foo), Reg(exitCode, foo1, foo2, foo3),
-//    where exitCode should be: int, int8, int16, int32, int64 and the same uint's.
+//  1. Just reg one or many destructor(s): Reg(foo), Reg(foo1, foo2, foo3).
+//  2. Reg destructor (one or many) to be called for special exitCode only:
+//     Reg(exitCode, foo), Reg(exitCode, foo1, foo2, foo3),
+//     where exitCode should be: int, int8, int16, int32, int64 and the same uint's.
 //
 // Nil destructors will be ignored.
 //
@@ -82,7 +82,7 @@ type (
 // when a death is requested and other destructors are under executing now.
 // In that case, added destructor will be executed just after the destructor,
 // that is under executing now.
-func Reg(args ...interface{}) {
+func Reg(args ...any) {
 
 	if l := len(args); l == 0 {
 		return

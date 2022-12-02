@@ -102,7 +102,7 @@ func LSetMessage(l *Letter, msg string, overwrite bool) {
 		// This is the first message.
 		fallthrough
 
-	case len(l.StackTrace) == 0:
+	case len(l.StackTrace) == 0 && !overwrite:
 		// This isn't the first message, but an error is lightweight.
 		// So add a message anyway.
 		fallthrough
@@ -186,29 +186,30 @@ func LReset(l *Letter) *Letter {
 // LParseTo is all-in-one function that parses 'args' to extract message
 // (if 'onlyFields' is false) and fields to the Letter.
 //
-//  - If 'onlyField' is true then only fields tries to be extracted from 'args'
-//    (explicit or implicit) and then saves to the Letter.
+//   - If 'onlyField' is true then only fields tries to be extracted from 'args'
+//     (explicit or implicit) and then saves to the Letter.
 //
-//  - If 'onlyField' is false then also a message tried to be extracted (or generated)
-//    from 'args' and use it as current stackframe's message
-//    and the rest of 'args' will be used to extract fields.
+//   - If 'onlyField' is false then also a message tried to be extracted (or generated)
+//     from 'args' and use it as current stackframe's message
+//     and the rest of 'args' will be used to extract fields.
 //
 // If it's message extraction, then:
 //
-//   The first item in 'args' that can be used as message
-//   (string-like or something that can be stringifed) will be used to do it.
+//	The first item in 'args' that can be used as message
+//	(string-like or something that can be stringifed) will be used to do it.
 //
-//   If it's a string and has a printf verbs, then next N values from 'args'
-//   will be used to generate a final string, N is a number of printf verbs in string.
+//	If it's a string and has a printf verbs, then next N values from 'args'
+//	will be used to generate a final string, N is a number of printf verbs in string.
 //
-//   The rest of 'args' will be parsed as a fields.
+//	The rest of 'args' will be parsed as a fields.
 //
 // Limitations:
 // If 'args' contain item that has one of the following type it will be SKIPPED:
-//   *Error, Error, *Letter, Letter, *LetterItem, LetterItem.
-//   See InitRestrictedTypesBeingParsed() for more details.
-//   IT IS NOT POSSIBLE TO USE ANOTHER ERRORS OR THEIR PRIVATE TYPES AS FIELDS.
-//   BUILD ONE ERROR THAT WILL CONTAIN ALL YOU WANT INSTEAD OF ERROR SPAWNING.
+//
+//	*Error, Error, *Letter, Letter, *LetterItem, LetterItem.
+//	See InitRestrictedTypesBeingParsed() for more details.
+//	IT IS NOT POSSIBLE TO USE ANOTHER ERRORS OR THEIR PRIVATE TYPES AS FIELDS.
+//	BUILD ONE ERROR THAT WILL CONTAIN ALL YOU WANT INSTEAD OF ERROR SPAWNING.
 //
 // Requirements:
 // 'li' != nil. Otherwise UB (may panic).
@@ -216,18 +217,18 @@ func LReset(l *Letter) *Letter {
 // Used to:
 // - Add fields (explicit/implicit) into *Error,
 // - Add fields (explicit/implicit) or/and message to *Logger's *Entry.
-func LParseTo(l *Letter, args []interface{}, onlyFields bool) {
+func LParseTo(l *Letter, args []any, onlyFields bool) {
 
 	var (
 		message          = LGetMessage(l)
-		messageArgs      []interface{}
+		messageArgs      []any
 		messageNeedsArgs int
 	)
 
 	if len(args) > 0 && !onlyFields {
 		messageNeedsArgs = PrintfVerbsCount(&message)
 		if messageNeedsArgs > 0 {
-			messageArgs = make([]interface{}, 0, messageNeedsArgs)
+			messageArgs = make([]any, 0, messageNeedsArgs)
 		}
 	}
 
@@ -238,7 +239,7 @@ func LParseTo(l *Letter, args []interface{}, onlyFields bool) {
 
 	if onlyFields {
 		messageBak = message
-		message = "message must be not empty to avoid its generating"
+		message = "message variable must not be empty to avoid its generating"
 	}
 
 	// isRestrictedType is an auxiliary function that will be used in the loop above

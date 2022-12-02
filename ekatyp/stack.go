@@ -78,7 +78,7 @@ func (s *StackSafe) Len() int {
 // if the stack is empty, false will be returned.
 // The complexity is O(1).
 // StackSafe must be not nil. Panic otherwise.
-func (s *StackSafe) Back() (interface{}, bool) {
+func (s *StackSafe) Back() (any, bool) {
 	s.m.Lock()
 	elem, found := s.s.Back()
 	s.m.Unlock()
@@ -91,7 +91,7 @@ func (s *StackSafe) Back() (interface{}, bool) {
 // if the stack is empty, false will be returned.
 // The complexity is O(1).
 // StackSafe must be not nil. Panic otherwise.
-func (s *StackSafe) Pop() (interface{}, bool) {
+func (s *StackSafe) Pop() (any, bool) {
 	s.m.Lock()
 	elem, found := s.s.Pop()
 	s.m.Unlock()
@@ -101,7 +101,7 @@ func (s *StackSafe) Pop() (interface{}, bool) {
 // Push adds value v to the the back of the thread safe stack.
 // The complexity is O(1).
 // StackSafe must be not nil. Panic otherwise.
-func (s *StackSafe) Push(v interface{}) {
+func (s *StackSafe) Push(v any) {
 	s.m.Lock()
 	s.s.Push(v)
 	s.m.Unlock()

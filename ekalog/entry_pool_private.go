@@ -63,7 +63,7 @@ var (
 
 // allocEntry creates a new Entry object, creates a new ekaletter.Letter object inside,
 // performs base initialization and returns it.
-func allocEntry() interface{} {
+func allocEntry() any {
 
 	e := new(Entry)
 	e.LogLetter = new(ekaletter.Letter)

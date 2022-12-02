@@ -37,7 +37,7 @@ type (
 	UUID [_UUID_SIZE]byte
 )
 
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 const (
 	// UUID versions
 
@@ -61,7 +61,7 @@ const (
 	UUID_DOMAIN_ORG    = 2
 )
 
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 var (
 	// _UUID_NULL is special form of UUID that is specified to have all
 	// 128 bits set to zero.
@@ -151,7 +151,7 @@ func (u *UUID) SetVariant(v byte) {
 
 // UUID_OrPanic is a helper that wraps a call to a function returning (UUID, error)
 // and panics if the error is non-nil.
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_OrPanic(u UUID, err error) UUID {
 	if err != nil {
 		panic(err)
@@ -161,7 +161,7 @@ func UUID_OrPanic(u UUID, err error) UUID {
 
 // UUID_OrNil is a helper that wraps a call to a function returning (UUID, error)
 // and returns _UUID_NULL if the error is non-nil.
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_OrNil(u UUID, err error) UUID {
 	if err != nil {
 		return _UUID_NULL
@@ -173,31 +173,31 @@ func UUID_OrNil(u UUID, err error) UUID {
 // ---------------------------------------------------------------------------- //
 
 // UUID_NewV1 returns UUID based on current timestamp and MAC address.
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_NewV1() (UUID, error) {
 	return _UUID_RFC4122_Generator.NewV1()
 }
 
 // UUID_NewV2 returns DCE Security UUID based on POSIX UID/GID.
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_NewV2(domain byte) (UUID, error) {
 	return _UUID_RFC4122_Generator.NewV2(domain)
 }
 
 // UUID_NewV3 returns UUID based on MD5 hash of namespace UUID and name.
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_NewV3(ns UUID, name string) UUID {
 	return _UUID_RFC4122_Generator.NewV3(ns, name)
 }
 
 // UUID_NewV4 returns random generated UUID.
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_NewV4() (UUID, error) {
 	return _UUID_RFC4122_Generator.NewV4()
 }
 
 // UUID_NewV5 returns UUID based on SHA-1 hash of namespace UUID and name.
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_NewV5(ns UUID, name string) UUID {
 	return _UUID_RFC4122_Generator.NewV5(ns, name)
 }
@@ -208,25 +208,25 @@ func UUID_NewV5(ns UUID, name string) UUID {
 // Next methods are the same as just generators v1/v2/v4 but it panics
 // if any error occurred while UUID been generated.
 
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_NewV1_OrPanic() UUID { return UUID_OrPanic(UUID_NewV1()) }
 
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_NewV2_OrPanic(domain byte) UUID { return UUID_OrPanic(UUID_NewV2(domain)) }
 
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_NewV4_OrPanic() UUID { return UUID_OrPanic(UUID_NewV4()) }
 
 // Next methods are the same as just generators v1/v2/v4 but it returns
 // a zero UUID if any error is occurred while UUID been generated.
 
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_NewV1_OrNil() UUID { return UUID_OrNil(UUID_NewV1()) }
 
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_NewV_2OrNil(domain byte) UUID { return UUID_OrNil(UUID_NewV2(domain)) }
 
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_NewV4_OrNil() UUID { return UUID_OrNil(UUID_NewV4()) }
 
 // Next methods are the same as just generators v1/v2/v4, but it returns
@@ -239,19 +239,19 @@ func UUID_NewV4_OrNil() UUID { return UUID_OrNil(UUID_NewV4()) }
 // WARNING!
 // No nil check! 'dest' must be not nil, panic otherwise.
 
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_NewV1_To(dest *UUID) (err error) {
 	*dest, err = UUID_NewV1()
 	return
 }
 
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_NewV2_To(dest *UUID, domain byte) (err error) {
 	*dest, err = UUID_NewV2(domain)
 	return
 }
 
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_NewV4_To(dest *UUID) (err error) {
 	*dest, err = UUID_NewV4()
 	return
@@ -262,7 +262,7 @@ func UUID_NewV4_To(dest *UUID) (err error) {
 
 // UUID_FromBytes returns UUID converted from raw byte slice input.
 // It will return error if the slice isn't 16 bytes long.
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_FromBytes(input []byte) (u UUID, err error) {
 	err = u.UnmarshalBinary(input)
 	return
@@ -270,7 +270,7 @@ func UUID_FromBytes(input []byte) (u UUID, err error) {
 
 // UUID_FromString returns UUID parsed from string input.
 // Input is expected in a form accepted by UnmarshalText.
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_FromString(input string) (u UUID, err error) {
 	err = u.UnmarshalText([]byte(input))
 	return
@@ -280,25 +280,25 @@ func UUID_FromString(input string) (u UUID, err error) {
 // ---------------------------------------------------------------------------- //
 
 // UUID_FromBytes_OrPanic is the same as UUID_OrPanic(UUID_FromBytes(input)).
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_FromBytes_OrPanic(input []byte) UUID {
 	return UUID_OrPanic(UUID_FromBytes(input))
 }
 
 // UUID_FromString_OrPanic is the same as UUID_OrPanic(UUID_FromString(input)).
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_FromString_OrPanic(input string) UUID {
 	return UUID_OrPanic(UUID_FromString(input))
 }
 
 // UUID_FromBytes_OrNil is the same as UUID_OrNil(UUID_FromBytes(input)).
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_FromBytes_OrNil(input []byte) UUID {
 	return UUID_OrNil(UUID_FromBytes(input))
 }
 
 // UUID_FromString_OrNil is the same as UUID_OrNil(UUID_FromString(input)).
-//noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
+// noinspection GoSnakeCaseUsage (Intellij IDEA suppress snake case warning).
 func UUID_FromString_OrNil(input string) UUID {
 	return UUID_OrNil(UUID_FromString(input))
 }
@@ -399,7 +399,7 @@ func (u UUID) Value() (driver.Value, error) {
 // Scan implements the sql.Scanner interface.
 // A 16-byte slice is handled by UnmarshalBinary, while
 // a longer byte slice or a string is handled by UnmarshalText. Supports SQL NULL.
-func (u *UUID) Scan(src interface{}) error {
+func (u *UUID) Scan(src any) error {
 	switch src := src.(type) {
 	case nil:
 		return nil

@@ -79,7 +79,7 @@ func (dq *DequeSafe) Len() int {
 // if the deque is empty, false will be returned.
 // The complexity is O(1).
 // DequeSafe must be not nil. Panic otherwise.
-func (dq *DequeSafe) Back() (interface{}, bool) {
+func (dq *DequeSafe) Back() (any, bool) {
 	dq.m.Lock()
 	elem, found := dq.q.Back()
 	dq.m.Unlock()
@@ -92,7 +92,7 @@ func (dq *DequeSafe) Back() (interface{}, bool) {
 // if the deque is empty, false will be returned.
 // The complexity is O(1).
 // DequeSafe must be not nil. Panic otherwise.
-func (dq *DequeSafe) Front() (interface{}, bool) {
+func (dq *DequeSafe) Front() (any, bool) {
 	dq.m.Lock()
 	elem, found := dq.q.Front()
 	dq.m.Unlock()
@@ -105,7 +105,7 @@ func (dq *DequeSafe) Front() (interface{}, bool) {
 // if the DequeSafe is empty, false will be returned.
 // The complexity is O(1).
 // DequeSafe must be not nil. Panic otherwise.
-func (dq *DequeSafe) PopBack() (interface{}, bool) {
+func (dq *DequeSafe) PopBack() (any, bool) {
 	dq.m.Lock()
 	elem, found := dq.q.PopBack()
 	dq.m.Unlock()
@@ -118,7 +118,7 @@ func (dq *DequeSafe) PopBack() (interface{}, bool) {
 // if the DequeSafe is empty, false will be returned.
 // The complexity is O(1).
 // DequeSafe must be not nil. Panic otherwise.
-func (dq *DequeSafe) PopFront() (interface{}, bool) {
+func (dq *DequeSafe) PopFront() (any, bool) {
 	dq.m.Lock()
 	elem, found := dq.q.PopFront()
 	dq.m.Unlock()
@@ -128,7 +128,7 @@ func (dq *DequeSafe) PopFront() (interface{}, bool) {
 // PushBack adds value v to the the back of the thread safe double ended queue.
 // The complexity is O(1).
 // DequeSafe must be not nil. Panic otherwise.
-func (dq *DequeSafe) PushBack(v interface{}) {
+func (dq *DequeSafe) PushBack(v any) {
 	dq.m.Lock()
 	dq.q.PushBack(v)
 	dq.m.Unlock()
@@ -137,7 +137,7 @@ func (dq *DequeSafe) PushBack(v interface{}) {
 // PushFront adds value v to the the front of the thread safe double ended queue.
 // The complexity is O(1).
 // DequeSafe must be not nil. Panic otherwise.
-func (dq *DequeSafe) PushFront(v interface{}) {
+func (dq *DequeSafe) PushFront(v any) {
 	dq.m.Lock()
 	dq.q.PushFront(v)
 	dq.m.Unlock()

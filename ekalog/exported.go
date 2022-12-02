@@ -131,13 +131,13 @@ func WithFloat32p(key string, value *float32) *Logger {
 func WithFloat64p(key string, value *float64) *Logger {
 	return baseLogger.addField(ekaletter.FFloat64p(key, value))
 }
-func WithType(key string, value interface{}) *Logger {
+func WithType(key string, value any) *Logger {
 	return baseLogger.addField(ekaletter.FType(key, value))
 }
 func WithStringer(key string, value fmt.Stringer) *Logger {
 	return baseLogger.addField(ekaletter.FStringer(key, value))
 }
-func WithAddr(key string, value interface{}) *Logger {
+func WithAddr(key string, value any) *Logger {
 	return baseLogger.addField(ekaletter.FAddr(key, value))
 }
 func WithUnixFromStd(key string, value time.Time) *Logger {
@@ -155,25 +155,25 @@ func WithUnixNano(key string, value int64) *Logger {
 func WithDuration(key string, value time.Duration) *Logger {
 	return baseLogger.addField(ekaletter.FDuration(key, value))
 }
-func WithArray(key string, value interface{}) *Logger {
+func WithArray(key string, value any) *Logger {
 	return baseLogger.addField(ekaletter.FArray(key, value))
 }
-func WithObject(key string, value interface{}) *Logger {
+func WithObject(key string, value any) *Logger {
 	return baseLogger.addField(ekaletter.FObject(key, value))
 }
-func WithMap(key string, value interface{}) *Logger {
+func WithMap(key string, value any) *Logger {
 	return baseLogger.addField(ekaletter.FMap(key, value))
 }
-func WithExtractedMap(key string, value map[string]interface{}) *Logger {
+func WithExtractedMap(key string, value map[string]any) *Logger {
 	return baseLogger.addField(ekaletter.FExtractedMap(key, value))
 }
-func WithAny(key string, value interface{}) *Logger {
+func WithAny(key string, value any) *Logger {
 	return baseLogger.addField(ekaletter.FAny(key, value))
 }
 func WithMany(fields ...ekaletter.LetterField) *Logger {
 	return baseLogger.addFields(fields)
 }
-func WithManyAny(fields ...interface{}) *Logger {
+func WithManyAny(fields ...any) *Logger {
 	return baseLogger.addFieldsParse(fields)
 }
 
@@ -193,11 +193,11 @@ func If(cond bool) (defaultLogger *Logger) {
 // ReplaceIntegrator replaces Integrator for the package Logger to the passed one.
 //
 // Requirements:
-//  - Integrator is not nil (even typed nil), panic otherwise;
-//  - If Integrator is CommonIntegrator
-//    it must not be registered with some Logger before, panic otherwise;
-//  - If Integrator is CommonIntegrator
-//    it must have at least 1 registered io.Writer, panic otherwise.
+//   - Integrator is not nil (even typed nil), panic otherwise;
+//   - If Integrator is CommonIntegrator
+//     it must not be registered with some Logger before, panic otherwise;
+//   - If Integrator is CommonIntegrator
+//     it must have at least 1 registered io.Writer, panic otherwise.
 //
 // WARNING.
 // Replacing Integrator will drop all pre-encoded ekaletter.LetterField fields

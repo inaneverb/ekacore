@@ -24,7 +24,7 @@ type (
 
 		// key's "mutexes"
 		// map's key it's key; value is a counter.
-		locks map[interface{}]int8
+		locks map[any]int8
 
 		maxRetry  int // how much TryLock() will tries to capture key's "mutex"
 		maxRetryR int // how much RTryLock() will tries to capture key's "mutex"
@@ -37,39 +37,35 @@ type (
 	}
 )
 
-//
-func (m *MuMap) RLock(key interface{}) {
+func (m *MuMap) RLock(key any) {
 	m.assertInitialized()
 	m.lock(key, true, true)
 }
 
-//
-func (m *MuMap) Lock(key interface{}) {
+func (m *MuMap) Lock(key any) {
 	m.assertInitialized()
 	m.lock(key, true, false)
 }
 
-//
-func (m *MuMap) RTryLock(key interface{}) (gotLock bool) {
+func (m *MuMap) RTryLock(key any) (gotLock bool) {
 	m.assertInitialized()
 	return m.lock(key, false, true)
 }
 
 // TryLock tries to aquire the lock.
-func (m *MuMap) TryLock(key interface{}) (gotLock bool) {
+func (m *MuMap) TryLock(key any) (gotLock bool) {
 	m.assertInitialized()
 	return m.lock(key, false, false)
 }
 
-//
-func (m *MuMap) RUnlock(key interface{}) {
+func (m *MuMap) RUnlock(key any) {
 	m.assertInitialized()
 	m.unlock(key, true)
 }
 
 // Unlock unlocks for the key
 // please call Unlock only after having aquired the lock
-func (m *MuMap) Unlock(key interface{}) {
+func (m *MuMap) Unlock(key any) {
 	m.assertInitialized()
 	m.unlock(key, false)
 }
@@ -81,8 +77,7 @@ func (m *MuMap) assertInitialized() {
 	}
 }
 
-//
-func (m *MuMap) lock(key interface{}, untilSuccess, readOnly bool) (gotLock bool) {
+func (m *MuMap) lock(key any, untilSuccess, readOnly bool) (gotLock bool) {
 
 	// First attempt will be done with -1 as attempt's index.
 	// -1 does no delay and no sleep before trying to lock
@@ -104,8 +99,7 @@ func (m *MuMap) lock(key interface{}, untilSuccess, readOnly bool) (gotLock bool
 	return true
 }
 
-//
-func (m *MuMap) lockIter(key interface{}, attempt int, readOnly bool) (gotLock bool) {
+func (m *MuMap) lockIter(key any, attempt int, readOnly bool) (gotLock bool) {
 
 	var sleepDur time.Duration
 	switch {
@@ -157,8 +151,7 @@ func (m *MuMap) lockIter(key interface{}, attempt int, readOnly bool) (gotLock b
 	return gotLock
 }
 
-//
-func (m *MuMap) unlock(key interface{}, readOnly bool) {
+func (m *MuMap) unlock(key any, readOnly bool) {
 
 	m.m.Lock()
 
@@ -204,7 +197,7 @@ func NewMuMap() *MuMap {
 // NewCustomizedMapMutex returns a customized mapmutex
 func NewMuMapCustom(mRetry int, mDelay, bDelay time.Duration, factor, jitter float64) *MuMap {
 	return &MuMap{
-		locks:     make(map[interface{}]int8),
+		locks:     make(map[any]int8),
 		m:         &sync.Mutex{},
 		maxRetry:  mRetry,
 		maxDelay:  mDelay,

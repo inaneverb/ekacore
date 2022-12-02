@@ -29,7 +29,7 @@ func foo1() error { ... }
 ```
 What do you do if func has been completed with `err != nil` ? Log it, i guess. But what if `foo1` has been called inside `foo2` that has another functions calls and also returns an `error` object? Like
 ```go
-func foo2(arg1, arg2 interface{}) error {
+func foo2(arg1, arg2 any) error {
 	// You has code here
 	if err := foo1(); err != nil {
 		// Log? Like "foo2 has been failed because of foo1"?

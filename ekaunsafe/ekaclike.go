@@ -18,15 +18,15 @@ type (
 	Interface = ekaclike.Interface
 )
 
-func UnpackInterface(i interface{}) Interface {
+func UnpackInterface(i any) Interface {
 	return ekaclike.UnpackInterface(i)
 }
 
-func TakeRealAddr(i interface{}) unsafe.Pointer {
+func TakeRealAddr(i any) unsafe.Pointer {
 	return ekaclike.TakeRealAddr(i)
 }
 
-func TakeCallableAddr(i interface{}) unsafe.Pointer {
+func TakeCallableAddr(i any) unsafe.Pointer {
 	return ekaclike.TakeCallableAddr(i)
 }
 

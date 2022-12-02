@@ -13,9 +13,9 @@ type (
 	// destructorRegistered is a destructor descriptor.
 	// Each Reg() call converts passed destructor to that descriptor.
 	destructorRegistered = struct {
-		f              interface{} // can be DestructorSimple or DestructorWithExitCode
-		bindToExitCode int         // f will be called only if app is down with that exit code
-		callAnyway     bool        // call no matter what exit code is
+		f              any  // can be DestructorSimple or DestructorWithExitCode
+		bindToExitCode int  // f will be called only if app is down with that exit code
+		callAnyway     bool // call no matter what exit code is
 	}
 )
 
@@ -27,7 +27,7 @@ var (
 // reg registers each function from destructorsToBeRegistered as destructor
 // that will be called anyway if hasExitCodeBind is false (exitCode is ignored this way)
 // or will be called if Die with passed exitCode is called if hasExitCodeBind is true.
-func reg(hasExitCodeBind bool, exitCode int, destructorsToBeRegistered ...interface{}) {
+func reg(hasExitCodeBind bool, exitCode int, destructorsToBeRegistered ...any) {
 	for _, destructor := range destructorsToBeRegistered {
 		if !valid(destructor) {
 			continue
@@ -43,7 +43,7 @@ func reg(hasExitCodeBind bool, exitCode int, destructorsToBeRegistered ...interf
 // valid reports whether d is valid destructor:
 // - it's type either DestructorSimple or DestructorWithExitCode,
 // - it's value is not nil.
-func valid(d interface{}) bool {
+func valid(d any) bool {
 	switch d.(type) {
 	case DestructorSimple:
 		return d.(DestructorSimple) != nil
@@ -56,7 +56,7 @@ func valid(d interface{}) bool {
 
 // invoke calls d with no passing arguments if d is DestructorSimple,
 // or passing exitCode if d is DestructorWithExitCode.
-func invoke(d interface{}, exitCode int) {
+func invoke(d any, exitCode int) {
 	switch d.(type) {
 	case DestructorSimple:
 		d.(DestructorSimple)()

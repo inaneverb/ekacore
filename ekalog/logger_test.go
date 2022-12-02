@@ -31,6 +31,18 @@ func foo(isLightWeight bool) *ekaerr.Error {
 		Throw()
 }
 
+func TestDebugLog(t *testing.T) {
+	consoleEncoder := new(ekalog.CI_ConsoleEncoder)
+
+	stdoutConsoleIntegrator := new(ekalog.CommonIntegrator).
+		WithEncoder(consoleEncoder).
+		WithMinLevel(ekalog.LEVEL_DEBUG)
+
+	ekalog.ReplaceIntegrator(stdoutConsoleIntegrator)
+
+	ekalog.Warne("", ekaerr.Interrupted.New("test"), "key", "value")
+}
+
 func TestLog(t *testing.T) {
 
 	consoleEncoder := new(ekalog.CI_ConsoleEncoder)
@@ -57,8 +69,7 @@ func TestLog(t *testing.T) {
 	ekalog.Debug("test", "field1", 42, "field2", nil)
 	ekalog.Info("test", "dur", time.Minute*20+time.Second*12, "i64", int64(3234234))
 	ekalog.Warn("test", "time", time.Now())
-	ekalog.Error("test")
-	ekalog.Error("test", "sys.field", 0)
+	ekalog.Error("test", "sys.this_field_is_ignored", 0)
 
 	ekalog.Alerte("", foo(true), "log_field")
 	ekalog.Emerge("emerg", foo(false), "log_field")

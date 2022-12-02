@@ -90,7 +90,7 @@ func (l *Logger) addFields(fs []ekaletter.LetterField) *Logger {
 // It also makes a copy if it's requested and adds generated ekaletter.LetterField
 // to the destination Logger's Entry only if those fields are addable.
 // Returns modified current Logger or its modified copy.
-func (l *Logger) addFieldsParse(fs []interface{}) *Logger {
+func (l *Logger) addFieldsParse(fs []any) *Logger {
 	l.assert()
 	if l == nopLogger || len(fs) == 0 {
 		return l
@@ -104,33 +104,33 @@ func (l *Logger) addFieldsParse(fs []interface{}) *Logger {
 //
 // There are 4 big things this method shall done:
 //
-// 1. Figure out what will be used as log message's body and construct it
-//    if necessary (wasn't done before):
+//  1. Figure out what will be used as log message's body and construct it
+//     if necessary (wasn't done before):
 //
-//    - Uses 'format' as just string if len(args) == 0;
-//    - Uses 'format' as printf-like format string if it's contains printf verbs
-//      and len(args) > 0, and then uses args[:N] as printf values;
-//    - Uses err's message as log's string if 'format' == "" and len(args) == 0;
-//    - Tries to extract string (or something string-like, e.g. fmt.Sprinter)
-//      or Golang error from 'args[0]' and then use it in an one of four cases
-//      described above. In that case only 'args[1:]' are allowed to be processed then.
+//     - Uses 'format' as just string if len(args) == 0;
+//     - Uses 'format' as printf-like format string if it's contains printf verbs
+//     and len(args) > 0, and then uses args[:N] as printf values;
+//     - Uses err's message as log's string if 'format' == "" and len(args) == 0;
+//     - Tries to extract string (or something string-like, e.g. fmt.Sprinter)
+//     or Golang error from 'args[0]' and then use it in an one of four cases
+//     described above. In that case only 'args[1:]' are allowed to be processed then.
 //
-// 2. Figure out what fields should be attached to the log message,
-//    Convert implicit fields (both of named/unnamed) to the explicit
-//    (using Entry.parseLogArgs method);
+//  2. Figure out what fields should be attached to the log message,
+//     Convert implicit fields (both of named/unnamed) to the explicit
+//     (using Entry.parseLogArgs method);
 //
-//    It guarantees that only one of 'args' or 'explicitFields' provided
-//    at the same time.
-//    If there's printf message, only 'args[N:]' or 'args[N+1:]' uses as
-//    explicit/implicit args, where N - printf verbs.
-//    N or N+1 depends by whether 'format' or 'err' was provided
-//    as printf-like string, or it was extracted from 'args[0]'.
+//     It guarantees that only one of 'args' or 'explicitFields' provided
+//     at the same time.
+//     If there's printf message, only 'args[N:]' or 'args[N+1:]' uses as
+//     explicit/implicit args, where N - printf verbs.
+//     N or N+1 depends by whether 'format' or 'err' was provided
+//     as printf-like string, or it was extracted from 'args[0]'.
 //
-// 3. Adds caller and stacktrace (if it necessary and if it wasn't provided
-//    by gext.errors.Error) (using Entry.addStacktrace method);
+//  3. Adds caller and stacktrace (if it necessary and if it wasn't provided
+//     by gext.errors.Error) (using Entry.addStacktrace method);
 //
-//    Uses gext.errors.Error.Stacktrace as stacktrace avoiding another one
-//    stacktrace generation procedure.
+//     Uses gext.errors.Error.Stacktrace as stacktrace avoiding another one
+//     stacktrace generation procedure.
 //
 // 4. Finally write a message and call then death.Die() if it's fatal level.
 func (l *Logger) log(
@@ -138,7 +138,7 @@ func (l *Logger) log(
 	lvl Level,
 	format string,
 	err *ekaerr.Error,
-	args []interface{},
+	args []any,
 	fields []ekaletter.LetterField,
 
 ) *Logger {

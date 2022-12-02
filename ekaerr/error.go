@@ -270,13 +270,13 @@ func (e *Error) WithFloat64p(key string, value *float64) *Error {
 func (e *Error) WithStringp(key string, value *string) *Error {
 	return e.addField(ekaletter.FStringp(key, value))
 }
-func (e *Error) WithType(key string, value interface{}) *Error {
+func (e *Error) WithType(key string, value any) *Error {
 	return e.addField(ekaletter.FType(key, value))
 }
 func (e *Error) WithStringer(key string, value fmt.Stringer) *Error {
 	return e.addField(ekaletter.FStringer(key, value))
 }
-func (e *Error) WithAddr(key string, value interface{}) *Error {
+func (e *Error) WithAddr(key string, value any) *Error {
 	return e.addField(ekaletter.FAddr(key, value))
 }
 func (e *Error) WithUnixFromStd(key string, value time.Time) *Error {
@@ -294,19 +294,19 @@ func (e *Error) WithUnixNano(key string, value int64) *Error {
 func (e *Error) WithDuration(key string, value time.Duration) *Error {
 	return e.addField(ekaletter.FDuration(key, value))
 }
-func (e *Error) WithArray(key string, value interface{}) *Error {
+func (e *Error) WithArray(key string, value any) *Error {
 	return e.addField(ekaletter.FArray(key, value))
 }
-func (e *Error) WithObject(key string, value interface{}) *Error {
+func (e *Error) WithObject(key string, value any) *Error {
 	return e.addField(ekaletter.FObject(key, value))
 }
-func (e *Error) WithMap(key string, value interface{}) *Error {
+func (e *Error) WithMap(key string, value any) *Error {
 	return e.addField(ekaletter.FMap(key, value))
 }
-func (e *Error) WithExtractedMap(key string, value map[string]interface{}) *Error {
+func (e *Error) WithExtractedMap(key string, value map[string]any) *Error {
 	return e.addField(ekaletter.FExtractedMap(key, value))
 }
-func (e *Error) WithAny(key string, value interface{}) *Error {
+func (e *Error) WithAny(key string, value any) *Error {
 	return e.addField(ekaletter.FAny(key, value))
 }
 
@@ -314,7 +314,7 @@ func (e *Error) WithMany(fields ...ekaletter.LetterField) *Error {
 	return e.addFields(fields)
 }
 
-func (e *Error) WithManyAny(fields ...interface{}) *Error {
+func (e *Error) WithManyAny(fields ...any) *Error {
 	return e.addFieldsParse(fields, true)
 }
 

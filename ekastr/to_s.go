@@ -28,7 +28,7 @@ const (
 ToString is a special type that allows you to get a string representation
 of any type's passed argument. It returns an empty string for nil interface.
 */
-func ToString(i interface{}) string {
+func ToString(i any) string {
 	iface := ekaclike.UnpackInterface(i)
 	return ToStringUnsafe(iface.Type, iface.Word, 0xFF)
 }

@@ -11,7 +11,7 @@ import (
 
 type (
 	/*
-		Interface represents what "interface{}" is
+		Interface represents what "any" is
 		in internal Golang parts.
 	*/
 	Interface struct {
@@ -22,9 +22,9 @@ type (
 
 /*
 Pack does the reverse thing that UnpackInterface does.
-It returns Golang interface{} object that current Interface describes.
+It returns Golang any object that current Interface describes.
 */
-func (i Interface) Pack() (i2 interface{}) {
+func (i Interface) Pack() (i2 any) {
 
 	if i.Type == 0 {
 		return nil
@@ -39,11 +39,11 @@ func (i Interface) Pack() (i2 interface{}) {
 }
 
 /*
-UnpackInterface exposes Golang interface{} internal parts
+UnpackInterface exposes Golang any internal parts
 and returns it.
 If passed argument is absolutely nil, returns an empty Interface object.
 */
-func UnpackInterface(i interface{}) Interface {
+func UnpackInterface(i any) Interface {
 	if i == nil {
 		return Interface{}
 	}
