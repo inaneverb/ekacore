@@ -6,20 +6,18 @@
 package ekamath
 
 import (
-	"golang.org/x/exp/constraints"
-
 	"github.com/qioalice/ekago/v3/ekaext"
 )
 
-func Min[T constraints.Ordered](a, b T) T {
+func Min[T ekaext.Ordered](a, b T) T {
 	return ekaext.If(a < b, a, b)
 }
 
-func Max[T constraints.Ordered](a, b T) T {
+func Max[T ekaext.Ordered](a, b T) T {
 	return ekaext.If(a > b, a, b)
 }
 
-func Clamp[T constraints.Ordered](v, a, b T) T {
+func Clamp[T ekaext.Ordered](v, a, b T) T {
 	a, b = Min(a, b), Max(a, b)
 	return Min(Max(v, a), b)
 }

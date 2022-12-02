@@ -10,7 +10,6 @@ require (
 	github.com/oklog/ulid/v2 v2.0.2
 	github.com/stretchr/testify v1.6.1
 	github.com/theodesp/go-heaps v0.0.0-20190520121037-88e35354fe0a
-	golang.org/x/exp v0.0.0-20221114191408-850992195362
 )
 
 require (

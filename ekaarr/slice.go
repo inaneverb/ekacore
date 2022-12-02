@@ -1,4 +1,18 @@
+// Copyright © 2020-2022. All rights reserved.
+// Author: Ilya Stroy.
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
+// License: https://opensource.org/licenses/MIT
+
 package ekaarr
+
+import (
+	"sort"
+)
+
+func Sort[T any](in []T, cb func(a, b T) bool) []T {
+	sort.Slice(in, func(i, j int) bool { return cb(in[i], in[j]) })
+	return in
+}
 
 func Reduce[T any, R any](
 	in []T, out R, cb func(acc R, value T, index int, arr []T) R) R {
