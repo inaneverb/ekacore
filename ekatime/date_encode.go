@@ -9,7 +9,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/qioalice/ekago/v3/internal/ekaenc"
+	"github.com/qioalice/ekago/v3/ekaenc"
 )
 
 //goland:noinspection GoSnakeCaseUsage
@@ -155,7 +155,7 @@ func (dd Date) String() string {
 func (dd *Date) MarshalJSON() ([]byte, error) {
 
 	if dd == nil || dd.ToCmp() == 0 {
-		return ekaenc.NULL_JSON_BYTES_SLICE, nil
+		return ekaenc.NullAsBytesLowerCase(), nil
 	}
 
 	b := make([]byte, 12)
@@ -178,7 +178,7 @@ func (dd *Date) MarshalJSON() ([]byte, error) {
 // In other cases JSON parsing error or Date.ParseFrom() error is returned.
 func (dd *Date) UnmarshalJSON(b []byte) error {
 
-	if ekaenc.IsNullJSON(b) {
+	if ekaenc.IsNullAsBytes(b) {
 		if dd != nil {
 			*dd = 0
 		}

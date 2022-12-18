@@ -8,7 +8,7 @@ package ekatime
 import (
 	"errors"
 
-	"github.com/qioalice/ekago/v3/internal/ekaenc"
+	"github.com/qioalice/ekago/v3/ekaenc"
 )
 
 //goland:noinspection GoSnakeCaseUsage
@@ -38,10 +38,10 @@ func (ts Timestamp) AppendTo(b []byte, separatorDate, separatorTime byte) []byte
 
 // ParseFrom tries to parse b considering with the following format:
 // "YYYY<sep>MM<sep>DD<reqSep>hh<sep>mm".
-// - <sep> may be any 1 byte, or not presented at all.
-//   But if separator was presented between in "YYYY<sep>MM" it must be also
-//   between other parts and vice-versa.
-// - <reqSep> required separator: space or 'T' char.
+//   - <sep> may be any 1 byte, or not presented at all.
+//     But if separator was presented between in "YYYY<sep>MM" it must be also
+//     between other parts and vice-versa.
+//   - <reqSep> required separator: space or 'T' char.
 //
 // Read more:
 // https://en.wikipedia.org/wiki/ISO_8601
@@ -132,7 +132,7 @@ func (ts Timestamp) String() string {
 func (ts *Timestamp) MarshalJSON() ([]byte, error) {
 
 	if ts == nil || *ts == 0 {
-		return ekaenc.NULL_JSON_BYTES_SLICE, nil
+		return ekaenc.NullAsBytesLowerCase(), nil
 	}
 
 	// Date: 10 chars (YYYY-MM-DD)
@@ -154,18 +154,19 @@ func (ts *Timestamp) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON decodes b into the current Timestamp object expecting b contains
 // ISO8601 quoted date with time in the one of the following formats:
-//   "YYYY-MM-DDThh:mm:ss" (recommended),
-//   "YYYYMMDDThh:mm:ss", "YYYY-MM-DDThhmmss", "YYYYMMDDThhmmss"
+//
+//	"YYYY-MM-DDThh:mm:ss" (recommended),
+//	"YYYYMMDDThh:mm:ss", "YYYY-MM-DDThhmmss", "YYYYMMDDThhmmss"
 //
 // JSON null supporting:
-// - It's ok if there is JSON null and receiver == nil (nothing changes)
-// - Zeroes Timestamp if there is JSON null and receiver != nil
-//   (yes, sets to 01 Jan 1970 00:00:00).
+//   - It's ok if there is JSON null and receiver == nil (nothing changes)
+//   - Zeroes Timestamp if there is JSON null and receiver != nil
+//     (yes, sets to 01 Jan 1970 00:00:00).
 //
 // In other cases JSON parsing error or Date.ParseFrom() error is returned.
 func (ts *Timestamp) UnmarshalJSON(b []byte) error {
 
-	if ekaenc.IsNullJSON(b) {
+	if ekaenc.IsNullAsBytes(b) {
 		if ts != nil {
 			*ts = 0
 		}

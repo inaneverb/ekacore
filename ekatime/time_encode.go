@@ -8,7 +8,7 @@ package ekatime
 import (
 	"errors"
 
-	"github.com/qioalice/ekago/v3/internal/ekaenc"
+	"github.com/qioalice/ekago/v3/ekaenc"
 )
 
 //goland:noinspection GoSnakeCaseUsage
@@ -149,7 +149,7 @@ func (t Time) String() string {
 func (t *Time) MarshalJSON() ([]byte, error) {
 
 	if t == nil || *t == 0 {
-		return ekaenc.NULL_JSON_BYTES_SLICE, nil
+		return ekaenc.NullAsBytesLowerCase(), nil
 	}
 
 	b := make([]byte, 10)
@@ -172,7 +172,7 @@ func (t *Time) MarshalJSON() ([]byte, error) {
 // In other cases JSON parsing error or Time.ParseFrom() error is returned.
 func (t *Time) UnmarshalJSON(b []byte) error {
 
-	if ekaenc.IsNullJSON(b) {
+	if ekaenc.IsNullAsBytes(b) {
 		if t != nil {
 			*t = 0
 		}
