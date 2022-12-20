@@ -5,7 +5,8 @@
 
 // This package is re-write of
 // https://github.com/bits-and-blooms/bitset
-// that is distributed (for now: 2021 Sep 12) by BSD 3-Clause "New" or "Revised" License.
+// that is distributed (for now: 2021 Sep 12)
+// by BSD 3-Clause "New" or "Revised" License.
 //
 // Here's some small changes, like introducing PrevUp(), PrevDown() methods,
 // using `uint` instead of `uint64` (thus it can be uint32 on 32bit platforms)
@@ -18,21 +19,19 @@ import (
 	"errors"
 )
 
-type (
-	// BitSet is a bitset with variate capacity.
-	// It can be grown, depends on your cases.
-	//
-	// The index of BitSet is starts from 1.
-	// In almost all cases it's prohibited to use 0 as index.
-	// NextUp(), NextDown() an their unsafe methods are exceptions.
-	//
-	// It's strongly recommend to instantiate BitSet using NewBitSet() constructor,
-	// but just creating a BitSet is also possible and ready-to-use
-	// (it will be with 0 capacity and will grow when you will try to set any bit).
-	BitSet struct {
-		bs []uint
-	}
-)
+// BitSet is a bitset with variate capacity.
+// It can be grown, depends on your cases.
+//
+// The index of BitSet is starts from 1.
+// In almost all cases it's prohibited to use 0 as index.
+// NextUp(), NextDown() an their unsafe methods are exceptions.
+//
+// It's strongly recommend to instantiate BitSet using NewBitSet() constructor,
+// but just creating a BitSet is also possible and ready-to-use
+// (it will be with 0 capacity and will grow when you will try to set any bit).
+type BitSet struct {
+	bs []uint
+}
 
 var (
 	ErrBitSetInvalid             = errors.New("invalid BitSet")

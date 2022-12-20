@@ -3,8 +3,8 @@ package ekamath_test
 import (
 	"testing"
 
-	"github.com/qioalice/ekago/v3/ekaext"
-	"github.com/qioalice/ekago/v3/ekamath"
+	"github.com/qioalice/ekago/ekaext/v4"
+	"github.com/qioalice/ekago/ekamath/v4"
 
 	"github.com/stretchr/testify/require"
 )

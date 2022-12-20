@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/qioalice/ekago/v3/ekamath"
+	"github.com/qioalice/ekago/ekamath/v4"
 )
 
 func BenchmarkStat(b *testing.B) {

@@ -6,7 +6,7 @@
 package ekamath
 
 import (
-	"github.com/qioalice/ekago/v3/ekaext"
+	"github.com/qioalice/ekago/ekaext/v4"
 )
 
 func Min[T ekaext.Ordered](a, b T) T {
