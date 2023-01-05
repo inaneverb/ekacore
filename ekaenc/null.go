@@ -6,7 +6,7 @@
 package ekaenc
 
 import (
-	"github.com/qioalice/ekago/v3/ekastr"
+	"github.com/qioalice/ekago/ekastr/v4"
 )
 
 func NullAsStringLowerCase() string { return "null" }
