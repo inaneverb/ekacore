@@ -8,13 +8,14 @@ package ekaunsafe_test
 import (
 	"fmt"
 	"testing"
-
-	"github.com/qioalice/ekago/v3/ekamath"
-	"github.com/qioalice/ekago/v3/ekaunsafe"
-
-	"github.com/stretchr/testify/assert"
+	"time"
+	"unsafe"
 
 	"github.com/modern-go/reflect2"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/qioalice/ekago/ekamath/v4"
+	"github.com/qioalice/ekago/ekaunsafe/v4"
 )
 
 //goland:noinspection GoRedundantConversion,GoBoolExpressions
@@ -46,6 +47,10 @@ var (
 		map[string]any(nil),    // 20
 		complex64(0),           // 21
 		complex128(0),          // 22
+		uintptr(0),             // 23
+		unsafe.Pointer(nil),    // 24
+		time.Time{},            // 25
+		time.Duration(0),       // 26
 	}
 	td1 = []struct {
 		f  func() uintptr
@@ -74,6 +79,10 @@ var (
 		{f: ekaunsafe.RTypeMapStringInterface, eq: 1 << 20},
 		{f: ekaunsafe.RTypeComplex64, eq: 1 << 21},
 		{f: ekaunsafe.RTypeComplex128, eq: 1 << 22},
+		{f: ekaunsafe.RTypeUintptr, eq: 1 << 23},
+		{f: ekaunsafe.RTypeUnsafePointer, eq: 1 << 24},
+		{f: ekaunsafe.RTypeTimeTime, eq: 1 << 25},
+		{f: ekaunsafe.RTypeTimeDuration, eq: 1 << 26},
 	}
 	td2 = []struct {
 		f  func(uintptr) bool
@@ -116,6 +125,10 @@ var (
 		{f: ekaunsafe.RTypeMapStringInterface, z: reflect2.RTypeOf(tda[20]), name: "RTypeMapStringInterface"},
 		{f: ekaunsafe.RTypeComplex64, z: reflect2.RTypeOf(tda[21]), name: "RTypeComplex64"},
 		{f: ekaunsafe.RTypeComplex128, z: reflect2.RTypeOf(tda[22]), name: "RTypeComplex128"},
+		{f: ekaunsafe.RTypeUintptr, z: reflect2.RTypeOf(tda[23]), name: "RTypeUintptr"},
+		{f: ekaunsafe.RTypeUnsafePointer, z: reflect2.RTypeOf(tda[24]), name: "RTypeUnsafePointer"},
+		{f: ekaunsafe.RTypeTimeTime, z: reflect2.RTypeOf(tda[25]), name: "RTypeTimeTime"},
+		{f: ekaunsafe.RTypeTimeDuration, z: reflect2.RTypeOf(tda[26]), name: "RTypeTimeDuration"},
 	}
 )
 
@@ -151,14 +164,14 @@ func TestRTypePrintTable(t *testing.T) {
 		}
 	}
 	fmt.Println()
-	fmt.Printf("%-[2]*[1]s | Ekadanger RType | reflect2 RType\n", "RType name", maxWidth)
+	fmt.Printf("%-[2]*[1]s | ekaunsafe RType | reflect2 RType\n", "RType name", maxWidth)
 	lines := make([]byte, maxWidth+36)
 	for i, n := 0, len(lines); i < n; i++ {
 		lines[i] = '-'
 	}
 	fmt.Println(string(lines))
 	for i, n := 0, len(pt); i < n; i++ {
-		fmt.Printf("%-[4]*[1]s | 0x%-13[2]x | 0x%[3]x\n", pt[i].name, pt[i].f(), pt[i].z, maxWidth)
+		fmt.Printf("%-[4]*[1]s | %-15[2]d | %[3]d\n", pt[i].name, pt[i].f(), pt[i].z, maxWidth)
 	}
 	fmt.Println()
 }
@@ -186,6 +199,10 @@ func TestRTypeMapStringString(t *testing.T)    { testRType(t, 19) }
 func TestRTypeMapStringInterface(t *testing.T) { testRType(t, 20) }
 func TestRTypeComplex64(t *testing.T)          { testRType(t, 21) }
 func TestRTypeComplex128(t *testing.T)         { testRType(t, 22) }
+func TestRTypeUintptr(t *testing.T)            { testRType(t, 23) }
+func TestRTypeUnsafePointer(t *testing.T)      { testRType(t, 24) }
+func TestRTypeTimeTime(t *testing.T)           { testRType(t, 25) }
+func TestRTypeTimeDuration(t *testing.T)       { testRType(t, 26) }
 
 func TestRTypeIsAnyNumeric(t *testing.T) { testRTypeIs(t, 0) }
 func TestRTypeIsAnyReal(t *testing.T)    { testRTypeIs(t, 1) }

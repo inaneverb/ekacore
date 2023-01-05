@@ -3,14 +3,14 @@
 // Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package ekaclike_test
+package ekaunsafe_test
 
 import (
 	"runtime"
 	"testing"
 	"unsafe"
 
-	"github.com/qioalice/ekago/v3/internal/ekaclike"
+	"github.com/qioalice/ekago/ekaunsafe/v4"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -33,16 +33,16 @@ func TestTakeCallableAddr(t *testing.T) {
 
 	var ptrFoo, ptrBar unsafe.Pointer
 	{
-		o := newT(10)
+		var o = newT(10)
 
 		var (
 			typedFoo *typeFoo
 			typedBar *typeBar
 		)
 		{
-			addrFoo := o.Foo
+			var addrFoo = o.Foo
 			typedFoo = &addrFoo
-			addrBar := o.Bar
+			var addrBar = o.Bar
 			typedBar = &addrBar
 		}
 
@@ -54,8 +54,8 @@ func TestTakeCallableAddr(t *testing.T) {
 
 		o.Bar(10)
 
-		ptrFoo = ekaclike.TakeCallableAddr(o.Foo)
-		ptrBar = ekaclike.TakeCallableAddr(o.Bar)
+		ptrFoo = ekaunsafe.TakeCallableAddr(o.Foo)
+		ptrBar = ekaunsafe.TakeCallableAddr(o.Bar)
 	}
 
 	runtime.GC()
@@ -70,9 +70,9 @@ func TestTakeCallableAddr(t *testing.T) {
 
 func TestTakeCallableAddr2(t *testing.T) {
 
-	o := newT(10)
-	foo := o.Foo
-	bar := o.Bar
+	var o = newT(10)
+	var foo = o.Foo
+	var bar = o.Bar
 
 	runtime.GC()
 
@@ -87,17 +87,17 @@ func (_ *CustomError) Error() string { return "<custom error>" }
 
 func TestTakeRealAddrForError(t *testing.T) {
 
-	customNilError := (*CustomError)(nil)
-	customNotNilError := new(CustomError)
+	var customNilError = (*CustomError)(nil)
+	var customNotNilError = new(CustomError)
 
 	var legacyNilError error = customNilError
 	var legacyNotNilError error = customNotNilError
 
-	assert.True(t, ekaclike.TakeRealAddr(customNilError) == nil)
-	assert.True(t, ekaclike.TakeRealAddr(legacyNilError) == nil)
+	assert.True(t, ekaunsafe.TakeRealAddr(customNilError) == nil)
+	assert.True(t, ekaunsafe.TakeRealAddr(legacyNilError) == nil)
 
-	assert.True(t, ekaclike.TakeRealAddr(customNotNilError) != nil)
-	assert.True(t, ekaclike.TakeRealAddr(legacyNotNilError) != nil)
+	assert.True(t, ekaunsafe.TakeRealAddr(customNotNilError) != nil)
+	assert.True(t, ekaunsafe.TakeRealAddr(legacyNotNilError) != nil)
 
 	// This is why this test exists:
 	assert.True(t, legacyNilError != nil)
@@ -105,10 +105,32 @@ func TestTakeRealAddrForError(t *testing.T) {
 
 func TestTakeCallableAddr3(t *testing.T) {
 
-	f := func(x int32) int32 {
-		return x
-	}
+	const U8 = 0xAB
 
-	z := (*(*func(float32) int32)(ekaclike.TakeCallableAddr(f)))(-1 * 12345678e-4)
-	assert.Equal(t, int32(-996519381), z)
+	type tf1 = func(uint16) uint16
+	type tf2 = func(uint8, uint8) (uint8, uint8)
+
+	var f1 = tf1(func(u uint16) uint16 { return u })
+	var f2 = *(*tf2)(ekaunsafe.TakeCallableAddr(f1))
+
+	var r1, r2 = f2(U8, U8)
+
+	assert.EqualValues(t, U8, r1)
+	assert.EqualValues(t, U8, r2)
+}
+
+func BenchmarkTakeCallableAddr3(b *testing.B) {
+	b.ReportAllocs()
+
+	const U8 = 0xAB
+
+	type tf1 = func(uint16) uint16
+	type tf2 = func(uint8, uint8) (uint8, uint8)
+
+	var f1 = tf1(func(u uint16) uint16 { return u })
+
+	for i := 0; i < b.N; i++ {
+		var f2 = *(*tf2)(ekaunsafe.TakeCallableAddr(f1))
+		_, _ = f2(U8, U8)
+	}
 }

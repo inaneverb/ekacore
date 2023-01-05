@@ -3,7 +3,7 @@
 // Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package ekaclike
+package ekaunsafe
 
 import (
 	_ "reflect"
