@@ -5,13 +5,17 @@
 
 package ekastr
 
-//
-func PItoa32(i int32) (requiredBytes int) {
-	return PItoa64(int64(i))
+// RequiredForI32 reports how many bytes are required
+// to represent provided int32 as a string. It also covers negative values.
+func RequiredForI32(i int32) int {
+	return RequiredForI64(int64(i))
 }
 
-//
-func PItoa64(i int64) (requiredBytes int) {
+// RequiredForI64 reports how many bytes are required
+// to represent provided int64 as a string. It also covers negative values.
+func RequiredForI64(i int64) int {
+
+	var requiredBytes int
 
 	if i < 0 {
 		i = -i
@@ -75,22 +79,28 @@ func PItoa64(i int64) (requiredBytes int) {
 		requiredBytes += 18
 
 	default:
-		// i is int32 and max(int32) == 9_223_372_036_854_775_807
+		// i is int64 and max(int64) == 9_223_372_036_854_775_807
 		requiredBytes += 19
 	}
 
 	return requiredBytes
 }
 
+// BItoa32 is the same as just itoa for int32, but instead returning string,
+// it writes int32 value to the provided []byte, and reports, how many bytes
+// were written.
 //
+// WARNING!
+// If there's not enough space in 'to' to write provided int32,
+// -1 is returned and provided []byte remains intact.
 func BItoa32(to []byte, i int32) (n int) {
 	return BItoa64(to, int64(i))
 }
 
-//
+// BItoa64 is the same as BItoa32 but for int64.
 func BItoa64(to []byte, i int64) (n int) {
 
-	idx := PItoa64(i)
+	var idx = RequiredForI64(i)
 	if len(to) < idx {
 		return -1
 	}

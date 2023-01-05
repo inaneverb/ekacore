@@ -9,21 +9,21 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/qioalice/ekago/v3/ekastr"
+	"github.com/qioalice/ekago/ekastr/v4"
 )
 
-func BenchmarkPItoa64(b *testing.B) {
+func BenchmarkRequiredForI64(b *testing.B) {
 	b.ReportAllocs()
 
 	for i := 0; i < b.N; i++ {
-		_ = ekastr.PItoa64(int64(i))
+		_ = ekastr.RequiredForI64(int64(i))
 	}
 }
 
 func BenchmarkBItoa64(b *testing.B) {
 	b.ReportAllocs()
 
-	buf := make([]byte, 20)
+	var buf = make([]byte, 20)
 
 	for i := 0; i < b.N; i++ {
 		_ = ekastr.BItoa64(buf, int64(i))

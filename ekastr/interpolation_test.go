@@ -9,34 +9,24 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/qioalice/ekago/v3/ekastr"
+	"github.com/qioalice/ekago/ekastr/v4"
 
 	"github.com/stretchr/testify/assert"
 )
 
-type (
-	/*
-		_TITC is Interpolation's test cases
-	*/
-	_TITC struct {
-		str      string
-		expected []_TITCSP
-	}
-
-	/*
-		_TITCSP is Interpolation test cases' string parts
-	*/
-	_TITCSP struct {
-		part   string
-		isVerb bool
-	}
-)
+type testCaseInterpolatePartReport struct {
+	part   string
+	isVerb bool
+}
 
 var (
-	itc = []_TITC{
+	itc = []struct {
+		str      string
+		expected []testCaseInterpolatePartReport
+	}{
 		{
 			str: "Hello, {{name}}! Nice to meet you.",
-			expected: []_TITCSP{
+			expected: []testCaseInterpolatePartReport{
 				{"Hello, ", false},
 				{"{{name}}", true},
 				{"! Nice to meet you.", false},
@@ -44,7 +34,7 @@ var (
 		},
 		{
 			str: "А вот и {{utf8}} текст с {{даже}} utf8 {{глаголом}}",
-			expected: []_TITCSP{
+			expected: []testCaseInterpolatePartReport{
 				{"А вот и ", false},
 				{"{{utf8}}", true},
 				{" текст с ", false},
@@ -56,29 +46,27 @@ var (
 	}
 )
 
-func TestInterpolateb(t *testing.T) {
+func TestInterpolateBytes(t *testing.T) {
 
-	var (
-		gotParts    = make([]_TITCSP, 0, 32)
-		gotPartsPtr = &gotParts
-	)
+	var gotParts = make([]testCaseInterpolatePartReport, 0, 32)
+	var gotPartsPtr = &gotParts
 
-	gotVerb := func(verb []byte) {
-		*gotPartsPtr = append(*gotPartsPtr, _TITCSP{
+	var gotVerb = func(verb []byte) {
+		*gotPartsPtr = append(*gotPartsPtr, testCaseInterpolatePartReport{
 			part:   string(verb),
 			isVerb: true,
 		})
 	}
 
-	gotJustText := func(text []byte) {
-		*gotPartsPtr = append(*gotPartsPtr, _TITCSP{
+	var gotJustText = func(text []byte) {
+		*gotPartsPtr = append(*gotPartsPtr, testCaseInterpolatePartReport{
 			part: string(text),
 		})
 	}
 
 	for i, testCase := range itc {
 		gotParts = gotParts[:0]
-		ekastr.Interpolateb([]byte(testCase.str), gotVerb, gotJustText)
+		ekastr.InterpolateBytes([]byte(testCase.str), gotVerb, gotJustText)
 		assert.Equal(t, testCase.expected, gotParts, "%i test case", i)
 	}
 }
@@ -86,19 +74,19 @@ func TestInterpolateb(t *testing.T) {
 func BenchmarkInterpolate(b *testing.B) {
 	const S = "This is some {{kind}} of string that must be {{interpolated}}."
 	b.ReportAllocs()
-	cb := func(_ string) {}
+	var cb = func(_ string) {}
 	for i := 0; i < b.N; i++ {
 		ekastr.Interpolate(S, cb, cb)
 	}
 }
 
-func BenchmarkInterpolateb(b *testing.B) {
+func BenchmarkInterpolateBytes(b *testing.B) {
 	const S = "This is some {{kind}} of string that must be {{interpolated}}."
 	b.ReportAllocs()
-	cb := func(_ []byte) {}
+	var cb = func(_ []byte) {}
 	for i := 0; i < b.N; i++ {
 		arr := ekastr.S2B(S)
-		ekastr.Interpolateb(arr, cb, cb)
+		ekastr.InterpolateBytes(arr, cb, cb)
 	}
 }
 

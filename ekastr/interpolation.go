@@ -5,31 +5,48 @@
 
 package ekastr
 
-/*
-
- */
+// Interpolate splits string into pieces, calling 'cbVerbFound' or 'cbTextFound'
+// for each piece (depending on piece's kind) consequentially.
+//
+// There are only 2 pieces of piece's kind:
+//   - Verb. Some text inside double brackets. Like: "{{verb}}".
+//     So, if verb is found, a related callback is called ('cbVerbFound').
+//   - Just text. Anything other but verb.
+//
+// Note.
+// In the example above, "verb" string will be passed to the 'cbVerbFound',
+// not "{{verb}}.
+//
+// So, the main reason is:
+// You define your verbs, like "print", "call" or something like that,
+// use them in string, like "blah-blah1 {{print}} blah-blah2 {{call}} blah3"
+// and then define your 'cbVerbFound' with switch statement,
+// where you determine behaviour depend on verb - "print" or "call".
+//
+// Note.
+// It guarantees, that order of pieces of string is preserved.
+// So, using example of previous note, the order of calls is:
+// - 'cbTextFound', argument "blah-blah1 ",
+// - 'cbVerbFound', argument "print",
+// - 'cbTextFound', argument " blah-blah2 ",
+// - 'cbVerbFound', argument "call",
+// - 'cbTextFound', argument " blah3".
+// Keep your eyes on the spaces in "just text" pieces.
 func Interpolate(s string, cbVerbFound, cbTextFound func(v string)) {
-	f1 := func(v []byte) { cbVerbFound(B2S(v)) }
-	f2 := func(v []byte) { cbTextFound(B2S(v)) }
-	Interpolateb(S2B(s), f1, f2)
+	var f1 = func(v []byte) { cbVerbFound(B2S(v)) }
+	var f2 = func(v []byte) { cbTextFound(B2S(v)) }
+	InterpolateBytes(S2B(s), f1, f2)
 }
 
-/*
+// InterpolateBytes is the same as Interpolate, but works with []byte
+// instead of string.
+func InterpolateBytes(p []byte, cbVerbFound, cbTextFound func(v []byte)) {
 
- */
-func Interpolateb(p []byte, cbVerbFound, cbTextFound func(v []byte)) {
-
-	var (
-		part   []byte
-		isVerb bool
-	)
-
-	if len(p) == 0 {
-		return
-	}
+	var part []byte
+	var isVerb bool
 
 	for len(p) > 0 {
-		part, p, isVerb = i9nGetNext(p)
+		part, p, isVerb = getNextPart(p)
 		if isVerb {
 			cbVerbFound(part)
 		} else {
@@ -38,51 +55,46 @@ func Interpolateb(p []byte, cbVerbFound, cbTextFound func(v []byte)) {
 	}
 }
 
-/*
-
- */
-// parseFirstVerb parses 'format', extracts first verb (even if it's "just text"
-// verb), saves it to ce.formatParts and then returns the rest of 'format' string.
-func i9nGetNext(p []byte) (part, nextP []byte, isVerb bool) {
+// getNextPart parses 'format', extracts next part of string.
+// It could be "just text" or a verb. Returns found part, rest of the string
+// and a flag whether returned part is a verb.
+func getNextPart(p []byte) (part, tail []byte, isVerb bool) {
 
 	if len(p) == 0 {
 		return nil, nil, false
 	}
 
-	//goland:noinspection GoSnakeCaseUsage
 	const (
-		VERB_START_INDICATOR byte = '{'
-		VERB_END_INDICATOR   byte = '}'
+		VerbStart byte = '{'
+		VerbEnd   byte = '}'
 	)
 
-	var (
-		i   = 0
-		pc  byte // prev char
-		wv  bool // true if current parsing verb is complex verb (not "just text")
-		wve bool // true if complex verb has been closed correctly
-	)
+	var i = 0
+	var pc byte  // prev char
+	var wv bool  // true if current parsing part is a verb (not "just text")
+	var wve bool // true if verb has been closed correctly
 
 	for _, c := range p {
 		switch {
-		case c == VERB_START_INDICATOR && pc == VERB_START_INDICATOR && wv:
+		case c == VerbStart && pc == VerbStart && wv:
 			// unexpected "{{" inside complex verb, treat all prev as "just text",
-			// try to treat as starting complex verb
+			// try to treat these chars as complex verb starting
 			wv = false
 			i--
 
-		case c == VERB_START_INDICATOR && pc == VERB_START_INDICATOR && i > 1:
+		case c == VerbStart && pc == VerbStart && i > 1:
 			// > 1 (not > 0) because if string started with "{{", after first "{"
 			// i already == 1.
 			//
 			// was "just text", found complex verb start
 			i--
 
-		case c == VERB_END_INDICATOR && pc == VERB_END_INDICATOR && wv:
-			// ending of complex verb
+		case c == VerbEnd && pc == VerbEnd && wv:
+			// verb's ending
 			wve = true
 			i++
 
-		case c == VERB_START_INDICATOR && pc == VERB_START_INDICATOR:
+		case c == VerbStart && pc == VerbStart:
 			// this is the beginning of 'format' and of complex verb
 			wv = true
 			i++
