@@ -5,9 +5,7 @@
 
 package ekatyp
 
-type (
-	NoCopy struct{}
-)
+type NoCopy struct{}
 
 func (*NoCopy) Lock()   {}
 func (*NoCopy) Unlock() {}

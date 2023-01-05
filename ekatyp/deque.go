@@ -1,26 +1,7 @@
-/*
-MIT License
-
-Copyright (c) 2018 ef-ds
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+// Copyright © 2021-2023. All rights reserved.
+// Author: Ilya Stroy.
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
+// License: https://opensource.org/licenses/MIT
 
 /*
 Original package: https://github.com/ef-ds/deque
@@ -36,21 +17,29 @@ import (
 	"github.com/ef-ds/deque"
 )
 
-type (
-	// Deque is double-ended queue providing both of FIFO, LIFO design.
-	// Thanks to https://github.com/ef-ds/deque it's blazing fast.
-	// Deque must not be used by value, only by reference.
-	// Deque is thread UNSAFE. Use DequeSafe if you need thread safety version.
-	Deque = deque.Deque
+// Deque is double-ended queue providing both of FIFO, LIFO design.
+// Thanks to https://github.com/ef-ds/deque it's blazing fast.
+// Deque must not be used by value, only by reference.
+// Deque is thread UNSAFE. Use DequeSafe if you need thread safety version.
+type Deque = deque.Deque
 
-	// DequeSafe is the same as Deque but provides thread-safety operations
-	// protecting them by sync.Mutex.
-	// DequeSafe must not be used by value, only by reference.
-	DequeSafe struct {
-		q Deque
-		m sync.Mutex
-	}
-)
+// DequeSafe is the same as Deque but provides thread-safety operations
+// protecting them by sync.Mutex.
+// DequeSafe must not be used by value, only by reference.
+type DequeSafe struct {
+	q Deque
+	m sync.Mutex
+}
+
+// NewDeque returns a new initialized thread UNSAFE double ended queue.
+func NewDeque() *Deque {
+	return deque.New()
+}
+
+// NewDequeSafe returns a new initialized thread safe double ended queue.
+func NewDequeSafe() *DequeSafe {
+	return new(DequeSafe)
+}
 
 // Init initializes or clears thread safe double ended queue.
 func (dq *DequeSafe) Init() *DequeSafe {
@@ -141,14 +130,4 @@ func (dq *DequeSafe) PushFront(v any) {
 	dq.m.Lock()
 	dq.q.PushFront(v)
 	dq.m.Unlock()
-}
-
-// NewDeque returns a new initialized thread UNSAFE double ended queue.
-func NewDeque() *Deque {
-	return deque.New()
-}
-
-// NewDequeSafe returns a new initialized thread safe double ended queue.
-func NewDequeSafe() *DequeSafe {
-	return new(DequeSafe)
 }

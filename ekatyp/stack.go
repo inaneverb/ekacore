@@ -1,26 +1,7 @@
-/*
-MIT License
-
-Copyright (c) 2018 ef-ds
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+// Copyright © 2021-2023. All rights reserved.
+// Author: Ilya Stroy.
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
+// License: https://opensource.org/licenses/MIT
 
 /*
 Original package: https://github.com/ef-ds/stack
@@ -36,21 +17,29 @@ import (
 	"github.com/ef-ds/stack"
 )
 
-type (
-	// Stack is LIFO data structure.
-	// Thanks to https://github.com/ef-ds/stack it's blazing fast.
-	// Stack must not be used by value, only by reference.
-	// Stack is thread UNSAFE. Use StackSafe if you need thread safety version.
-	Stack = stack.Stack
+// Stack is LIFO data structure.
+// Thanks to https://github.com/ef-ds/stack it's blazing fast.
+// Stack must not be used by value, only by reference.
+// Stack is thread UNSAFE. Use StackSafe if you need thread safety version.
+type Stack = stack.Stack
 
-	// StackSafe is the same as Stack but provides thread-safety operations
-	// protecting them by sync.Mutex.
-	// StackSafe must not be used by value, only by reference.
-	StackSafe struct {
-		s Stack
-		m sync.Mutex
-	}
-)
+// StackSafe is the same as Stack but provides thread-safety operations
+// protecting them by sync.Mutex.
+// StackSafe must not be used by value, only by reference.
+type StackSafe struct {
+	s Stack
+	m sync.Mutex
+}
+
+// NewStack returns a new initialized thread UNSAFE stack.
+func NewStack() *Stack {
+	return stack.New()
+}
+
+// NewStackSafe returns a new initialized thread safe stack.
+func NewStackSafe() *StackSafe {
+	return new(StackSafe)
+}
 
 // Init initializes or clears thread safe stack.
 func (s *StackSafe) Init() *StackSafe {
@@ -105,14 +94,4 @@ func (s *StackSafe) Push(v any) {
 	s.m.Lock()
 	s.s.Push(v)
 	s.m.Unlock()
-}
-
-// NewStack returns a new initialized thread UNSAFE stack.
-func NewStack() *Stack {
-	return stack.New()
-}
-
-// NewStackSafe returns a new initialized thread safe stack.
-func NewStackSafe() *StackSafe {
-	return new(StackSafe)
 }
