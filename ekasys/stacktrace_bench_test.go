@@ -8,7 +8,7 @@ package ekasys_test
 import (
 	"testing"
 
-	"github.com/qioalice/ekago/v3/ekasys"
+	"github.com/qioalice/ekago/ekasys/v4"
 )
 
 // benchGetStackTraceCommonDepth aux bench func that starts

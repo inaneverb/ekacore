@@ -52,7 +52,7 @@ func getStackFramePoints(skip, count int) (framePoints []uintptr) {
 
 	// runtime.Callers only fills slice we provide which
 	// so, if slice is full, reallocate mem and try to request frames again
-	framePointsLen := 0
+	var framePointsLen = 0
 	for count = baseFullStackFramePointsLen; ; count <<= 1 {
 
 		framePoints = make([]uintptr, count)
@@ -84,15 +84,15 @@ func GetStackTrace(skip, depth int) (stacktrace StackTrace) {
 	// prepare to get runtime.Frame objects:
 	// - get stack trace frame points,
 	// - create runtime.Frame iterator by frame points from prev step
-	framePoints := getStackFramePoints(skip, depth)
-	framePointsLen := len(framePoints)
-	frameIterator := runtime.CallersFrames(framePoints)
+	var framePoints = getStackFramePoints(skip, depth)
+	var framePointsLen = len(framePoints)
+	var frameIterator = runtime.CallersFrames(framePoints)
 
 	// alloc mem for slice that will have as many 'runtime.Frame' objects
 	// as many frame points we got
 	stacktrace = make([]StackFrame, framePointsLen)
 
-	i := 0
+	var i = 0
 	for more := true; more && i < framePointsLen; i++ {
 		stacktrace[i].Frame, more = frameIterator.Next()
 	}
@@ -113,7 +113,7 @@ func (s StackTrace) ExcludeInternal() StackTrace {
 	// instead, we starting from the end and generating "ignore list" -
 	// a special list of stack frames that won't be included to the result set.
 
-	idx := len(s) - 1
+	var idx = len(s) - 1
 	for continue_ := true; continue_; idx-- {
 		continue_ = idx > 0 && (strings.HasPrefix(s[idx].Function, "runtime.") ||
 			strings.HasPrefix(s[idx].Function, "testing."))
@@ -121,8 +121,8 @@ func (s StackTrace) ExcludeInternal() StackTrace {
 	return s[:idx+2]
 }
 
-// Write writes generated stacktrace to the w or to the stdout if w == nil.
-func (s StackTrace) Write(w io.Writer) (n int, err error) {
+// WriteTo writes generated stacktrace to the w or to the stdout if w == nil.
+func (s StackTrace) WriteTo(w io.Writer) (n int64, err error) {
 
 	if w == nil {
 		w = os.Stdout
@@ -134,7 +134,7 @@ func (s StackTrace) Write(w io.Writer) (n int, err error) {
 		if err_ != nil {
 			return n, err_
 		}
-		n += nn
+		n += int64(nn)
 
 		// write \n
 		if _, err_ := w.Write([]byte{'\n'}); err_ != nil {
@@ -144,10 +144,4 @@ func (s StackTrace) Write(w io.Writer) (n int, err error) {
 	}
 
 	return n, nil
-}
-
-// Print prints generated stacktrace to the w or to the stdout if w == nil.
-// Ignores all errors. To write with error tracking use Write method.
-func (s StackTrace) Print(w io.Writer) {
-	_, _ = s.Write(w)
 }

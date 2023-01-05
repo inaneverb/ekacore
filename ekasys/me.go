@@ -14,5 +14,8 @@ var (
 	posixCachedGid = uint32(os.Getgid())
 )
 
+// PosixCachedUid returns the cached value of os.Getuid() call.
 func PosixCachedUid() uint32 { return posixCachedUid }
+
+// PosixCachedGid returns the cached value of os.Getgid() call.
 func PosixCachedGid() uint32 { return posixCachedGid }

@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/qioalice/ekago/v3/ekastr"
+	"github.com/qioalice/ekago/ekastr/v4"
 )
 
 // StackFrame represents one stack level (frame/item).
@@ -50,22 +50,22 @@ func (f *StackFrame) DoFormat() string {
 // doFormat is a private part of DoFormat() function.
 func (f *StackFrame) doFormat() string {
 
-	fullPackage, fn := filepath.Split(f.Function)
-	_, file := filepath.Split(f.File)
+	var fullPackage, fn = filepath.Split(f.Function)
+	var _, file = filepath.Split(f.File)
 
 	// we need last package from the fullPackage
-	lastPackage := filepath.Base(fullPackage)
+	var lastPackage = filepath.Base(fullPackage)
 
 	// need remove last package from fullPackage
 	if len(lastPackage)+2 <= len(fullPackage) && lastPackage != "." {
 		fullPackage = fullPackage[:len(fullPackage)-len(lastPackage)-2]
 	}
 
-	requiredBufLen := 9 // 2 spaces, '/', '(', ')', ':' + 3 reserved bytes
+	var requiredBufLen = 9 // 2 spaces, '/', '(', ')', ':' + 3 reserved bytes
 	requiredBufLen += len(fullPackage) + len(lastPackage) + len(file) + len(fn)
-	requiredBufLen += ekastr.PItoa32(int32(f.Line))
+	requiredBufLen += ekastr.RequiredForI32(int32(f.Line))
 
-	buf := make([]byte, requiredBufLen)
+	var buf = make([]byte, requiredBufLen)
 	offset := 0
 
 	// maybe 'lastPackage' is version of package?

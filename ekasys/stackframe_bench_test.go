@@ -28,7 +28,7 @@ func benchGetStackFramePointsSyntheticDepth(b *testing.B, depth, createDepth int
 
 	type tF func(int, int) []uintptr
 
-	wrapper := func(f tF) tF {
+	var wrapper = func(f tF) tF {
 		return func(i1 int, i2 int) []uintptr {
 			return f(i1, i2)
 		}
