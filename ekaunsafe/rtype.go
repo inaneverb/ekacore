@@ -43,46 +43,108 @@ var (
 	rTypeTimeDuration       = reflect2.RTypeOf(time.Duration(0))
 )
 
-func RTypeBool() uintptr               { return rTypeBool }
-func RTypeByte() uintptr               { return rTypeByte }
-func RTypeRune() uintptr               { return rTypeRune }
-func RTypeInt() uintptr                { return rTypeInt }
-func RTypeInt8() uintptr               { return rTypeInt8 }
-func RTypeInt16() uintptr              { return rTypeInt16 }
-func RTypeInt32() uintptr              { return rTypeInt32 }
-func RTypeInt64() uintptr              { return rTypeInt64 }
-func RTypeUint() uintptr               { return rTypeUint }
-func RTypeUint8() uintptr              { return rTypeUint8 }
-func RTypeUint16() uintptr             { return rTypeUint16 }
-func RTypeUint32() uintptr             { return rTypeUint32 }
-func RTypeUint64() uintptr             { return rTypeUint64 }
-func RTypeFloat32() uintptr            { return rTypeFloat32 }
-func RTypeFloat64() uintptr            { return rTypeFloat64 }
-func RTypeComplex64() uintptr          { return rTypeComplex64 }
-func RTypeComplex128() uintptr         { return rTypeComplex128 }
-func RTypeString() uintptr             { return rTypeString }
-func RTypeStringArray() uintptr        { return rTypeStringArray }
-func RTypeBytes() uintptr              { return rTypeBytes }
-func RTypeBytesArray() uintptr         { return rTypeBytesArray }
-func RTypeMapStringString() uintptr    { return rTypeMapStringString }
-func RTypeMapStringInterface() uintptr { return rTypeMapStringInterface }
-func RTypeUintptr() uintptr            { return rTypeUintptr }
-func RTypeUnsafePointer() uintptr      { return rTypeUnsafePointer }
-func RTypeTimeTime() uintptr           { return rTypeTimeTime }
-func RTypeTimeDuration() uintptr       { return rTypeTimeDuration }
+// RTypeBool returns rtype of bool.
+func RTypeBool() uintptr { return rTypeBool }
 
-func RTypeIsAnyNumeric(rtype uintptr) bool {
+// RTypeByte returns rtype of byte.
+func RTypeByte() uintptr { return rTypeByte }
+
+// RTypeRune returns rtype of rune.
+func RTypeRune() uintptr { return rTypeRune }
+
+// RTypeInt returns rtype of int.
+func RTypeInt() uintptr { return rTypeInt }
+
+// RTypeInt8 returns rtype of int8.
+func RTypeInt8() uintptr { return rTypeInt8 }
+
+// RTypeInt16 returns rtype of int16.
+func RTypeInt16() uintptr { return rTypeInt16 }
+
+// RTypeInt32 returns rtype of int32.
+func RTypeInt32() uintptr { return rTypeInt32 }
+
+// RTypeInt64 returns rtype of int64.
+func RTypeInt64() uintptr { return rTypeInt64 }
+
+// RTypeUint returns rtype of uint.
+func RTypeUint() uintptr { return rTypeUint }
+
+// RTypeUint8 returns rtype of uint8.
+func RTypeUint8() uintptr { return rTypeUint8 }
+
+// RTypeUint16 returns rtype of uint16.
+func RTypeUint16() uintptr { return rTypeUint16 }
+
+// RTypeUint32 returns rtype of uint32.
+func RTypeUint32() uintptr { return rTypeUint32 }
+
+// RTypeUint64 returns rtype of uint64.
+func RTypeUint64() uintptr { return rTypeUint64 }
+
+// RTypeFloat32 returns rtype of float32.
+func RTypeFloat32() uintptr { return rTypeFloat32 }
+
+// RTypeFloat64 returns rtype of float64.
+func RTypeFloat64() uintptr { return rTypeFloat64 }
+
+// RTypeComplex64 returns rtype of complex64.
+func RTypeComplex64() uintptr { return rTypeComplex64 }
+
+// RTypeComplex128 returns rtype of complex128.
+func RTypeComplex128() uintptr { return rTypeComplex128 }
+
+// RTypeString returns rtype of string.
+func RTypeString() uintptr { return rTypeString }
+
+// RTypeStringArray returns rtype of []string.
+func RTypeStringArray() uintptr { return rTypeStringArray }
+
+// RTypeBytes returns rtype of []byte.
+func RTypeBytes() uintptr { return rTypeBytes }
+
+// RTypeBytesArray returns rtype of [][]byte.
+func RTypeBytesArray() uintptr { return rTypeBytesArray }
+
+// RTypeMapStringString returns rtype of map[string]string.
+func RTypeMapStringString() uintptr { return rTypeMapStringString }
+
+// RTypeMapStringAny returns rtype of map[string]any.
+func RTypeMapStringAny() uintptr { return rTypeMapStringInterface }
+
+// RTypeUintptr returns rtype of uintptr.
+func RTypeUintptr() uintptr { return rTypeUintptr }
+
+// RTypeUnsafePointer returns rtype of unsafe.Pointer.
+func RTypeUnsafePointer() uintptr { return rTypeUnsafePointer }
+
+// RTypeTimeTime returns rtype of time.Time.
+func RTypeTimeTime() uintptr { return rTypeTimeTime }
+
+// RTypeTimeDuration returns rtype of time.Duration.
+func RTypeTimeDuration() uintptr { return rTypeTimeDuration }
+
+// RTypeIsNumericAny returns true if provided rtype is of any int or uint type.
+// Covers: int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64.
+func RTypeIsNumericAny(rtype uintptr) bool {
 	return RTypeIsIntAny(rtype) || RTypeIsUintAny(rtype)
 }
 
-func RTypeIsAnyReal(rtype uintptr) bool {
-	return RTypeIsAnyNumeric(rtype) || RTypeIsFloatAny(rtype)
+// RTypeIsRealAny returns true if provided rtype is any numeric or float type.
+// Covers: int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64,
+// float32, float64.
+func RTypeIsRealAny(rtype uintptr) bool {
+	return RTypeIsNumericAny(rtype) || RTypeIsFloatAny(rtype)
 }
 
+// RTypeIsIntAny returns true if provided rtype is any int type.
+// Covers: int, int8, int16, int32, int64.
 func RTypeIsIntAny(rtype uintptr) bool {
 	return rtype == rTypeInt || RTypeIsIntFixed(rtype)
 }
 
+// RTypeIsIntFixed returns true if provided rtype is fixed int type.
+// Covers: int8, int16, int32, int64.
 func RTypeIsIntFixed(rtype uintptr) bool {
 	switch rtype {
 	case rTypeInt8, rTypeInt16, rTypeInt32, rTypeInt64:
@@ -92,10 +154,14 @@ func RTypeIsIntFixed(rtype uintptr) bool {
 	}
 }
 
+// RTypeIsUintAny returns true if provided rtype is any uint type.
+// Covers: uint, uint8, uint16, uint32, uint64.
 func RTypeIsUintAny(rtype uintptr) bool {
 	return rtype == rTypeUint || RTypeIsUintFixed(rtype)
 }
 
+// RTypeIsUintFixed returns true if provided rtype is fixed uint type.
+// Covers: uint8, uint16, uint32, uint64.
 func RTypeIsUintFixed(rtype uintptr) bool {
 	switch rtype {
 	case rTypeUint8, rTypeUint16, rTypeUint32, rTypeUint64:
@@ -105,6 +171,8 @@ func RTypeIsUintFixed(rtype uintptr) bool {
 	}
 }
 
+// RTypeIsFloatAny returns true if provided rtype is any float type.
+// Covers: float32, float64.
 func RTypeIsFloatAny(rtype uintptr) bool {
 	switch rtype {
 	case rTypeFloat32, rTypeFloat64:
@@ -114,6 +182,8 @@ func RTypeIsFloatAny(rtype uintptr) bool {
 	}
 }
 
+// RTypeIsComplexAny returns true if provided rtype is any complex type.
+// Covers: complex64, complex128.
 func RTypeIsComplexAny(rtype uintptr) bool {
 	switch rtype {
 	case rTypeComplex64, rTypeComplex128:

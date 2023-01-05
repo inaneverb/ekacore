@@ -76,7 +76,7 @@ var (
 		{f: ekaunsafe.RTypeBytes, eq: 1 << 17},
 		{f: ekaunsafe.RTypeBytesArray, eq: 1 << 18},
 		{f: ekaunsafe.RTypeMapStringString, eq: 1 << 19},
-		{f: ekaunsafe.RTypeMapStringInterface, eq: 1 << 20},
+		{f: ekaunsafe.RTypeMapStringAny, eq: 1 << 20},
 		{f: ekaunsafe.RTypeComplex64, eq: 1 << 21},
 		{f: ekaunsafe.RTypeComplex128, eq: 1 << 22},
 		{f: ekaunsafe.RTypeUintptr, eq: 1 << 23},
@@ -88,8 +88,8 @@ var (
 		f  func(uintptr) bool
 		eq uint64
 	}{
-		{f: ekaunsafe.RTypeIsAnyNumeric, eq: 4095 << 1},   // [1..12] as idx
-		{f: ekaunsafe.RTypeIsAnyReal, eq: 16383 << 1},     // [1..14] as idx
+		{f: ekaunsafe.RTypeIsNumericAny, eq: 4095 << 1},   // [1..12] as idx
+		{f: ekaunsafe.RTypeIsRealAny, eq: 16383 << 1},     // [1..14] as idx
 		{f: ekaunsafe.RTypeIsIntAny, eq: 31<<3 | 1<<2},    // [3..7,2] as idx
 		{f: ekaunsafe.RTypeIsIntFixed, eq: 15<<4 | 1<<2},  // [4..7,2] as idx
 		{f: ekaunsafe.RTypeIsUintAny, eq: 31<<8 | 1<<1},   // [8..12,1] as idx
@@ -122,7 +122,7 @@ var (
 		{f: ekaunsafe.RTypeBytes, z: reflect2.RTypeOf(tda[17]), name: "RTypeBytes"},
 		{f: ekaunsafe.RTypeBytesArray, z: reflect2.RTypeOf(tda[18]), name: "RTypeBytesArray"},
 		{f: ekaunsafe.RTypeMapStringString, z: reflect2.RTypeOf(tda[19]), name: "RTypeMapStringString"},
-		{f: ekaunsafe.RTypeMapStringInterface, z: reflect2.RTypeOf(tda[20]), name: "RTypeMapStringInterface"},
+		{f: ekaunsafe.RTypeMapStringAny, z: reflect2.RTypeOf(tda[20]), name: "RTypeMapStringInterface"},
 		{f: ekaunsafe.RTypeComplex64, z: reflect2.RTypeOf(tda[21]), name: "RTypeComplex64"},
 		{f: ekaunsafe.RTypeComplex128, z: reflect2.RTypeOf(tda[22]), name: "RTypeComplex128"},
 		{f: ekaunsafe.RTypeUintptr, z: reflect2.RTypeOf(tda[23]), name: "RTypeUintptr"},
