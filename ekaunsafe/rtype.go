@@ -146,12 +146,8 @@ func RTypeIsIntAny(rtype uintptr) bool {
 // RTypeIsIntFixed returns true if provided rtype is fixed int type.
 // Covers: int8, int16, int32, int64.
 func RTypeIsIntFixed(rtype uintptr) bool {
-	switch rtype {
-	case rTypeInt8, rTypeInt16, rTypeInt32, rTypeInt64:
-		return true
-	default:
-		return false
-	}
+	return rtype == rTypeInt8 || rtype == rTypeInt16 || rtype == rTypeInt32 ||
+		rtype == rTypeInt64
 }
 
 // RTypeIsUintAny returns true if provided rtype is any uint type.
@@ -163,32 +159,24 @@ func RTypeIsUintAny(rtype uintptr) bool {
 // RTypeIsUintFixed returns true if provided rtype is fixed uint type.
 // Covers: uint8, uint16, uint32, uint64.
 func RTypeIsUintFixed(rtype uintptr) bool {
-	switch rtype {
-	case rTypeUint8, rTypeUint16, rTypeUint32, rTypeUint64:
-		return true
-	default:
-		return false
-	}
+	return rtype == rTypeUint8 || rtype == rTypeUint16 ||
+		rtype == rTypeUint32 || rtype == rTypeUint64
 }
 
 // RTypeIsFloatAny returns true if provided rtype is any float type.
 // Covers: float32, float64.
 func RTypeIsFloatAny(rtype uintptr) bool {
-	switch rtype {
-	case rTypeFloat32, rTypeFloat64:
-		return true
-	default:
-		return false
-	}
+	return rtype == rTypeFloat32 || rtype == rTypeFloat64
 }
 
 // RTypeIsComplexAny returns true if provided rtype is any complex type.
 // Covers: complex64, complex128.
 func RTypeIsComplexAny(rtype uintptr) bool {
-	switch rtype {
-	case rTypeComplex64, rTypeComplex128:
-		return true
-	default:
-		return false
-	}
+	return rtype == rTypeComplex64 || rtype == rTypeComplex128
+}
+
+// RTypeIsStringLike returns true if provided rtype is anything string like
+// (or can be cast to string). Covers: string, []byte.
+func RTypeIsStringLike(rtype uintptr) bool {
+	return rtype == rTypeString || rtype == rTypeBytes
 }

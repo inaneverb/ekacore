@@ -96,6 +96,7 @@ var (
 		{f: ekaunsafe.RTypeIsUintFixed, eq: 15<<9 | 1<<1}, // [9..12,1] as idx
 		{f: ekaunsafe.RTypeIsFloatAny, eq: 3 << 13},       // [13..14] as idx
 		{f: ekaunsafe.RTypeIsComplexAny, eq: 3 << 21},     // [21..22] as idx
+		{f: ekaunsafe.RTypeIsStringLike, eq: 5 << 15},     // [15,17] as idx
 	}
 	pt = []struct {
 		f    func() uintptr
@@ -212,3 +213,4 @@ func TestRTypeIsUintAny(t *testing.T)    { testRTypeIs(t, 4) }
 func TestRTypeIsUintFixed(t *testing.T)  { testRTypeIs(t, 5) }
 func TestRTypeIsFloatAny(t *testing.T)   { testRTypeIs(t, 6) }
 func TestRTypeIsComplexAny(t *testing.T) { testRTypeIs(t, 7) }
+func TestRTypeIsStringLike(t *testing.T) { testRTypeIs(t, 8) }
