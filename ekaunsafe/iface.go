@@ -32,6 +32,12 @@ func (i Interface) Pack() any {
 	return ret
 }
 
+// PackInterface is the same as Interface.Pack method,
+// but it is just a small convenient alias.
+func PackInterface(rtype uintptr, word unsafe.Pointer) any {
+	return Interface{rtype, word}.Pack()
+}
+
 // UnpackInterface exposes Golang any internal parts and returns it.
 // If passed argument is absolutely nil, returns an empty Interface object.
 func UnpackInterface(i any) Interface {
