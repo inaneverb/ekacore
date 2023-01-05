@@ -18,6 +18,6 @@ func init() {
 	var crEntropy [8]byte
 	_, _ = crand.Read(crEntropy[:])
 
-	d := int64(binary.BigEndian.Uint64(crEntropy[:]))
+	var d = int64(binary.BigEndian.Uint64(crEntropy[:]))
 	mrand.Seed(time.Now().UnixNano() + d)
 }

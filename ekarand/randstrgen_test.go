@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/qioalice/ekago/v3/ekarand"
+	"github.com/qioalice/ekago/ekarand/v4"
 )
 
 func doTest(t *testing.T, n int) {

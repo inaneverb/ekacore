@@ -3,9 +3,9 @@
 // Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package ekahaiku
+package ekarand
 
-var adjectives = []string{
+var haikuAdjectives = []string{
 	"abandoned", "able", "absolute", "adorable", "adventurous", "academic",
 	"acceptable", "acclaimed", "accomplished", "accurate", "aching", "acidic",
 	"acrobatic", "active", "actual", "adept", "admirable", "admired", "adolescent",
@@ -202,7 +202,7 @@ var adjectives = []string{
 	"yawning", "yearly", "yellow", "yellowish", "young", "youthful", "yummy", "zany",
 }
 
-var nouns = []string{
+var haikuNouns = []string{
 	"people", "history", "way", "art", "world", "information", "map", "two",
 	"family", "government", "health", "system", "computer", "meat", "year", "thanks",
 	"music", "person", "reading", "method", "data", "food", "understanding",

@@ -8,7 +8,7 @@ package ekarand
 import (
 	mrand "math/rand"
 
-	"github.com/qioalice/ekago/v3/ekastr"
+	"github.com/qioalice/ekago/ekastr/v4"
 )
 
 const (
