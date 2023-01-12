@@ -32,6 +32,12 @@ func (i Interface) Pack() any {
 	return ret
 }
 
+// Tuple returns Interface arguments as a tuple. It's just for convenient usage
+// while chaining or unpacking interface and passing its parts to anywhere else.
+func (i Interface) Tuple() (uintptr, unsafe.Pointer) {
+	return i.Type, i.Word
+}
+
 // PackInterface is the same as Interface.Pack method,
 // but it is just a small convenient alias.
 func PackInterface(rtype uintptr, word unsafe.Pointer) any {
