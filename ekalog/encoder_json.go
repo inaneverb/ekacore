@@ -8,12 +8,12 @@ package ekalog
 import (
 	"time"
 
-	"github.com/qioalice/ekago/v3/internal/ekaletter"
-
 	"github.com/json-iterator/go"
+
+	"github.com/qioalice/ekago/v4/internal/ekaletter"
 )
 
-//noinspection GoSnakeCaseUsage
+// noinspection GoSnakeCaseUsage
 type (
 	// CI_JSONEncoder is a type that built to be used as a part of CommonIntegrator
 	// as an log Entry encoder to the some output as JSON.
@@ -70,7 +70,7 @@ type (
 	CI_JSONEncoder_Field uint8
 )
 
-//noinspection GoSnakeCaseUsage
+// noinspection GoSnakeCaseUsage
 const (
 	CI_JSON_ENCODER_FIELD_LEVEL CI_JSONEncoder_Field = 1 + iota
 	CI_JSON_ENCODER_FIELD_LEVEL_VALUE
@@ -86,7 +86,7 @@ const (
 	CI_JSON_ENCODER_FIELD_1DL_STACKTRACE_FIELDS_PREFIX
 )
 
-//noinspection GoSnakeCaseUsage
+// noinspection GoSnakeCaseUsage
 const (
 	CI_JSON_ENCODER_FIELD_DEFAULT_LEVEL                        = "level"
 	CI_JSON_ENCODER_FIELD_DEFAULT_LEVEL_VALUE                  = "level_value"
@@ -111,31 +111,31 @@ var (
 //
 // By default, the depth level is > 1, meaning an output may look like:
 //
-// 		{
-// 		    "message": "Error message",
-// 		    "fields": {
-// 		        "key1": "value1" // <-- here 2 depth level
-// 		    }
-// 		    "stacktrace": [{
-// 		        "func": "ekago.v3.ekalog_test.foo", // <-- here 2 depth level
-// 		        "file": "logger_test.go:22",
-// 		        "package": "github.com/qioalice",
-// 		        "fields": {
-// 		            "test": 42 // <-- here 3 depth level
-// 		        }
-// 		    }]
-// 		}
+//	{
+//	    "message": "Error message",
+//	    "fields": {
+//	        "key1": "value1" // <-- here 2 depth level
+//	    }
+//	    "stacktrace": [{
+//	        "func": "ekago.v3.ekalog_test.foo", // <-- here 2 depth level
+//	        "file": "logger_test.go:22",
+//	        "package": "github.com/qioalice",
+//	        "fields": {
+//	            "test": 42 // <-- here 3 depth level
+//	        }
+//	    }]
+//	}
 //
 // But enabling 1 depth level you will get:
 //
-// 		{
-// 		    "message": "Error message",
-// 		    "field_key1": "value1",
-// 		    "stacktrace": [
-// 		        "github.com/qioalice/ekago.v3.ekalog_test.foo (logger_test.go:22)"
-// 		    ],
-// 		    "field_stacktrace_0_test": 42
-// 		}
+//	{
+//	    "message": "Error message",
+//	    "field_key1": "value1",
+//	    "stacktrace": [
+//	        "github.com/qioalice/ekago.v3.ekalog_test.foo (logger_test.go:22)"
+//	    ],
+//	    "field_stacktrace_0_test": 42
+//	}
 //
 // Calling this method many times will overwrite previous value.
 //

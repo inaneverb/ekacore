@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/qioalice/ekago/ekarand/v4"
+	"github.com/qioalice/ekago/v4/ekarand"
 )
 
 func TestHaikunate(t *testing.T) {

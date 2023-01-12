@@ -10,7 +10,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/qioalice/ekago/v3/internal/ekaletter"
+	"github.com/qioalice/ekago/v4/internal/ekaletter"
 )
 
 type (

@@ -10,12 +10,12 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/qioalice/ekago/v3/ekadeath"
-	"github.com/qioalice/ekago/v3/ekaerr"
-	"github.com/qioalice/ekago/v3/internal/ekaclike"
-	"github.com/qioalice/ekago/v3/internal/ekaletter"
-
 	"github.com/modern-go/reflect2"
+
+	"github.com/qioalice/ekago/v4/ekadeath"
+	"github.com/qioalice/ekago/v4/ekaerr"
+	"github.com/qioalice/ekago/v4/ekaunsafe"
+	"github.com/qioalice/ekago/v4/internal/ekaletter"
 )
 
 var (
@@ -185,7 +185,7 @@ func (l *Logger) log(
 				rtype1stArg = typ1stArg.RType()
 			}
 
-			if rtype1stArg == ekaclike.RTypeString {
+			if rtype1stArg == ekaunsafe.RTypeString() {
 				var str string
 				typ1stArg.UnsafeSet(unsafe.Pointer(&str), reflect2.PtrOf(args[0]))
 				args = args[1:]

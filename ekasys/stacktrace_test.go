@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/qioalice/ekago/ekasys/v4"
-
 	"github.com/stretchr/testify/assert"
+
+	"github.com/qioalice/ekago/v4/ekasys"
 )
 
 // Test GetStackTrace with 'skip' == 0, 'depth' == 1,

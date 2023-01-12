@@ -33,9 +33,9 @@ package ekastr
 // - 'cbTextFound', argument " blah3".
 // Keep your eyes on the spaces in "just text" pieces.
 func Interpolate(s string, cbVerbFound, cbTextFound func(v string)) {
-	var f1 = func(v []byte) { cbVerbFound(B2S(v)) }
-	var f2 = func(v []byte) { cbTextFound(B2S(v)) }
-	InterpolateBytes(S2B(s), f1, f2)
+	var f1 = func(v []byte) { cbVerbFound(FromBytes(v)) }
+	var f2 = func(v []byte) { cbTextFound(FromBytes(v)) }
+	InterpolateBytes(ToBytes(s), f1, f2)
 }
 
 // InterpolateBytes is the same as Interpolate, but works with []byte

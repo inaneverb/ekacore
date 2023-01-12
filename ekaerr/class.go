@@ -84,9 +84,9 @@ func (c Class) New(message string, args ...any) *Error {
 	return newError(false, c.id, c.namespaceID, nil, message, args)
 }
 
-// LightNew is the same as just New() but creates a lightweight Error instead.
+// NewLightweight is the same as just New() but creates a lightweight Error instead.
 // Read more what lightweight error is in Error's doc.
-func (c Class) LightNew(message string, args ...any) *Error {
+func (c Class) NewLightweight(message string, args ...any) *Error {
 	if !isValidClassID(c.id) {
 		return nil
 	}
@@ -108,9 +108,9 @@ func (c Class) Wrap(err error, message string, args ...any) *Error {
 	return newError(false, c.id, c.namespaceID, err, message, args)
 }
 
-// LightWrap is the same as just Wrap() but creates a lightweight Error instead.
+// WrapLightweight is the same as just Wrap() but creates a lightweight Error instead.
 // Read more what lightweight error is in Error's doc.
-func (c Class) LightWrap(err error, message string, args ...any) *Error {
+func (c Class) WrapLightweight(err error, message string, args ...any) *Error {
 	if !isValidClassID(c.id) || err == nil {
 		return nil
 	}

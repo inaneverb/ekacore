@@ -14,7 +14,7 @@ import (
 	"bytes"
 	"strconv"
 
-	"github.com/qioalice/ekago/ekastr/v4"
+	"github.com/qioalice/ekago/v4/ekastr"
 )
 
 // Thanks to https://gist.github.com/hugsy/8910dc78d208e40de42deb29e62df913
@@ -49,5 +49,5 @@ func HaikunateWithRange(from, to uint) string {
 		b.WriteByte('0')
 	}
 
-	return ekastr.B2S(strconv.AppendUint(b.Bytes(), rn, 10))
+	return ekastr.FromBytes(strconv.AppendUint(b.Bytes(), rn, 10))
 }

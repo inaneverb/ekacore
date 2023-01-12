@@ -1,15 +1,17 @@
-module github.com/qioalice/ekago/v3
+module github.com/qioalice/ekago/v4
 
-go 1.18
+go 1.19
 
 require (
 	github.com/ef-ds/deque v1.0.4
 	github.com/ef-ds/stack v1.0.1
+	github.com/gofrs/uuid v4.3.1+incompatible
 	github.com/json-iterator/go v1.1.9
 	github.com/modern-go/reflect2 v1.0.1
 	github.com/oklog/ulid/v2 v2.0.2
 	github.com/stretchr/testify v1.6.1
 	github.com/theodesp/go-heaps v0.0.0-20190520121037-88e35354fe0a
+	github.com/tomnomnom/xtermcolor v0.0.0-20160428124646-b78803f00a7e
 )
 
 require (

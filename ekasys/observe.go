@@ -3,7 +3,7 @@
 // Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package ekaserv
+package ekasys
 
 import (
 	"context"
@@ -11,22 +11,18 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"github.com/qioalice/ekago/v3/ekadeath"
+	"github.com/qioalice/ekago/v4/ekadeath"
 )
 
-// TODO: Comment
+type ObserveController struct {
+	ctx  context.Context
+	wg   sync.WaitGroup
+	sema sync.Mutex
+}
 
-type (
-	ObserveController struct {
-		ctx  context.Context
-		wg   sync.WaitGroup
-		sema sync.Mutex
-	}
-
-	// ObserveCallback is just a function alias for callback
-	// that you will use in Observe() function.
-	ObserveCallback func(oc *ObserveController)
-)
+// ObserveCallback is just a function alias for callback
+// that you will use in Observe() function.
+type ObserveCallback func(oc *ObserveController)
 
 const (
 	mutexLocked = 1 << iota
@@ -73,8 +69,9 @@ func newObserveController(ctx context.Context) *ObserveController {
 // First of all. You need a special "main" context.
 // If you pass nil as context.Context, the context.Background() will be used.
 // The difference is:
-//  - Overwritten background context can be canceled ONLY by OS signals;
-//  - Your context can be cancelled by your hands manually AND by OS signals.
+//   - Overwritten background context can be canceled ONLY by OS signals;
+//   - Your context can be cancelled by your hands manually AND by OS signals.
+//
 // This context will be used to be able to say your jobs that it's time to stop
 // their work and they need to be completed completely.
 //
@@ -95,13 +92,11 @@ func Observe(ctx context.Context, cb ObserveCallback) {
 		ctx = context.Background()
 	}
 
-	ctx, cancelFunc := context.WithCancel(ctx)
-	oc := newObserveController(ctx)
+	var cancelFunc func()
+	ctx, cancelFunc = context.WithCancel(ctx)
 
-	ekadeath.Reg(func() {
-		cancelFunc()
-		oc.wait()
-	})
+	var oc = newObserveController(ctx)
 
+	ekadeath.Reg(func() { cancelFunc(); oc.wait() })
 	cb(oc)
 }

@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/qioalice/ekago/ekastr/v4"
+	"github.com/qioalice/ekago/v4/ekastr"
 )
 
 // StackFrame represents one stack level (frame/item).

@@ -11,8 +11,8 @@ import (
 
 	"github.com/oklog/ulid/v2"
 
-	"github.com/qioalice/ekago/ekaenc/v4"
-	"github.com/qioalice/ekago/ekarand/v4"
+	"github.com/qioalice/ekago/v4/ekaenc"
+	"github.com/qioalice/ekago/v4/ekarand"
 )
 
 // Ulid is a Universally Unique Lexicographically Sortable Identifier.

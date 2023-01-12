@@ -4,7 +4,7 @@
 // Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package ekafuture_test
+package ekatyp_test
 
 import (
 	"fmt"
@@ -13,15 +13,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/qioalice/ekago/v3/ekafuture"
-
 	"github.com/stretchr/testify/assert"
+
+	"github.com/qioalice/ekago/v4/ekatyp"
 )
 
 const MaxRetry = 100000
 
 func TestLockSuccess(t *testing.T) {
-	m := ekafuture.NewMuMap()
+	m := ekatyp.NewMuMap()
 
 	if !m.TryLock("123") {
 		t.Error("fail to get lock")
@@ -30,7 +30,7 @@ func TestLockSuccess(t *testing.T) {
 }
 
 func TestLock(t *testing.T) {
-	m := ekafuture.NewMuMap()
+	m := ekatyp.NewMuMap()
 	assert.True(t, m.RTryLock("abc"))
 	assert.False(t, m.TryLock("abc"))
 	assert.Panics(t, func() { m.Unlock("abc") })
@@ -39,7 +39,7 @@ func TestLock(t *testing.T) {
 
 func TestLockFail(t *testing.T) {
 	// fail fast
-	m := ekafuture.NewMuMapCustom(1, 1*time.Nanosecond, 1*time.Nanosecond, 2, 0.1)
+	m := ekatyp.NewMuMapCustom(1, 1*time.Nanosecond, 1*time.Nanosecond, 2, 0.1)
 
 	c := make(chan bool)
 	finish := make(chan bool)
@@ -85,7 +85,7 @@ func TestLockFail(t *testing.T) {
 }
 
 func TestLockIndivisually(t *testing.T) {
-	m := ekafuture.NewMuMap()
+	m := ekatyp.NewMuMap()
 
 	if !m.TryLock(123) || !m.TryLock(456) {
 		t.Error("different locks affect each other")
@@ -212,7 +212,7 @@ func lockByMapWithMutex(actionCount, keyCount, goroutineNum, averageTime int) {
 
 func lockByMapMutex(actionCount, keyCount, goroutineNum, averageTime int) {
 	sharedSlice := make([]int, keyCount)
-	m := ekafuture.NewMuMap()
+	m := ekatyp.NewMuMap()
 
 	loads := splitLoad(actionCount, goroutineNum)
 	var wg sync.WaitGroup
@@ -283,7 +283,7 @@ func runWithMapWithMutex(iterateNum, keyCount, averageTime int,
 }
 
 func runWithMapMutex(iterateNum, keyCount, averageTime int,
-	sharedSlice []int, m *ekafuture.MuMap) int {
+	sharedSlice []int, m *ekatyp.MuMap) int {
 	success := 0
 	for ; iterateNum > 0; iterateNum-- {
 		idx := rand.Intn(keyCount)

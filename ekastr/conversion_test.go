@@ -10,33 +10,33 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/qioalice/ekago/ekastr/v4"
+	"github.com/qioalice/ekago/v4/ekastr"
 )
 
-func TestS2B(t *testing.T) {
+func TestToBytes(t *testing.T) {
 	var s = "string"
-	require.EqualValues(t, []byte("string"), ekastr.S2B(s))
+	require.EqualValues(t, []byte("string"), ekastr.ToBytes(s))
 }
 
-func TestB2S(t *testing.T) {
+func TestFromBytes(t *testing.T) {
 	var b = []byte("byte array")
-	require.EqualValues(t, "byte array", ekastr.B2S(b))
+	require.EqualValues(t, "byte array", ekastr.FromBytes(b))
 }
 
-func BenchmarkB2S(b *testing.B) {
+func BenchmarkFromBytes(b *testing.B) {
 	b.ReportAllocs()
 
 	var ba = []byte("byte array")
 	for i := 0; i < b.N; i++ {
-		_ = ekastr.B2S(ba)
+		_ = ekastr.FromBytes(ba)
 	}
 }
 
-func BenchmarkS2B(b *testing.B) {
+func BenchmarkToBytes(b *testing.B) {
 	b.ReportAllocs()
 
 	var s = "string"
 	for i := 0; i < b.N; i++ {
-		_ = ekastr.S2B(s)
+		_ = ekastr.ToBytes(s)
 	}
 }

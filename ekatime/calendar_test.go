@@ -8,10 +8,10 @@ package ekatime_test
 import (
 	"testing"
 
-	"github.com/qioalice/ekago/v3/ekatime"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/qioalice/ekago/v4/ekatime"
 )
 
 func TestCalendar2015(t *testing.T) {

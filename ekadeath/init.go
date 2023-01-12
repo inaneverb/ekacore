@@ -13,7 +13,7 @@ import (
 
 // Spawns goroutine which can handle SIGKILL, SIGTERM that leads to call Die(1).
 func init() {
-	ch := make(chan os.Signal)
+	var ch = make(chan os.Signal)
 	signal.Notify(ch, os.Interrupt, syscall.SIGKILL, syscall.SIGTERM)
 	go func() {
 		_ = <-ch // blocks

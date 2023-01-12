@@ -1,3 +1,8 @@
+// Copyright © 2020-2021. All rights reserved.
+// Author: Ilya Stroy.
+// Contacts: iyuryevich@pm.me, https://github.com/qioalice
+// License: https://opensource.org/licenses/MIT
+
 package ekaerr_test
 
 import (
@@ -6,9 +11,9 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/qioalice/ekago/v3/ekaerr"
-	"github.com/qioalice/ekago/v3/ekalog"
-	"github.com/qioalice/ekago/v3/internal/ekaletter"
+	"github.com/qioalice/ekago/v4/ekaerr"
+	"github.com/qioalice/ekago/v4/ekalog"
+	"github.com/qioalice/ekago/v4/internal/ekaletter"
 )
 
 //go:noinline
@@ -46,7 +51,7 @@ func wrapEkagoErr(layer int) *ekaerr.Error {
 func wrapEkagoErrLightweight(layer int) *ekaerr.Error {
 
 	if layer == 0 {
-		return ekaerr.IllegalArgument.LightNew("Something goes wrong")
+		return ekaerr.IllegalArgument.NewLightweight("Something goes wrong")
 	}
 
 	err := wrapEkagoErrLightweight(layer - 1)

@@ -10,58 +10,56 @@ import (
 	"encoding/binary"
 	"errors"
 
-	"github.com/qioalice/ekago/v3/ekamath"
+	"github.com/qioalice/ekago/v4/ekamath"
 )
 
-type (
-	// Calendar is a RAM friendly data structure that allows you to keep
-	// 365 days of some year with flags whether day is day off or a workday,
-	// store a reason of that and also binary/text encoding/decoding.
+// Calendar is a RAM friendly data structure that allows you to keep
+// 365 days of some year with flags whether day is day off or a workday,
+// store a reason of that and also binary/text encoding/decoding.
+//
+// WARNING!
+// You MUST use NewCalendar() constructor to construct this object.
+// If you just instantiate an object it will be considered as invalid,
+// and almost all methods will return you an unexpected, bad result.
+//
+// WARNING!
+// Encode/decode operations DOES NOT SUPPORT causing feature (for now).
+// It will be fixed in the future.
+type Calendar struct {
+
+	// -------------------------------------------------------------
+	//   Binary encoding/decoding protocol.
+	//   Version: 1.0
 	//
-	// WARNING!
-	// You MUST use NewCalendar() constructor to construct this object.
-	// If you just instantiate an object it will be considered as invalid,
-	// and almost all methods will return you an unexpected, bad result.
-	//
-	// WARNING!
-	// Encode/decode operations DOES NOT SUPPORT causing feature (for now).
-	// It will be fixed in the future.
-	Calendar struct {
+	//   [0..3] bytes:  Reserved.
+	//   [4..5] bytes:  Field `year`, big endian.
+	//   [6] byte:      Field `isLeap`.
+	//   [7] byte:      Reserved.
+	//   [8..] bytes:   Field `dayOff`. BitSet as binary encoded.
+	// -------------------------------------------------------------
 
-		// -------------------------------------------------------------
-		//   Binary encoding/decoding protocol.
-		//   Version: 1.0
-		//
-		//   [0..3] bytes:  Reserved.
-		//   [4..5] bytes:  Field `year`, big endian.
-		//   [6] byte:      Field `isLeap`.
-		//   [7] byte:      Reserved.
-		//   [8..] bytes:   Field `dayOff`. BitSet as binary encoded.
-		// -------------------------------------------------------------
+	// TODO: Add support of causing feature for encode/decode operations.
 
-		// TODO: Add support of causing feature for encode/decode operations.
+	// The year this calendar of.
+	year Year
 
-		// The year this calendar of.
-		year Year
+	// Flag whether the current year is leap or not.
+	// Fewer computations, more RAM consumption.
+	isLeap bool
 
-		// Flag whether the current year is leap or not.
-		// Fewer computations, more RAM consumption.
-		isLeap bool
+	// Bitset of days in calendar.
+	// 0 means work day, 1 means day off.
+	// The index of bit is a day of year.
+	dayOff *ekamath.BitSet
 
-		// Bitset of days in calendar.
-		// 0 means work day, 1 means day off.
-		// The index of bit is a day of year.
-		dayOff *ekamath.BitSet
+	// A set of Event that is used to overwrite default values of calendar.
+	// Nil if `enableCause` is false at the NewCalendar() call.
+	cause map[uint]EventID
 
-		// A set of Event that is used to overwrite default values of calendar.
-		// Nil if `enableCause` is false at the NewCalendar() call.
-		cause map[uint]EventID
-
-		// A map of EventID's descriptions.
-		// Nil if `enableCause` is false at the NewCalendar() call.
-		eventDescriptions map[EventID]string
-	}
-)
+	// A map of EventID's descriptions.
+	// Nil if `enableCause` is false at the NewCalendar() call.
+	eventDescriptions map[EventID]string
+}
 
 var (
 	ErrCalendarInvalid             = errors.New("invalid Calendar")
@@ -135,9 +133,9 @@ func (wc *Calendar) OverrideDate(dd Date, isDayOff bool) {
 // of such overwriting rule.
 //
 // Requirements:
-//  - Calendar is valid and not malformed object,
-//  - Causing feature is enabled (`enableCause` being `true` at the NewCalendar() call),
-//  - Provided Event (`e`) is valid and belongs to Year, this Calendar of.
+//   - Calendar is valid and not malformed object,
+//   - Causing feature is enabled (`enableCause` being `true` at the NewCalendar() call),
+//   - Provided Event (`e`) is valid and belongs to Year, this Calendar of.
 //
 // Does nothing if any of requirements is failed.
 func (wc *Calendar) AddEvent(e Event) {
@@ -151,9 +149,9 @@ func (wc *Calendar) AddEvent(e Event) {
 // Using that you can describe your EventID and figure out event's name.
 //
 // Requirements:
-//  - Calendar is valid and not malformed object,
-//  - Causing feature is enabled (`enableCause` being `true` at the NewCalendar() call),
-//  - Provided EventID's name (`desc`) is not empty
+//   - Calendar is valid and not malformed object,
+//   - Causing feature is enabled (`enableCause` being `true` at the NewCalendar() call),
+//   - Provided EventID's name (`desc`) is not empty
 //
 // Does nothing if any of requirements is failed.
 func (wc *Calendar) AddEventDescription(eid EventID, desc string) {
@@ -166,8 +164,8 @@ func (wc *Calendar) AddEventDescription(eid EventID, desc string) {
 // If you have a Date object just call Date.Days() method.
 //
 // Requirements:
-//  - Calendar is valid and not malformed object,
-//  - Requested Date is valid and belongs to Year, this Calendar of.
+//   - Calendar is valid and not malformed object,
+//   - Requested Date is valid and belongs to Year, this Calendar of.
 //
 // Returns false if requested day is workday or if any of requirements is failed.
 func (wc *Calendar) IsDayOff(dd Date) bool {
@@ -180,8 +178,8 @@ func (wc *Calendar) IsDayOff(dd Date) bool {
 // NextWorkDay returns a next work day followed by provided day of year.
 //
 // Requirements:
-//  - Calendar is valid and not malformed object,
-//  - Requested Date is valid and belongs to Year, this Calendar of.
+//   - Calendar is valid and not malformed object,
+//   - Requested Date is valid and belongs to Year, this Calendar of.
 //
 // Returns an invalid date if there's no remaining workdays after requested
 // or if any of requirements is failed.
@@ -192,8 +190,8 @@ func (wc *Calendar) NextWorkDay(dd Date) Date {
 // NextDayOff returns a next day off followed by provided day of year.
 //
 // Requirements:
-//  - Calendar is valid and not malformed object,
-//  - Requested Date is valid and belongs to Year, this Calendar of.
+//   - Calendar is valid and not malformed object,
+//   - Requested Date is valid and belongs to Year, this Calendar of.
 //
 // Returns an invalid date if there's no remaining days off after requested
 // or if any of requirements is failed.
@@ -204,9 +202,9 @@ func (wc *Calendar) NextDayOff(dd Date) Date {
 // EventOfDate returns an Event because of which the type of the current date is changed.
 //
 // Requirements:
-//  - Calendar is valid and not malformed object,
-//  - Causing feature is enabled (`enableCause` being `true` at the NewCalendar() call),
-//  - Requested date (`dayOfYear`) is valid and belongs the year, this calendar belongs also to.
+//   - Calendar is valid and not malformed object,
+//   - Causing feature is enabled (`enableCause` being `true` at the NewCalendar() call),
+//   - Requested date (`dayOfYear`) is valid and belongs the year, this calendar belongs also to.
 //
 // Returns an invalid event if there's no registered event with passed date,
 // or if any of requirements is failed.
@@ -230,9 +228,9 @@ func (wc *Calendar) EventOfDate(dd Date) Event {
 // DescriptionOfEvent returns an EventID's description (name).
 //
 // Requirements:
-//  - Calendar is valid and not malformed object,
-//  - Causing feature is enabled (`enableCause` being `true` at the NewCalendar() call),
-//  - Calendar has at least one Event with requested EventID,
+//   - Calendar is valid and not malformed object,
+//   - Causing feature is enabled (`enableCause` being `true` at the NewCalendar() call),
+//   - Calendar has at least one Event with requested EventID,
 //
 // Returns an empty string if there's no registered such EventID,
 // or if any of requirements is failed.
@@ -248,8 +246,8 @@ func (wc *Calendar) DescriptionOfEvent(eid EventID) string {
 // WorkDays returns an array of work days of the provided Month.
 //
 // Requirements:
-//  - Calendar is valid and not malformed object,
-//  - Requested Month (`m`) is valid.
+//   - Calendar is valid and not malformed object,
+//   - Requested Month (`m`) is valid.
 //
 // WARNING:
 // It takes quite a lot of time to prepare return data, because of the way
@@ -273,8 +271,8 @@ func (wc *Calendar) DaysOff(m Month) []Day {
 // WorkDaysCount returns a number of working days in the provided Month.
 //
 // Requirements:
-//  - Calendar is valid and not malformed object,
-//  - Requested Month (`m`) is valid.
+//   - Calendar is valid and not malformed object,
+//   - Requested Month (`m`) is valid.
 //
 // Returns 0 if any of requirements is failed.
 func (wc *Calendar) WorkDaysCount(m Month) Days {
@@ -298,8 +296,8 @@ func (wc *Calendar) DaysOffCount(m Month) Days {
 // There's no guarantees about algorithm that will be used to encode/decode.
 //
 // Requirements:
-//  - Calendar is valid and not malformed object,
-//  - User MUST NOT modify returned data. If you need it, clone it firstly.
+//   - Calendar is valid and not malformed object,
+//   - User MUST NOT modify returned data. If you need it, clone it firstly.
 //
 // Limitations:
 // - Encode/decode operations DOES NOT SUPPORT causing feature.
@@ -337,9 +335,9 @@ func (wc *Calendar) MarshalBinary() ([]byte, error) {
 // Does nothing (and returns nil) if provided `data` is empty.
 //
 // Requirements:
-//  - Provided `data` MUST BE obtained by calling Calendar.MarshalBinary() method.
-//  - Provided `data` MUST BE valid, ErrCalendarInvalidDataToDecode returned otherwise.
-//  - User MUST NOT use provided `data` after passing to this method. UB otherwise.
+//   - Provided `data` MUST BE obtained by calling Calendar.MarshalBinary() method.
+//   - Provided `data` MUST BE valid, ErrCalendarInvalidDataToDecode returned otherwise.
+//   - User MUST NOT use provided `data` after passing to this method. UB otherwise.
 //
 // Limitations:
 // - Encode/decode operations DOES NOT SUPPORT causing feature.
@@ -381,8 +379,8 @@ func (wc *Calendar) UnmarshalBinary(data []byte) error {
 // MarshalText guarantees that output data will be base64 encoded.
 //
 // Requirements:
-//  - Calendar is valid and not malformed object,
-//  - User MUST NOT modify returned data. If you need it, clone it firstly.
+//   - Calendar is valid and not malformed object,
+//   - User MUST NOT modify returned data. If you need it, clone it firstly.
 //
 // Limitations:
 // - Encode/decode operations DOES NOT SUPPORT causing feature.
@@ -409,9 +407,9 @@ func (wc *Calendar) MarshalText() ([]byte, error) {
 // Does nothing (and returns nil) if provided `data` is empty.
 //
 // Requirements:
-//  - Provided `data` MUST BE obtained by calling Calendar.MarshalBinary() method.
-//  - Provided `data` MUST BE valid, ErrCalendarInvalidDataToDecode returned otherwise.
-//  - User MUST NOT use provided `data` after passing to this method. UB otherwise.
+//   - Provided `data` MUST BE obtained by calling Calendar.MarshalBinary() method.
+//   - Provided `data` MUST BE valid, ErrCalendarInvalidDataToDecode returned otherwise.
+//   - User MUST NOT use provided `data` after passing to this method. UB otherwise.
 //
 // Limitations:
 // - Encode/decode operations DOES NOT SUPPORT causing feature.

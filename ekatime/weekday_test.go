@@ -8,9 +8,9 @@ package ekatime_test
 import (
 	"testing"
 
-	"github.com/qioalice/ekago/v3/ekatime"
-
 	"github.com/stretchr/testify/require"
+
+	"github.com/qioalice/ekago/v4/ekatime"
 )
 
 func TestWeekday_To06(t *testing.T) {

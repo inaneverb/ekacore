@@ -8,7 +8,7 @@ package ekarand
 import (
 	mrand "math/rand"
 
-	"github.com/qioalice/ekago/ekastr/v4"
+	"github.com/qioalice/ekago/v4/ekastr"
 )
 
 const (
@@ -43,5 +43,5 @@ func genWithLenFrom(charSet string, n int) string {
 	for i := 0; i < n; i++ {
 		res[i] = charSet[mrand.Intn(len(charSet))]
 	}
-	return ekastr.B2S(res)
+	return ekastr.FromBytes(res)
 }

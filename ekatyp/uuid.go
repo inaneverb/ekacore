@@ -12,8 +12,8 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"github.com/qioalice/ekago/ekaenc/v4"
-	"github.com/qioalice/ekago/ekastr/v4"
+	"github.com/qioalice/ekago/v4/ekaenc"
+	"github.com/qioalice/ekago/v4/ekastr"
 )
 
 // Uuid is a Universally Unique IDentifier.
@@ -88,7 +88,7 @@ func NewUuidTo(to *Uuid, v byte) error {
 //
 // Returns ErrIDNilDestination if 'to' is nil.
 func NewUuidFromStringTo(to *Uuid, input string) error {
-	return to.UnmarshalText(ekastr.S2B(input))
+	return to.UnmarshalText(ekastr.ToBytes(input))
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -196,7 +196,7 @@ func (u *Uuid) MarshalText() ([]byte, error) {
 	if u == nil {
 		return ekaenc.NullAsBytesLowerCase(), nil
 	}
-	return ekastr.S2B(uuid.UUID(*u).String()), nil
+	return ekastr.ToBytes(uuid.UUID(*u).String()), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface by parsing

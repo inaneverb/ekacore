@@ -6,7 +6,7 @@
 package ekastr
 
 import (
-	"github.com/qioalice/ekago/ekaunsafe/v4"
+	"github.com/qioalice/ekago/v4/ekaunsafe"
 )
 
 // FromBytes converts byte slice to a string without memory allocation.

@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/qioalice/ekago/v3/internal/ekaclike"
-	"github.com/qioalice/ekago/v3/internal/ekaletter"
+	"github.com/qioalice/ekago/v4/ekaunsafe"
+	"github.com/qioalice/ekago/v4/internal/ekaletter"
 )
 
 type (
@@ -300,7 +300,7 @@ func (l *Logger) ReplaceIntegrator(newIntegrator Integrator) {
 	if l == nopLogger {
 		return
 	}
-	if ekaclike.TakeRealAddr(newIntegrator) == nil {
+	if ekaunsafe.TakeRealAddr(newIntegrator) == nil {
 		panic("Failed to change Integrator. New Integrator is nil.")
 	}
 	if ci, ok := newIntegrator.(*CommonIntegrator); ok {

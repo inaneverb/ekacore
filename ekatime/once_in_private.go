@@ -10,10 +10,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/qioalice/ekago/v3/ekadeath"
-
 	heap "github.com/theodesp/go-heaps"
 	fibheap "github.com/theodesp/go-heaps/fibonacci"
+
+	"github.com/qioalice/ekago/v4/ekadeath"
 )
 
 /*

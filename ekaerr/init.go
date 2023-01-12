@@ -6,9 +6,9 @@
 package ekaerr
 
 import (
-	"github.com/qioalice/ekago/v3/internal/ekaletter"
-
 	"github.com/modern-go/reflect2"
+
+	"github.com/qioalice/ekago/v4/internal/ekaletter"
 )
 
 func init() {

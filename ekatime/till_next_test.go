@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/qioalice/ekago/v3/ekatime"
-
 	"github.com/stretchr/testify/require"
+
+	"github.com/qioalice/ekago/v4/ekatime"
 )
 
 func TestTimestamp_TillNext(t *testing.T) {

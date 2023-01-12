@@ -12,10 +12,10 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/qioalice/ekago/v3/ekastr"
-	"github.com/qioalice/ekago/v3/internal/ekaclike"
-
 	"github.com/modern-go/reflect2"
+
+	"github.com/qioalice/ekago/v4/ekastr"
+	"github.com/qioalice/ekago/v4/ekaunsafe"
 )
 
 // Inspired by: https://github.com/uber-go/zap/blob/master/zapcore/field.go
@@ -320,7 +320,7 @@ func FString(key string, value string) LetterField {
 
 // FStringFromBytes constructs a field with the given key and value.
 func FStringFromBytes(key string, value []byte) LetterField {
-	return FString(key, ekastr.B2S(value))
+	return FString(key, ekastr.FromBytes(value))
 }
 
 // ------------------------- POINTER CASES GENERATORS ------------------------- //
@@ -483,7 +483,7 @@ func FStringer(key string, value fmt.Stringer) LetterField {
 // So it's unsafe to try to do something with that addr but comparing.
 func FAddr(key string, value any) LetterField {
 	if value != nil {
-		addr := ekaclike.TakeRealAddr(value)
+		addr := ekaunsafe.TakeRealAddr(value)
 		return LetterField{Key: key, IValue: int64(uintptr(addr)), Kind: KIND_TYPE_ADDR}
 	}
 	return FNil(key, KIND_TYPE_ADDR)
@@ -581,7 +581,7 @@ func FExtractedMap(key string, value map[string]any) LetterField {
 // Value must not be Golang's nil. Otherwise an invalid LetterField will be returned
 // and such field is skipped at the parsing.
 func FAny(key string, value any) LetterField {
-	eface := ekaclike.UnpackInterface(value)
+	var eface = ekaunsafe.UnpackInterface(value)
 
 	if eface.Type == 0 && eface.Word == nil {
 		return FNil(key, 0)
@@ -590,97 +590,97 @@ func FAny(key string, value any) LetterField {
 	typ := reflect2.TypeOf(value)
 
 	switch eface.Type {
-	case ekaclike.RTypeBool:
+	case ekaunsafe.RTypeBool():
 		var boolVal bool
 		typ.UnsafeSet(unsafe.Pointer(&boolVal), eface.Word)
 		return FBool(key, boolVal)
 
-	case ekaclike.RTypeInt:
+	case ekaunsafe.RTypeInt():
 		var intVal int
 		typ.UnsafeSet(unsafe.Pointer(&intVal), eface.Word)
 		return FInt(key, intVal)
 
-	case ekaclike.RTypeInt8:
+	case ekaunsafe.RTypeInt8():
 		var int8Val int8
 		typ.UnsafeSet(unsafe.Pointer(&int8Val), eface.Word)
 		return FInt8(key, int8Val)
 
-	case ekaclike.RTypeInt16:
+	case ekaunsafe.RTypeInt16():
 		var int16Val int16
 		typ.UnsafeSet(unsafe.Pointer(&int16Val), eface.Word)
 		return FInt16(key, int16Val)
 
-	case ekaclike.RTypeInt32:
+	case ekaunsafe.RTypeInt32():
 		var int32Val int32
 		typ.UnsafeSet(unsafe.Pointer(&int32Val), eface.Word)
 		return FInt32(key, int32Val)
 
-	case ekaclike.RTypeInt64:
+	case ekaunsafe.RTypeInt64():
 		var int64Val int64
 		typ.UnsafeSet(unsafe.Pointer(&int64Val), eface.Word)
 		return FInt64(key, int64Val)
 
-	case ekaclike.RTypeUint:
+	case ekaunsafe.RTypeUint():
 		var uintVal uint64
 		typ.UnsafeSet(unsafe.Pointer(&uintVal), eface.Word)
 		return FUint64(key, uintVal)
 
-	case ekaclike.RTypeUint8:
+	case ekaunsafe.RTypeUint8():
 		var uint8Val uint8
 		typ.UnsafeSet(unsafe.Pointer(&uint8Val), eface.Word)
 		return FUint8(key, uint8Val)
 
-	case ekaclike.RTypeUint16:
+	case ekaunsafe.RTypeUint16():
 		var uint16Val uint16
 		typ.UnsafeSet(unsafe.Pointer(&uint16Val), eface.Word)
 		return FUint16(key, uint16Val)
 
-	case ekaclike.RTypeUint32:
+	case ekaunsafe.RTypeUint32():
 		var uint32Val uint32
 		typ.UnsafeSet(unsafe.Pointer(&uint32Val), eface.Word)
 		return FUint32(key, uint32Val)
 
-	case ekaclike.RTypeUint64:
+	case ekaunsafe.RTypeUint64():
 		var uint64Val uint64
 		typ.UnsafeSet(unsafe.Pointer(&uint64Val), eface.Word)
 		return FUint64(key, uint64Val)
 
-	case ekaclike.RTypeFloat32:
+	case ekaunsafe.RTypeFloat32():
 		var float32Val float32
 		typ.UnsafeSet(unsafe.Pointer(&float32Val), eface.Word)
 		return FFloat32(key, float32Val)
 
-	case ekaclike.RTypeFloat64:
+	case ekaunsafe.RTypeFloat64():
 		var float64Val float64
 		typ.UnsafeSet(unsafe.Pointer(&float64Val), eface.Word)
 		return FFloat64(key, float64Val)
 
-	case ekaclike.RTypeComplex64:
+	case ekaunsafe.RTypeComplex64():
 		var complex64Val complex64
 		typ.UnsafeSet(unsafe.Pointer(&complex64Val), eface.Word)
 		return FComplex64(key, complex64Val)
 
-	case ekaclike.RTypeComplex128:
+	case ekaunsafe.RTypeComplex128():
 		var complex128Val complex128
 		typ.UnsafeSet(unsafe.Pointer(&complex128Val), eface.Word)
 		return FComplex128(key, complex128Val)
 
-	case ekaclike.RTypeString:
+	case ekaunsafe.RTypeString():
 		var stringVal string
 		typ.UnsafeSet(unsafe.Pointer(&stringVal), eface.Word)
 		return FString(key, stringVal)
 
-	case ekaclike.RTypeTimeTime:
+	case ekaunsafe.RTypeTimeTime():
 		var timeVal time.Time
 		typ.UnsafeSet(unsafe.Pointer(&timeVal), eface.Word)
 		return FUnixFromStd(key, timeVal)
 
-	case ekaclike.RTypeTimeDuration:
+	case ekaunsafe.RTypeTimeDuration():
 		var durationVal time.Duration
 		typ.UnsafeSet(unsafe.Pointer(&durationVal), eface.Word)
 		return FDuration(key, durationVal)
 
-	case ekaclike.RTypeUintptr, ekaclike.RTypeUnsafePointer:
+	case ekaunsafe.RTypeUintptr(), ekaunsafe.RTypeUnsafePointer():
 		return FAddr(key, value)
 	}
 

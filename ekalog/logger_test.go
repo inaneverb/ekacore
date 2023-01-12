@@ -13,16 +13,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/qioalice/ekago/v3/ekadeath"
-	"github.com/qioalice/ekago/v3/ekaerr"
-	"github.com/qioalice/ekago/v3/ekalog"
+	"github.com/qioalice/ekago/v4/ekadeath"
+	"github.com/qioalice/ekago/v4/ekaerr"
+	"github.com/qioalice/ekago/v4/ekalog"
 )
 
 func foo(isLightWeight bool) *ekaerr.Error {
 
 	gen := ekaerr.Interrupted.New
 	if isLightWeight {
-		gen = ekaerr.Interrupted.LightNew
+		gen = ekaerr.Interrupted.NewLightweight
 	}
 
 	return gen("fwefwf").
@@ -60,7 +60,10 @@ func TestLog(t *testing.T) {
 	ekalog.Error("test", "sys.this_field_is_ignored", 0)
 
 	ekalog.Alerte("", foo(true), "log_field")
-	ekalog.Emerge("emerg", foo(false), "log_field")
+	ekalog.Alerte("log message", foo(true), "log_field")
+	ekalog.Alerte("", foo(false), "log_field")
+	ekalog.Alerte("log message", foo(false), "log_field")
+	ekalog.Emerge("emerg", foo(true), "log_field")
 }
 
 func BenchmarkLog(b *testing.B) {
@@ -82,4 +85,9 @@ func BenchmarkLog(b *testing.B) {
 
 	var eps = ekalog.EPS()
 	fmt.Printf("%+v\n", eps)
+}
+
+func TestFoo(t *testing.T) {
+	var err = foo(true)
+	fmt.Println(ekaerr.GetLetter(err).Messages)
 }

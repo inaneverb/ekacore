@@ -10,10 +10,10 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/qioalice/ekago/v3/ekaerr"
-	"github.com/qioalice/ekago/v3/ekalog"
-
 	"github.com/stretchr/testify/assert"
+
+	"github.com/qioalice/ekago/v4/ekaerr"
+	"github.com/qioalice/ekago/v4/ekalog"
 )
 
 type T struct{}

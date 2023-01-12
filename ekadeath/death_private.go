@@ -1,4 +1,4 @@
-// Copyright © 2019-2021. All rights reserved.
+// Copyright © 2019-2023. All rights reserved.
 // Author: Ilya Stroy.
 // Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
@@ -6,61 +6,53 @@
 package ekadeath
 
 import (
-	"github.com/qioalice/ekago/v3/ekatyp"
+	"github.com/qioalice/ekago/v4/ekatyp"
+	"github.com/qioalice/ekago/v4/ekaunsafe"
 )
 
-type (
-	// destructorRegistered is a destructor descriptor.
-	// Each Reg() call converts passed destructor to that descriptor.
-	destructorRegistered = struct {
-		f              any  // can be DestructorSimple or DestructorWithExitCode
-		bindToExitCode int  // f will be called only if app is down with that exit code
-		callAnyway     bool // call no matter what exit code is
-	}
-)
+// destructorDescriptor is a descriptor of registered destructor.
+// Each Reg() call converts provided destructor to this.
+type destructorDescriptor struct {
+	f          DestructorWithExitCode
+	exitCode   int  // f will be called only if app is down with that exit code
+	callAnyway bool // call no matter what exit code is
+}
 
-var (
-	// destructors is a LIFO stack that contains destructorRegistered objects.
-	destructors ekatyp.Stack
-)
+// destructors is a LIFO stack that contains destructorDescriptor objects.
+var destructors ekatyp.Stack
 
-// reg registers each function from destructorsToBeRegistered as destructor
-// that will be called anyway if hasExitCodeBind is false (exitCode is ignored this way)
-// or will be called if Die with passed exitCode is called if hasExitCodeBind is true.
-func reg(hasExitCodeBind bool, exitCode int, destructorsToBeRegistered ...any) {
-	for _, destructor := range destructorsToBeRegistered {
-		if !valid(destructor) {
-			continue
+// reg registers each function from 'd' as a destructor that:
+//   - Will be called anyway if 'bind' is false ('exitCode' is ignored this way);
+//   - Will be called if Die() with the same 'exitCode' is called
+//     and 'bind' is true.
+func reg(bind bool, exitCode int, d []any) {
+	for i, n := 0, len(d); i < n; i++ {
+		if f := parse(d[i]); f != nil {
+			destructors.Push(newDescriptor(f, exitCode, !bind))
 		}
-		destructors.Push(destructorRegistered{
-			f:              destructor,
-			bindToExitCode: exitCode,
-			callAnyway:     !hasExitCodeBind,
-		})
 	}
 }
 
-// valid reports whether d is valid destructor:
-// - it's type either DestructorSimple or DestructorWithExitCode,
-// - it's value is not nil.
-func valid(d any) bool {
-	switch d.(type) {
+// parse tries to treat provided argument as a destructor.
+// Returns non-nil one if it so; nil otherwise.
+func parse(d any) DestructorWithExitCode {
+	if ekaunsafe.TakeRealAddr(d) == nil {
+		return nil
+	}
+	switch d := d.(type) {
 	case DestructorSimple:
-		return d.(DestructorSimple) != nil
+		return func(_ int) { d() } // "cast" to DestructorWithExitCode
 	case DestructorWithExitCode:
-		return d.(DestructorWithExitCode) != nil
+		return d
 	default:
-		return false
+		return nil
 	}
 }
 
-// invoke calls d with no passing arguments if d is DestructorSimple,
-// or passing exitCode if d is DestructorWithExitCode.
-func invoke(d any, exitCode int) {
-	switch d.(type) {
-	case DestructorSimple:
-		d.(DestructorSimple)()
-	case DestructorWithExitCode:
-		d.(DestructorWithExitCode)(exitCode)
-	}
+// newDescriptor creates a new destructorDescriptor with given args.
+func newDescriptor(
+	d DestructorWithExitCode,
+	exitCode int, callAnyway bool) destructorDescriptor {
+
+	return destructorDescriptor{d, exitCode, callAnyway}
 }

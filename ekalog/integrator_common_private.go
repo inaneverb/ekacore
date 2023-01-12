@@ -10,11 +10,11 @@ import (
 	"os"
 	"unsafe"
 
-	"github.com/qioalice/ekago/v3/internal/ekaclike"
-	"github.com/qioalice/ekago/v3/internal/ekasys"
+	"github.com/qioalice/ekago/v4/ekaio"
+	"github.com/qioalice/ekago/v4/ekaunsafe"
 )
 
-//noinspection GoSnakeCaseUsage
+// noinspection GoSnakeCaseUsage
 type (
 	// _CI_Output is a CommonIntegrator part that contains encoder
 	// and destination io.Writer set, encoded Entry will be written to.
@@ -50,15 +50,15 @@ func (ci *CommonIntegrator) assertWithLock() {
 }
 
 // build tries to prepare CommonIntegrator to be used with Logger:
-//  - Drops last not fully registered _CI_Output object,
-//  - Calculates lowest levels of all _CI_Output.
+//   - Drops last not fully registered _CI_Output object,
+//   - Calculates lowest levels of all _CI_Output.
 //
 // Requirements:
-//  - Integrator must not be nil (even typed nil), panic otherwise;
-//  - If Integrator is CommonIntegrator
-//    it must not be registered with some Logger before, panic otherwise;
-//  - If Integrator is CommonIntegrator
-//    it must have at least 1 registered io.Writer, panic otherwise.
+//   - Integrator must not be nil (even typed nil), panic otherwise;
+//   - If Integrator is CommonIntegrator
+//     it must not be registered with some Logger before, panic otherwise;
+//   - If Integrator is CommonIntegrator
+//     it must have at least 1 registered io.Writer, panic otherwise.
 func (ci *CommonIntegrator) build() {
 
 	// build() cannot be called if CommonIntegrator is nil.
@@ -78,14 +78,14 @@ func (ci *CommonIntegrator) build() {
 
 		// Try to find stdout in the previous writers.
 
-		stdoutNormal := unsafe.Pointer(os.Stdout)
-		stdoutSynced := unsafe.Pointer(ekasys.Stdout)
+		var stdoutNormal = unsafe.Pointer(os.Stdout)
+		var stdoutSynced = ekaunsafe.TakeRealAddr(ekaio.GetSyncedStdout())
 
 		found := false
 
 		for i := 0; i < ci.idx && !found; i++ {
 			for j, n := 0, len(ci.output[i].writers); j < n && !found; j++ {
-				writerPtr := ekaclike.TakeRealAddr(ci.output[i].writers[j])
+				writerPtr := ekaunsafe.TakeRealAddr(ci.output[i].writers[j])
 				found = writerPtr == stdoutNormal || writerPtr == stdoutSynced
 			}
 		}
@@ -94,7 +94,8 @@ func (ci *CommonIntegrator) build() {
 			// If stdout was used already, drop the last encoder.
 			ci.output = ci.output[:ci.idx]
 		} else {
-			ci.output[ci.idx].writers = append(ci.output[ci.idx].writers, ekasys.Stdout)
+			ci.output[ci.idx].writers =
+				append(ci.output[ci.idx].writers, ekaio.GetSyncedStdout())
 		}
 	}
 

@@ -10,9 +10,9 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/qioalice/ekago/ekaunsafe/v4"
-
 	"github.com/stretchr/testify/assert"
+
+	"github.com/qioalice/ekago/v4/ekaunsafe"
 )
 
 type t1 struct {

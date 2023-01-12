@@ -8,7 +8,7 @@ package ekaunsafe_test
 import (
 	"testing"
 
-	"github.com/qioalice/ekago/ekaunsafe/v4"
+	"github.com/qioalice/ekago/v4/ekaunsafe"
 
 	"github.com/stretchr/testify/assert"
 )

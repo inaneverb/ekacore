@@ -13,11 +13,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/qioalice/ekago/v3/ekamath"
-	"github.com/qioalice/ekago/v3/ekasys"
-	"github.com/qioalice/ekago/v3/internal/ekaletter"
-
 	"github.com/json-iterator/go"
+
+	"github.com/qioalice/ekago/v4/ekamath"
+	"github.com/qioalice/ekago/v4/ekasys"
+	"github.com/qioalice/ekago/v4/internal/ekaletter"
 )
 
 // noinspection GoSnakeCaseUsage

@@ -4,7 +4,7 @@
 // Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package ekafuture
+package ekatyp
 
 import (
 	"math/rand"

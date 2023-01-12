@@ -14,8 +14,8 @@ import (
 	"github.com/modern-go/reflect2"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/qioalice/ekago/ekamath/v4"
-	"github.com/qioalice/ekago/ekaunsafe/v4"
+	"github.com/qioalice/ekago/v4/ekamath"
+	"github.com/qioalice/ekago/v4/ekaunsafe"
 )
 
 //goland:noinspection GoRedundantConversion,GoBoolExpressions

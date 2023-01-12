@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/qioalice/ekago/ekastr/v4"
-
 	"github.com/stretchr/testify/assert"
+
+	"github.com/qioalice/ekago/v4/ekastr"
 )
 
 type testCaseInterpolatePartReport struct {
@@ -85,7 +85,7 @@ func BenchmarkInterpolateBytes(b *testing.B) {
 	b.ReportAllocs()
 	var cb = func(_ []byte) {}
 	for i := 0; i < b.N; i++ {
-		arr := ekastr.S2B(S)
+		arr := ekastr.ToBytes(S)
 		ekastr.InterpolateBytes(arr, cb, cb)
 	}
 }

@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/qioalice/ekago/v3/internal/3rdparty/xtermcolor"
+	"github.com/tomnomnom/xtermcolor"
 )
 
 type (

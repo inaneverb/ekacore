@@ -9,10 +9,11 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/qioalice/ekago/v3/ekasys"
-	"github.com/qioalice/ekago/v3/internal/ekaclike"
-
 	"github.com/modern-go/reflect2"
+
+	"github.com/qioalice/ekago/v4/ekastr"
+	"github.com/qioalice/ekago/v4/ekasys"
+	"github.com/qioalice/ekago/v4/ekaunsafe"
 )
 
 type (
@@ -98,9 +99,8 @@ func LAddFieldWithCheck(l *Letter, f LetterField) {
 func LSetMessage(l *Letter, msg string, overwrite bool) {
 	switch lm := len(l.Messages); {
 
-	case lm > 0 && len(l.StackTrace) == 0 && overwrite:
-		// This isn't the first message, but an error is lightweight
-		// and overwrite is requested.
+	case lm > 0 && !overwrite:
+		// This isn't the first message, and overwrite is not requested.
 		l.Messages[lm-1].Body += "; " + msg
 
 	case lm == 0:
@@ -114,7 +114,8 @@ func LSetMessage(l *Letter, msg string, overwrite bool) {
 		})
 
 	case overwrite:
-		// Prev cond can be false only if l.Messages[lm-1].StackFrameIdx == l.stackFrameIdx
+		// Prev cond can be false only if
+		// l.Messages[lm-1].StackFrameIdx == l.stackFrameIdx
 		// meaning that message for the current stackframe is presented.
 		// So, we can overwrite it, if it's allowed.
 		l.Messages[lm-1].Body = msg
@@ -226,7 +227,7 @@ func LParseTo(l *Letter, args []any, onlyFields bool) {
 	)
 
 	if len(args) > 0 && !onlyFields {
-		messageNeedsArgs = PrintfVerbsCount(&message)
+		messageNeedsArgs = ekastr.PrintfVerbsCount(&message)
 		if messageNeedsArgs > 0 {
 			messageArgs = make([]any, 0, messageNeedsArgs)
 		}
@@ -296,7 +297,7 @@ func LParseTo(l *Letter, args []any, onlyFields bool) {
 			// there is no message's body still and we'll use current arg as message's body.
 			messageArgs = append(messageArgs, args[i])
 
-		case rtypeArg == ekaclike.RTypeString:
+		case rtypeArg == ekaunsafe.RTypeString():
 			// at this code point arg could be only field's key or unnamed arg
 			// well, looks like it's a key.
 			typeArg.UnsafeSet(unsafe.Pointer(&fieldKey), reflect2.PtrOf(args[i]))

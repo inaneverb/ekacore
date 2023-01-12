@@ -13,7 +13,7 @@ import (
 
 	"github.com/modern-go/reflect2"
 
-	"github.com/qioalice/ekago/ekaext/v4"
+	"github.com/qioalice/ekago/v4/ekaext"
 )
 
 const (

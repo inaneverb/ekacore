@@ -3,10 +3,10 @@
 // Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
 
-package ekaserv
+package ekasys
 
 import (
-	"github.com/qioalice/ekago/v3/ekatime"
+	"github.com/qioalice/ekago/v4/ekatime"
 )
 
 type (

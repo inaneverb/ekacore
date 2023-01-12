@@ -9,12 +9,12 @@ import (
 	"io"
 	"sync"
 
-	"github.com/qioalice/ekago/v3/ekatyp"
-	"github.com/qioalice/ekago/v3/internal/ekaclike"
-	"github.com/qioalice/ekago/v3/internal/ekaletter"
+	"github.com/qioalice/ekago/v4/ekaio"
+	"github.com/qioalice/ekago/v4/ekaunsafe"
+	"github.com/qioalice/ekago/v4/internal/ekaletter"
 )
 
-//noinspection GoSnakeCaseUsage
+// noinspection GoSnakeCaseUsage
 type (
 	// CommonIntegrator is the implementation of Integrator interface.
 	// It's SYNC Integrator, that calls io.Writer.Write() method one by one at the
@@ -241,7 +241,7 @@ func (ci *CommonIntegrator) Sync() error {
 
 	for _, output := range ci.output {
 		for _, destination := range output.writers {
-			if syncer, ok := destination.(ekatyp.Syncer); ok {
+			if syncer, ok := destination.(ekaio.Syncer); ok {
 				if err := syncer.Sync(); err != nil {
 					return err
 				}
@@ -263,7 +263,7 @@ func (ci *CommonIntegrator) WithEncoder(enc CI_Encoder) *CommonIntegrator {
 	defer ci.mu.Unlock()
 
 	// encAddr == nil if encoder == nil
-	switch encAddr := ekaclike.TakeRealAddr(enc); {
+	switch encAddr := ekaunsafe.TakeRealAddr(enc); {
 
 	case encAddr == nil && len(ci.output) == 0:
 		ci.output = append(ci.output, _CI_Output{

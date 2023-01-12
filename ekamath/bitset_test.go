@@ -10,7 +10,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/qioalice/ekago/ekamath/v4"
+	"github.com/qioalice/ekago/v4/ekamath"
 
 	"github.com/stretchr/testify/require"
 )

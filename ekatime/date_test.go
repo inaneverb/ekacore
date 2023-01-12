@@ -10,15 +10,15 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/qioalice/ekago/v3/ekatime"
-
 	"github.com/stretchr/testify/require"
+
+	"github.com/qioalice/ekago/v4/ekatime"
 )
 
 func TestDate_String(t *testing.T) {
-	d1 := ekatime.NewDate(2020, 9, 1)
-	d2 := ekatime.NewDate(1812, 11, 24)
-	d3 := ekatime.NewDate(2100, 2, 15)
+	var d1 = ekatime.NewDate(2020, 9, 1)
+	var d2 = ekatime.NewDate(1812, 11, 24)
+	var d3 = ekatime.NewDate(2100, 2, 15)
 
 	require.EqualValues(t, "2020/09/01", d1.String())
 	require.EqualValues(t, "1812/11/24", d2.String())
@@ -26,7 +26,7 @@ func TestDate_String(t *testing.T) {
 }
 
 func BenchmarkDate_String_CachedYear(b *testing.B) {
-	d := ekatime.NewDate(2020, 9, 1)
+	var d = ekatime.NewDate(2020, 9, 1)
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -35,7 +35,7 @@ func BenchmarkDate_String_CachedYear(b *testing.B) {
 }
 
 func BenchmarkDate_String_GeneratedYear(b *testing.B) {
-	d := ekatime.NewDate(2212, 8, 8)
+	var d = ekatime.NewDate(2212, 8, 8)
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -44,7 +44,7 @@ func BenchmarkDate_String_GeneratedYear(b *testing.B) {
 }
 
 func BenchmarkDate_FmtSprintf(b *testing.B) {
-	y, m, d := ekatime.NewDate(1914, 3, 9).Split()
+	var y, m, d = ekatime.NewDate(1914, 3, 9).Split()
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -53,21 +53,19 @@ func BenchmarkDate_FmtSprintf(b *testing.B) {
 }
 
 func TestDate_ParseFrom(t *testing.T) {
-	bd1 := []byte("1814/05/12") // valid
-	bd2 := []byte("20200901")   // valid
-	bd3 := []byte("2020-1120")  // invalid
-	bd4 := []byte("202011-2")   // invalid
-	bd5 := []byte("202011-20")  // invalid
+	var bd1 = []byte("1814/05/12") // valid
+	var bd2 = []byte("20200901")   // valid
+	var bd3 = []byte("2020-1120")  // invalid
+	var bd4 = []byte("202011-2")   // invalid
+	var bd5 = []byte("202011-20")  // invalid
 
-	var (
-		d1, d2, d3, d4, d5 ekatime.Date
-	)
+	var d1, d2, d3, d4, d5 ekatime.Date
 
-	err1 := d1.ParseFrom(bd1)
-	err2 := d2.ParseFrom(bd2)
-	err3 := d3.ParseFrom(bd3)
-	err4 := d4.ParseFrom(bd4)
-	err5 := d5.ParseFrom(bd5)
+	var err1 = d1.ParseFrom(bd1)
+	var err2 = d2.ParseFrom(bd2)
+	var err3 = d3.ParseFrom(bd3)
+	var err4 = d4.ParseFrom(bd4)
+	var err5 = d5.ParseFrom(bd5)
 
 	require.Equal(t, ekatime.NewDate(1814, 5, 12).ToCmp(), d1.ToCmp())
 	require.Equal(t, ekatime.NewDate(2020, 9, 1).ToCmp(), d2.ToCmp())
@@ -80,7 +78,7 @@ func TestDate_ParseFrom(t *testing.T) {
 }
 
 func BenchmarkDate_ParseFrom(b *testing.B) {
-	bd0 := []byte("2020/09/01")
+	var bd0 = []byte("2020/09/01")
 	var d ekatime.Date
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -95,14 +93,14 @@ func TestDate_MarshalJSON(t *testing.T) {
 	}{
 		D: ekatime.NewDate(2020, 9, 12),
 	}
-	d, err := json.Marshal(&dt)
+	var d, err = json.Marshal(&dt)
 
 	require.NoError(t, err)
 	require.EqualValues(t, string(d), `{"d":"2020-09-12"}`)
 }
 
 func TestDate_Replace(t *testing.T) {
-	d := ekatime.NewDate(2021, ekatime.MONTH_FEBRUARY, 10)
+	var d = ekatime.NewDate(2021, ekatime.MONTH_FEBRUARY, 10)
 
 	d = d.Replace(2013, ekatime.MONTH_JANUARY, 2)
 	require.Equal(t, ekatime.NewDate(2013, ekatime.MONTH_JANUARY, 02).ToCmp(), d.ToCmp())
@@ -133,7 +131,7 @@ func TestDate_Replace(t *testing.T) {
 }
 
 func TestDate_Add(t *testing.T) {
-	d := ekatime.NewDate(2021, ekatime.MONTH_FEBRUARY, 10)
+	var d = ekatime.NewDate(2021, ekatime.MONTH_FEBRUARY, 10)
 
 	d = d.Add(1, 2, 3)
 	require.Equal(t, ekatime.NewDate(2022, ekatime.MONTH_APRIL, 13).ToCmp(), d.ToCmp())

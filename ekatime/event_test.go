@@ -8,12 +8,12 @@ package ekatime_test
 import (
 	"testing"
 
-	"github.com/qioalice/ekago/v3/ekatime"
-
 	"github.com/stretchr/testify/require"
+
+	"github.com/qioalice/ekago/v4/ekatime"
 )
 
 func TestEvent_String(t *testing.T) {
-	e := ekatime.NewEvent(ekatime.NewDate(2020, 12, 31), 1, true)
+	var e = ekatime.NewEvent(ekatime.NewDate(2020, 12, 31), 1, true)
 	require.EqualValues(t, "2020/12/31 [Dayoff] ID: 1", e.String())
 }

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/qioalice/ekago/v3/internal/ekaletter"
+	"github.com/qioalice/ekago/v4/internal/ekaletter"
 )
 
 type (
@@ -34,7 +34,7 @@ type (
 	// ERROR OBJECTS CREATED MANUALLY CONSIDERED NOT INITIALIZED AND WILL NOT
 	// WORK PROPERLY, WILL NOT CONTAIN ANY DATA AND WILL NOT WORK AT ALL!
 	//
-	// Use Class.New(), Class.Wrap(), Class.LightNew(), Class.LightWrap() methods
+	// Use Class.New(), Class.Wrap(), Class.NewLightweight(), Class.WrapLightweight() methods
 	// to create an *Error object.
 	//
 	// BECAUSE OF THE MAIN IDEA OF THIS PACKAGE AND EKALOG PACKAGE,
@@ -162,7 +162,7 @@ func (e *Error) Throw() *Error {
 func (e *Error) AddMessage(message string) *Error {
 	if e.IsValid() {
 		if message = strings.TrimSpace(message); message != "" {
-			ekaletter.LSetMessage(e.letter, message, true)
+			ekaletter.LSetMessage(e.letter, message, !e.isLightweight())
 		}
 	}
 	return e

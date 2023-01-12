@@ -10,9 +10,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/qioalice/ekago/v3/ekasys"
-	"github.com/qioalice/ekago/v3/ekatyp"
-	"github.com/qioalice/ekago/v3/internal/ekaletter"
+	"github.com/qioalice/ekago/v4/ekasys"
+	"github.com/qioalice/ekago/v4/ekatyp"
+	"github.com/qioalice/ekago/v4/internal/ekaletter"
 )
 
 // noinspection GoSnakeCaseUsage
@@ -138,22 +138,29 @@ func (e *Error) of(nss []Namespace) bool {
 // classID and namespaceID to the Error and then returns it.
 func (e *Error) init(classID ClassID, namespaceID NamespaceID, lightweight bool) *Error {
 
-	skip := 3 // init(), newError(), [Class.New(), Class.Wrap(), Class.LightNew(), Class.LightWrap()]
+	skip := 3 // init(), newError(), [Class.New(), Class.Wrap(), Class.NewLightweight(), Class.WrapLightweight()]
 
 	if !lightweight {
 		e.letter.StackTrace = ekasys.GetStackTrace(skip, -1).ExcludeInternal()
 	}
 
+	var id ekatyp.Ulid
+	_ = ekatyp.NewUlidTo(&id)
+
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_ID].IValue = int64(classID)
 	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_CLASS_NAME].SValue =
 		classByID(classID, true).fullName
-	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_ERROR_ID].SValue =
-		ekatyp.ULID_New_OrNil().String()
+	e.letter.SystemFields[_ERR_SYS_FIELD_IDX_ERROR_ID].SValue = id.String()
 
 	e.classID = classID
 	e.namespaceID = namespaceID
 
 	return e
+}
+
+// isLightweight reports whether an Error is lightweight or not.
+func (e *Error) isLightweight() bool {
+	return len(e.letter.StackTrace) == 0
 }
 
 // construct is a part of newError() func (Error's constructor).
