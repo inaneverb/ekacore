@@ -7,52 +7,34 @@ package ekadeath
 
 import (
 	"github.com/inaneverb/ekacore/ekatyp/v4"
-	"github.com/inaneverb/ekacore/ekaunsafe/v4"
 )
 
-// destructorDescriptor is a descriptor of registered destructor.
+// dd is a descriptor of registered destructor.
 // Each Reg() call converts provided destructor to this.
-type destructorDescriptor struct {
-	f          DestructorWithExitCode
+type dd struct {
+	f          func(code int)
 	exitCode   int  // f will be called only if app is down with that exit code
 	callAnyway bool // call no matter what exit code is
 }
 
-// destructors is a LIFO stack that contains destructorDescriptor objects.
+// destructors is a LIFO stack that contains dd objects.
 var destructors ekatyp.Stack
 
 // reg registers each function from 'd' as a destructor that:
 //   - Will be called anyway if 'bind' is false ('exitCode' is ignored this way);
 //   - Will be called if Die() with the same 'exitCode' is called
 //     and 'bind' is true.
-func reg(bind bool, exitCode int, d []any) {
-	for i, n := 0, len(d); i < n; i++ {
-		if f := parse(d[i]); f != nil {
-			destructors.Push(newDescriptor(f, exitCode, !bind))
-		}
-	}
+func reg(bind bool, exitCode int, cb func(code int)) {
+	destructors.Push(newDescriptor(cb, exitCode, !bind))
 }
 
-// parse tries to treat provided argument as a destructor.
-// Returns non-nil one if it so; nil otherwise.
-func parse(d any) DestructorWithExitCode {
-	if ekaunsafe.TakeRealAddr(d) == nil {
-		return nil
-	}
-	switch d := d.(type) {
-	case DestructorSimple:
-		return func(_ int) { d() } // "cast" to DestructorWithExitCode
-	case DestructorWithExitCode:
-		return d
-	default:
-		return nil
-	}
+// newDescriptor creates a new dd with given args.
+func newDescriptor(d func(code int), exitCode int, callAnyway bool) dd {
+	return dd{d, exitCode, callAnyway}
 }
 
-// newDescriptor creates a new destructorDescriptor with given args.
-func newDescriptor(
-	d DestructorWithExitCode,
-	exitCode int, callAnyway bool) destructorDescriptor {
-
-	return destructorDescriptor{d, exitCode, callAnyway}
+// wrap wraps destructor w/o accepting exit code to the destructor,
+// that accepts.
+func wrap(cb func()) func(code int) {
+	return func(_ int) { cb() }
 }

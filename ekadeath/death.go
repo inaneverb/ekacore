@@ -7,9 +7,6 @@ package ekadeath
 
 import (
 	"os"
-
-	"github.com/inaneverb/ekacore/ekaext/v4"
-	"github.com/inaneverb/ekacore/ekaunsafe/v4"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -45,9 +42,9 @@ import (
 // 5. Do not want to multiply "if exitCode == 1 {} else if exitCode == 2 {} ..."
 //    and you hate switch construction? Do not worry!
 //    Register your destructors that will be called only for specified exit code.
-//    Call Reg(exitCodeToBind int, yourDestructor func()).
+//    Call Reg(yourDestructor func(), exitCodes[1,2,3]).
 //    Want to know in your destructor that you bind it e.g. to exitCode, dunno, 5?
-//    No problem, Reg(5, foo), where foo is func(code){...}.
+//    No problem, Reg2(foo, 5), where foo is func(code){...}.
 //    Now in your foo, code is 5. It's simple, isn't?
 //
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,52 +57,44 @@ import (
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-// DestructorSimple is an alias to the function that you may register
-// using Reg() function to be executed after Die() or Exit() is called.
-type DestructorSimple = func()
-
-// DestructorWithExitCode is an alias to the function that you may register
-// using Reg() function to be executed after Die() or Exit() is called,
-// that takes an exit code as argument.
-type DestructorWithExitCode = func(code int)
-
 // Reg registers destructors to be called when app should be stopped
 // when Die() or Exit() is called or SIGTERM/SIGKILL received.
 //
-// You can use Reg to do:
-//  1. Just reg one or many destructor(s): Reg(foo), Reg(foo1, foo2, foo3).
-//  2. Reg destructor (one or many) to be called for special exitCode only:
-//     Reg(exitCode, foo), Reg(exitCode, foo1, foo2, foo3),
-//     where exitCode should be: int, int8, int16, int32, int64
-//     (or such uints).
+// You can use Reg to reg destructor to be called:
+// 1. For all exit codes (empty 'codes' provided)
+// 2. For special exit code only (with specified 'codes').
 //
 // WARNING!
-// Nil destructors will be ignored. All values, which type are not allowed,
-// will be ignored. It means:
-// - 1st arg must be any numeric or destructor;
-// - 2nd and next args must be only destructors.
-// All other types for specified arguments are ignored.
-//
-// WARNING!
-// Despite fact that int64/uint64 types are available to be used as exit code,
-// their values must be in the int32 range. UB otherwise.
+// Nil destructors will be ignored.
 //
 // Note.
 // You may register a new destructors when death is requested
 // and other destructors are under executing now.
 // In that case, added destructor will be executed just after the destructor,
 // that is under executing now.
-//
-// Note.
-// Calling a function with no argument does nothing.
-func Reg(args ...any) {
+func Reg(cb func(), codes ...int) {
 
-	args = ekaext.If(len(args) == 0, append([]any{nil}, args...), args)
+	if cb == nil {
+		return
+	}
 
-	if n, ok := ekaunsafe.ToInt64Fast(args[0]); ok {
-		reg(true, int(n), args[1:])
+	if len(codes) > 0 {
+		reg(true, codes[0], wrap(cb))
 	} else {
-		reg(false, 0, args)
+		reg(false, 0, wrap(cb))
+	}
+}
+
+func Reg2(cb func(int), codes ...int) {
+
+	if cb == nil {
+		return
+	}
+
+	if len(codes) > 0 {
+		reg(true, codes[0], cb)
+	} else {
+		reg(false, 0, cb)
 	}
 }
 
@@ -121,17 +110,15 @@ func Exit() {
 // Any numeric variants are allowed (int, int8, ..., uint, uint8, ..., uintptr).
 // In this case only common and associated with specified exit code destructors
 // will be called. By default, exit code is 1. 2nd and next codes are ignored.
-func Die(code ...any) {
+func Die(code ...int) {
 
 	var exitCode = 1
 	if len(code) > 0 {
-		if specifiedExitCode, ok := ekaunsafe.ToInt64Fast(code[0]); ok {
-			exitCode = int(specifiedExitCode)
-		}
+		exitCode = code[0]
 	}
 
 	for elem, found := destructors.Pop(); found; elem, found = destructors.Pop() {
-		destructor := elem.(destructorDescriptor)
+		destructor := elem.(dd)
 		if destructor.callAnyway || destructor.exitCode == exitCode {
 			destructor.f(exitCode)
 		}
