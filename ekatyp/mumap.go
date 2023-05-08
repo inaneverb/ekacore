@@ -13,7 +13,7 @@ import (
 )
 
 type (
-	// Mutex is the mutex with synchronized map
+	// MuMap is the mutex with synchronized map
 	// it's for reducing unnecessary locks among different keys
 	MuMap struct {
 
@@ -189,12 +189,12 @@ func (m *MuMap) unlock(key any, readOnly bool) {
 	m.m.Unlock()
 }
 
-// NewMapMutex returns a mapmutex with default configs
+// NewMuMap returns a mapmutex with default configs
 func NewMuMap() *MuMap {
 	return NewMuMapCustom(180, 1*time.Second, 10*time.Nanosecond, 1.1, 0.2)
 }
 
-// NewCustomizedMapMutex returns a customized mapmutex
+// NewMuMapCustom returns a customized mapmutex
 func NewMuMapCustom(mRetry int, mDelay, bDelay time.Duration, factor, jitter float64) *MuMap {
 	return &MuMap{
 		locks:     make(map[any]int8),

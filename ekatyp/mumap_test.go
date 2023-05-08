@@ -15,7 +15,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/qioalice/ekago/v4/ekatyp"
+	"github.com/inaneverb/ekacore/ekatyp/v4"
 )
 
 const MaxRetry = 100000

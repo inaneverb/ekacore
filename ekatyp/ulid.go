@@ -11,8 +11,8 @@ import (
 
 	"github.com/oklog/ulid/v2"
 
-	"github.com/qioalice/ekago/v4/ekaenc"
-	"github.com/qioalice/ekago/v4/ekarand"
+	"github.com/inaneverb/ekacore/ekaenc/v4"
+	"github.com/inaneverb/ekacore/ekarand/v4"
 )
 
 // Ulid is a Universally Unique Lexicographically Sortable Identifier.
@@ -114,6 +114,19 @@ func (u *Ulid) MarshalText() ([]byte, error) {
 	return ulid.ULID(*u).MarshalText()
 }
 
+// MarshalTextTo does the same as MarshalText() does,
+// but writes result to the 'b'. Returns an error, if len(b) != 26.
+func (u *Ulid) MarshalTextTo(b []byte) error {
+	switch {
+	case (u == nil && len(b) < 4) || (u != nil && len(b) != 26):
+		return ErrIDNotEnoughBuffer
+	case u == nil:
+		copy(b, ekaenc.NullAsStringLowerCase())
+		return nil
+	}
+	return ulid.ULID(*u).MarshalTextTo(b)
+}
+
 // UnmarshalText implements the encoding.TextUnmarshaler interface by parsing
 // the data as string encoded Ulid. Returns ErrIDNilDestination if Ulid is nil.
 func (u *Ulid) UnmarshalText(data []byte) error {
@@ -175,6 +188,18 @@ func (u *Ulid) MarshalBinary() ([]byte, error) {
 	return ulid.ULID(*u).MarshalBinary()
 }
 
+// MarshalBinaryTo does the same as MarshalBinary() does,
+// but writes result to the 'b'. Returns an error, if len(b) != 16.
+func (u *Ulid) MarshalBinaryTo(b []byte) error {
+	switch {
+	case u != nil && len(b) != 16:
+		return ErrIDNotEnoughBuffer
+	case u == nil:
+		return nil
+	}
+	return ulid.ULID(*u).MarshalBinaryTo(b)
+}
+
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface by
 // copying the passed data and converting it to an Ulid.
 // Returns ErrIDNilDestination if Ulid is nil.
@@ -184,6 +209,17 @@ func (u *Ulid) UnmarshalBinary(data []byte) error {
 	}
 	return (*ulid.ULID)(u).UnmarshalBinary(data)
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+// TextLen returns how many bytes will take a text representation of Ulid.
+// Text representation may be obtained by MarshalText(), MarshalTextTo()
+// or String().
+func (*Ulid) TextLen() int { return 26 }
+
+// BinaryLen returns how many bytes will take a binary representation of Ulid.
+// Text representation may be obtained by MarshalBinary(), MarshalBinaryTo().
+func (*Ulid) BinaryLen() int { return 16 }
 
 ////////////////////////////////////////////////////////////////////////////////
 

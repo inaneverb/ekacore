@@ -1,4 +1,4 @@
-// Copyright © 2021. All rights reserved.
+// Copyright © 2023. All rights reserved.
 // Author: Ilya Stroy.
 // Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
@@ -29,8 +29,15 @@ type ID interface {
 	IsNil() bool
 	SetNil()
 	Bytes() []byte
+
+	MarshalTextTo(b []byte) error
+	MarshalBinaryTo(b []byte) error
+
+	TextLen() int
+	BinaryLen() int
 }
 
 var (
-	ErrIDNilDestination = errors.New("ID: Nil destination")
+	ErrIDNilDestination  = errors.New("ID: Nil destination")
+	ErrIDNotEnoughBuffer = errors.New("ID: Not enough buffer")
 )
