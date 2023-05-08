@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/qioalice/ekago/v4/ekatime"
+	"github.com/inaneverb/ekacore/ekatime/v4"
 )
 
 func TestTimestamp_TillNext(t *testing.T) {
@@ -24,6 +24,6 @@ func TestTimestamp_TillNext(t *testing.T) {
 		{105*time.Minute + 45*time.Second, 3 * ekatime.SECONDS_IN_HOUR},
 		{15*time.Minute + 45*time.Second, 30 * ekatime.SECONDS_IN_MINUTE},
 	} {
-		require.Equal(t, n.expected, ts.TillNext(n.range_))
+		require.Equal(t, n.expected, ts.TillNext(n.range_).Duration())
 	}
 }

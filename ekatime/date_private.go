@@ -10,10 +10,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/modern-go/reflect2"
+	"github.com/inaneverb/ekacore/ekaunsafe/v4"
 )
 
-//noinspection GoSnakeCaseUsage
+// noinspection GoSnakeCaseUsage
 const (
 	_DATE_OFFSET_DAY     uint8 = 0
 	_DATE_OFFSET_MONTH   uint8 = _DATE_OFFSET_DAY + 5
@@ -34,7 +34,7 @@ const (
 	_DATE_INVALID Date = 0
 )
 
-//noinspection GoSnakeCaseUsage
+// noinspection GoSnakeCaseUsage
 const (
 	// Min and max values to use _YEAR_AS_NUM_STR instead of strconv.Itoa()
 	_YEAR_AS_NUM_STR_MIN      = _YEAR_MIN
@@ -44,7 +44,7 @@ const (
 	_YEAR_MAX Year = 4095
 )
 
-//noinspection GoSnakeCaseUsage
+// noinspection GoSnakeCaseUsage
 var (
 	_YEAR_AS_NUM_STR [_YEAR_AS_NUM_STR_MAX - _YEAR_AS_NUM_STR_MIN + 1][]byte
 	_DAY_AS_NUM_STR  [31][]byte
@@ -76,10 +76,10 @@ func (dd Date) ensureWeekdayExist() Date {
 func initDateNumStr() {
 	for y := _YEAR_AS_NUM_STR_MIN; y <= _YEAR_AS_NUM_STR_MAX; y++ {
 		_YEAR_AS_NUM_STR[y-_YEAR_AS_NUM_STR_MIN] =
-			reflect2.UnsafeCastString(strconv.Itoa(int(y)))
+			ekaunsafe.StringToBytes(strconv.Itoa(int(y)))
 	}
 	for d := Day(1); d <= 31; d++ {
 		_DAY_AS_NUM_STR[d-1] =
-			reflect2.UnsafeCastString(fmt.Sprintf("%02d", d))
+			ekaunsafe.StringToBytes(fmt.Sprintf("%02d", d))
 	}
 }

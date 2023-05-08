@@ -10,7 +10,7 @@ import (
 	"encoding/binary"
 	"errors"
 
-	"github.com/qioalice/ekago/v4/ekamath"
+	"github.com/inaneverb/ekacore/ekamath/v4"
 )
 
 // Calendar is a RAM friendly data structure that allows you to keep

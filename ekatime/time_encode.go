@@ -8,7 +8,7 @@ package ekatime
 import (
 	"errors"
 
-	"github.com/qioalice/ekago/v4/ekaenc"
+	"github.com/inaneverb/ekacore/ekaenc/v4"
 )
 
 //goland:noinspection GoSnakeCaseUsage

@@ -31,7 +31,7 @@ func (ts Timestamp) Cmp(anotherTimestamp Timestamp) int {
 	}
 }
 
-// I64 returns int64 representation of the current Timestamp 'ts.
+// I64 returns int64 representation of the current Timestamp 'ts'.
 func (ts Timestamp) I64() int64 {
 	return int64(ts)
 }
@@ -40,6 +40,13 @@ func (ts Timestamp) I64() int64 {
 // as current Timestamp have.
 func (ts Timestamp) Std() time.Time {
 	return time.Unix(ts.I64(), 0).UTC()
+}
+
+// Duration returns standard Golang's time.Duration object with the same value,
+// as current Timestamp have. Since Timestamp has only seconds,
+// returned time.Duration has 0 ms, us, ns.
+func (ts Timestamp) Duration() time.Duration {
+	return time.Duration(ts) * time.Second
 }
 
 // Split splits the current TimestampPair 'tsp' into two separate Timestamps.
@@ -160,6 +167,12 @@ func NewTimestamp(y Year, m Month, d Day, hh Hour, mm Minute, ss Second) Timesta
 // time.Time object (UTC time).
 func NewTimestampFromStd(t time.Time) Timestamp {
 	return Timestamp(t.Unix())
+}
+
+// NewTimestampFromDuration creates and returns Timestamp object
+// from the standard Golang's time.Duration object.
+func NewTimestampFromDuration(d time.Duration) Timestamp {
+	return Timestamp(d.Seconds())
 }
 
 // BeginningAndEndOf returns the [A,B] pair, and A <= 'ts' <= B, and A-B == 'range_'.

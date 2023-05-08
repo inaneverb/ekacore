@@ -9,10 +9,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/modern-go/reflect2"
+	"github.com/inaneverb/ekacore/ekaunsafe/v4"
 )
 
-//noinspection GoSnakeCaseUsage
+// noinspection GoSnakeCaseUsage
 const (
 	_TIME_OFFSET_HOUR   uint8 = 0
 	_TIME_OFFSET_MINUTE uint8 = _TIME_OFFSET_HOUR + 5
@@ -26,7 +26,7 @@ const (
 	_TIME_MASK_TIME Time = (Time(1) << _TIME_OFFSET_UNUSED) - 1
 )
 
-//noinspection GoSnakeCaseUsage
+// noinspection GoSnakeCaseUsage
 var (
 	_TIME_PART_AS_NUM_STR [60][]byte
 )
@@ -48,6 +48,6 @@ func normalizeTime(h Hour, m Minute, s Second) (Hour, Minute, Second) {
 func initTimeNumStr() {
 	for i := 0; i <= 59; i++ {
 		_TIME_PART_AS_NUM_STR[i] =
-			reflect2.UnsafeCastString(fmt.Sprintf("%02d", i))
+			ekaunsafe.StringToBytes(fmt.Sprintf("%02d", i))
 	}
 }

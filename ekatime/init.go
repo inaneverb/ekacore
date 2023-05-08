@@ -18,8 +18,4 @@ func init() {
 	initTimeNumStr()
 
 	initWeekday()
-
-	// ---------
-
-	initOnceIn() // must be last always!
 }

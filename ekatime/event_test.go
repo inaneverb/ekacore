@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/qioalice/ekago/v4/ekatime"
+	"github.com/inaneverb/ekacore/ekatime/v4"
 )
 
 func TestEvent_String(t *testing.T) {
