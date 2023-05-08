@@ -12,7 +12,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/qioalice/ekago/v4/ekaunsafe"
+	"github.com/inaneverb/ekacore/ekaunsafe/v4"
 )
 
 type t1 struct {

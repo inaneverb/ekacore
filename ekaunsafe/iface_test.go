@@ -8,9 +8,9 @@ package ekaunsafe_test
 import (
 	"testing"
 
-	"github.com/qioalice/ekago/v4/ekaunsafe"
-
 	"github.com/stretchr/testify/assert"
+
+	"github.com/inaneverb/ekacore/ekaunsafe/v4"
 )
 
 func TestUnpackInterface(t *testing.T) {

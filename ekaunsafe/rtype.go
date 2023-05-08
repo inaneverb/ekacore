@@ -6,42 +6,50 @@
 package ekaunsafe
 
 import (
+	"bytes"
+	"reflect"
 	"time"
 	"unsafe"
-
-	"github.com/modern-go/reflect2"
 )
 
 //goland:noinspection GoVarAndConstTypeMayBeOmitted,GoRedundantConversion,GoBoolExpressions
 var (
-	rTypeBool               = reflect2.RTypeOf(bool(0 == 0))
-	rTypeByte               = reflect2.RTypeOf(byte(0))
-	rTypeRune               = reflect2.RTypeOf(rune(0))
-	rTypeInt                = reflect2.RTypeOf(int(0))
-	rTypeInt8               = reflect2.RTypeOf(int8(0))
-	rTypeInt16              = reflect2.RTypeOf(int16(0))
-	rTypeInt32              = reflect2.RTypeOf(int32(0))
-	rTypeInt64              = reflect2.RTypeOf(int64(0))
-	rTypeUint               = reflect2.RTypeOf(uint(0))
-	rTypeUint8              = reflect2.RTypeOf(uint8(0))
-	rTypeUint16             = reflect2.RTypeOf(uint16(0))
-	rTypeUint32             = reflect2.RTypeOf(uint32(0))
-	rTypeUint64             = reflect2.RTypeOf(uint64(0))
-	rTypeFloat32            = reflect2.RTypeOf(float32(0))
-	rTypeFloat64            = reflect2.RTypeOf(float64(0))
-	rTypeComplex64          = reflect2.RTypeOf(complex64(0))
-	rTypeComplex128         = reflect2.RTypeOf(complex128(0))
-	rTypeString             = reflect2.RTypeOf(string(""))
-	rTypeStringArray        = reflect2.RTypeOf([]string(nil))
-	rTypeBytes              = reflect2.RTypeOf([]byte(nil))
-	rTypeBytesArray         = reflect2.RTypeOf([][]byte(nil))
-	rTypeMapStringString    = reflect2.RTypeOf(map[string]string(nil))
-	rTypeMapStringInterface = reflect2.RTypeOf(map[string]any(nil))
-	rTypeUintptr            = reflect2.RTypeOf(uintptr(0))
-	rTypeUnsafePointer      = reflect2.RTypeOf(unsafe.Pointer(nil))
-	rTypeTimeTime           = reflect2.RTypeOf(time.Time{})
-	rTypeTimeDuration       = reflect2.RTypeOf(time.Duration(0))
+	rTypeBool               = RTypeOf(bool(0 == 0))
+	rTypeByte               = RTypeOf(byte(0))
+	rTypeRune               = RTypeOf(rune(0))
+	rTypeInt                = RTypeOf(int(0))
+	rTypeInt8               = RTypeOf(int8(0))
+	rTypeInt16              = RTypeOf(int16(0))
+	rTypeInt32              = RTypeOf(int32(0))
+	rTypeInt64              = RTypeOf(int64(0))
+	rTypeUint               = RTypeOf(uint(0))
+	rTypeUint8              = RTypeOf(uint8(0))
+	rTypeUint16             = RTypeOf(uint16(0))
+	rTypeUint32             = RTypeOf(uint32(0))
+	rTypeUint64             = RTypeOf(uint64(0))
+	rTypeFloat32            = RTypeOf(float32(0))
+	rTypeFloat64            = RTypeOf(float64(0))
+	rTypeComplex64          = RTypeOf(complex64(0))
+	rTypeComplex128         = RTypeOf(complex128(0))
+	rTypeString             = RTypeOf(string(""))
+	rTypeStringArray        = RTypeOf([]string(nil))
+	rTypeBytes              = RTypeOf([]byte(nil))
+	rTypeBytesArray         = RTypeOf([][]byte(nil))
+	rTypeMapStringString    = RTypeOf(map[string]string(nil))
+	rTypeMapStringInterface = RTypeOf(map[string]any(nil))
+	rTypeUintptr            = RTypeOf(uintptr(0))
+	rTypeUnsafePointer      = RTypeOf(unsafe.Pointer(nil))
+	rTypeTimeTime           = RTypeOf(time.Time{})
+	rTypeTimeDuration       = RTypeOf(time.Duration(0))
+	rTypeBytesBuffer        = RTypeOf(bytes.Buffer{})
+	rTypeBytesBufferPtr     = RTypeOf((*bytes.Buffer)(nil))
+	rtypeAny                = RTypeOfReflectType(reflect.TypeOf((*any)(nil)).Elem())
 )
+
+// RTypeOf returns rtype of given value. 0 means nil.
+func RTypeOf(x any) uintptr {
+	return UnpackInterface(x).Type
+}
 
 // RTypeBool returns rtype of bool.
 func RTypeBool() uintptr { return rTypeBool }
@@ -123,6 +131,15 @@ func RTypeTimeTime() uintptr { return rTypeTimeTime }
 
 // RTypeTimeDuration returns rtype of time.Duration.
 func RTypeTimeDuration() uintptr { return rTypeTimeDuration }
+
+// RTypeBytesBuffer returns rtype of bytes.Buffer.
+func RTypeBytesBuffer() uintptr { return rTypeBytesBuffer }
+
+// RTypeBytesBufferPtr returns rtype of *bytes.Buffer.
+func RTypeBytesBufferPtr() uintptr { return rTypeBytesBufferPtr }
+
+// RTypeAny returns rtype of Golang special type "any" (old: interface{}).
+func RTypeAny() uintptr { return rtypeAny }
 
 // RTypeIsNumericAny returns true if provided rtype is of any int or uint type.
 // Covers: int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64.

@@ -11,4 +11,4 @@ import (
 )
 
 //go:linkname Typedmemmove reflect.typedmemmove
-func Typedmemmove(rtype unsafe.Pointer, dst, src unsafe.Pointer)
+func Typedmemmove(rtype, dst, src unsafe.Pointer)
