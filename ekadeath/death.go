@@ -8,8 +8,8 @@ package ekadeath
 import (
 	"os"
 
-	"github.com/qioalice/ekago/v4/ekaext"
-	"github.com/qioalice/ekago/v4/ekaunsafe"
+	"github.com/inaneverb/ekacore/ekaext/v4"
+	"github.com/inaneverb/ekacore/ekaunsafe/v4"
 )
 
 ////////////////////////////////////////////////////////////////////////////////

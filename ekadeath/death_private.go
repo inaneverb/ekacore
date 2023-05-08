@@ -6,8 +6,8 @@
 package ekadeath
 
 import (
-	"github.com/qioalice/ekago/v4/ekatyp"
-	"github.com/qioalice/ekago/v4/ekaunsafe"
+	"github.com/inaneverb/ekacore/ekatyp/v4"
+	"github.com/inaneverb/ekacore/ekaunsafe/v4"
 )
 
 // destructorDescriptor is a descriptor of registered destructor.
