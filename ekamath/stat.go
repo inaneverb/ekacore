@@ -8,7 +8,7 @@ package ekamath
 import (
 	"fmt"
 
-	"github.com/qioalice/ekago/v4/ekaext"
+	"github.com/inaneverb/ekacore/ekaext/v4"
 )
 
 type Stat[T ekaext.Numeric] interface {

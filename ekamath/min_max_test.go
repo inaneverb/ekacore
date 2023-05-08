@@ -3,10 +3,10 @@ package ekamath_test
 import (
 	"testing"
 
-	"github.com/qioalice/ekago/v4/ekaext"
-	"github.com/qioalice/ekago/v4/ekamath"
-
 	"github.com/stretchr/testify/require"
+
+	"github.com/inaneverb/ekacore/ekaext/v4"
+	"github.com/inaneverb/ekacore/ekamath/v4"
 )
 
 func TestMinMax(t *testing.T) {

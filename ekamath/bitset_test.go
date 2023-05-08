@@ -10,9 +10,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/qioalice/ekago/v4/ekamath"
-
 	"github.com/stretchr/testify/require"
+
+	"github.com/inaneverb/ekacore/ekamath/v4"
 )
 
 func TestBitSet(t *testing.T) {
