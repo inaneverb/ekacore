@@ -8,19 +8,19 @@ package ekarand
 import (
 	mrand "math/rand"
 
-	"github.com/qioalice/ekago/v4/ekastr"
+	"github.com/inaneverb/ekacore/ekastr/v4"
 )
 
 const (
 	charSetLetters = `abcdefghijklmnopqrstuvwxyz`
 	charSetDigits  = `1234567890`
-	charSetAll     = charSetLetters + charSetDigits
+	charSet        = charSetLetters + charSetDigits
 )
 
 // WithLen generates a random sequence with n length that contains both of
 // english letters and arabic digits. Returns "" if n <= 0.
 func WithLen(n int) string {
-	return genWithLenFrom(charSetAll, n)
+	return genWithLenFrom(charSet, n)
 }
 
 // WithLenOnlyLetters generates a random sequence with n length that contains

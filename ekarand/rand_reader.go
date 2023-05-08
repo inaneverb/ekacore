@@ -6,8 +6,13 @@
 package ekarand
 
 import (
+	"io"
+
 	crand "crypto/rand"
 	mrand "math/rand"
+
+	"github.com/awnumar/fastrand"
+	"lukechampine.com/frand"
 )
 
 // MathRandReader is an io.Reader interface that provides thread safe Read()
@@ -23,6 +28,10 @@ type MathRandReader struct{}
 // You can use both of (*CryptoRandReader)(nil) or CryptoRandReader{} variants.
 type CryptoRandReader struct{}
 
+type FastRandReader struct{}
+
+type CryptoFastRandReader struct{}
+
 func (_ *MathRandReader) Read(p []byte) (n int, err error) {
 	return mrand.Read(p)
 }
@@ -30,3 +39,16 @@ func (_ *MathRandReader) Read(p []byte) (n int, err error) {
 func (_ *CryptoRandReader) Read(p []byte) (n int, err error) {
 	return crand.Read(p)
 }
+
+func (_ *FastRandReader) Read(p []byte) (n int, err error) {
+	return frand.Read(p)
+}
+
+func (_ *CryptoFastRandReader) Read(p []byte) (n int, err error) {
+	return fastrand.Reader.Read(p)
+}
+
+func GetMathRandReader() io.Reader       { return (*MathRandReader)(nil) }
+func GetCryptoRandReader() io.Reader     { return (*CryptoRandReader)(nil) }
+func GetFastRandReader() io.Reader       { return (*FastRandReader)(nil) }
+func GetCryptoFastRandReader() io.Reader { return (*CryptoFastRandReader)(nil) }

@@ -14,7 +14,7 @@ import (
 	"bytes"
 	"strconv"
 
-	"github.com/qioalice/ekago/v4/ekastr"
+	"github.com/inaneverb/ekacore/ekastr/v4"
 )
 
 // Thanks to https://gist.github.com/hugsy/8910dc78d208e40de42deb29e62df913
