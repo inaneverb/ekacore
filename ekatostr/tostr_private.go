@@ -110,7 +110,7 @@ func genEnc(rtype uintptr) _Encoder {
 		e = genEncStruct(rt)
 
 	default:
-		e = genEncConstStr(fmt.Sprintf("<unknown_type_%s>", rt.String()))
+		e = genEncConstStr(fmt.Sprintf("<unknown_type_%s>", rt.String()), false)
 	}
 
 exit:

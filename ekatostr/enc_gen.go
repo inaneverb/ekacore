@@ -25,9 +25,12 @@ import (
 //go:linkname strconvAppendInt strconv.AppendInt
 func strconvAppendInt([]byte, uint64, int) []byte
 
-func genEncConstStr(s string) _Encoder {
-	return func(to []byte, _ unsafe.Pointer, _ uint8) []byte {
-		return append(to, s...)
+func genEncConstStr(s string, skipZero bool) _Encoder {
+	return func(to []byte, _ unsafe.Pointer, bh uint8) []byte {
+		if !isSkipZero(bh) || !skipZero {
+			to = append(to, s...)
+		}
+		return to
 	}
 }
 

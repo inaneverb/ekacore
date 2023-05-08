@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-	gEnc[0] = genEncConstStr("<nil>")
+	gEnc[0] = genEncConstStr("<nil>", true)
 
 	gEnc[ekaunsafe.RTypeInt()] = genEncItoa[int](strconvAppendInt)
 	gEnc[ekaunsafe.RTypeInt8()] = genEncItoa[int8](strconvAppendInt)
