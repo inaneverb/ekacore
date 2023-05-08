@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/qioalice/ekago/v4/ekastr"
+	"github.com/inaneverb/ekacore/ekastr/v4"
 )
 
 func TestToBytes(t *testing.T) {

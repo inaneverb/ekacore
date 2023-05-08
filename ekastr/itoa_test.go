@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/qioalice/ekago/v4/ekastr"
+	"github.com/inaneverb/ekacore/ekastr/v4"
 )
 
 func BenchmarkRequiredForI64(b *testing.B) {
