@@ -1,4 +1,4 @@
-// Copyright © 2020. All rights reserved.
+// Copyright © 2020-2023. All rights reserved.
 // Author: Ilya Stroy.
 // Contacts: iyuryevich@pm.me, https://github.com/qioalice
 // License: https://opensource.org/licenses/MIT
@@ -6,7 +6,7 @@
 package ekaenc
 
 import (
-	"github.com/qioalice/ekago/v4/ekastr"
+	"github.com/inaneverb/ekacore/ekastr/v4"
 )
 
 func NullAsStringLowerCase() string { return "null" }
@@ -25,4 +25,6 @@ func IsNullAsString(s string) bool {
 	return s == NullAsStringLowerCase() || s == NullAsStringUpperCase()
 }
 
-func IsNullAsBytes(b []byte) bool { return IsNullAsString(ekastr.FromBytes(b)) }
+func IsNullAsBytes(b []byte) bool {
+	return IsNullAsString(ekastr.FromBytes(b))
+}
