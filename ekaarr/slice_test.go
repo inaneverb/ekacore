@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/qioalice/ekago/v4/ekaarr"
+	"github.com/inaneverb/ekacore/ekaarr/v4"
 )
 
 func slicePtr[T comparable](in []T) uintptr {
@@ -45,7 +45,7 @@ func TestFilter(t *testing.T) {
 
 func BenchmarkFilter(b *testing.B) {
 
-	var bg = func(in []int, cb func(int) bool) func(*testing.B) {
+	var bgFilter = func(in []int, cb func(int) bool) func(*testing.B) {
 		return func(b *testing.B) {
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
@@ -54,7 +54,24 @@ func BenchmarkFilter(b *testing.B) {
 		}
 	}
 
+	var bgIter = func(in []int) func(*testing.B) {
+		return func(b *testing.B) {
+			b.ReportAllocs()
+			var out = make([]int, 0, len(in))
+			for i, n := 0, len(in); i < n; i++ {
+				if in[i] > 0 {
+					out = append(out, in[i])
+				}
+			}
+		}
+	}
+
 	var f = func(n int) bool { return n > 0 }
+
+	var bg = func(b *testing.B, name string, in []int) {
+		b.Run(name, bgFilter(in, f))
+		b.Run(name+"-iter", bgIter(in))
+	}
 
 	var in1 = []int{1, 2, 3, 4, -1, 0, -2, -5}
 	var in2 = []int{1, 2, 3, 4}
@@ -82,20 +99,18 @@ func BenchmarkFilter(b *testing.B) {
 		return append(pos, neg...)
 	}
 
-	b.Run("TrimRight", bg(in1, f))
-	b.Run("NoFilter", bg(in2, f))
-	b.Run("FilterAll", bg(in3, f))
-	b.Run("Common", bg(in4, f))
-
-	b.Run("TrimRight-x10", bg(sort(mul(in1, 10)), f))
-	b.Run("NoFilter-x10", bg(mul(in2, 10), f))
-	b.Run("FilterAll-x10", bg(mul(in3, 10), f))
-	b.Run("Common-x10", bg(mul(in4, 10), f))
-
-	b.Run("TrimRight-x100", bg(sort(mul(in1, 100)), f))
-	b.Run("NoFilter-x100", bg(mul(in2, 100), f))
-	b.Run("FilterAll-x100", bg(mul(in3, 100), f))
-	b.Run("Common-x100", bg(mul(in4, 100), f))
+	bg(b, "TrimRight", in1)
+	bg(b, "NoFilter", in2)
+	bg(b, "FilterAll", in3)
+	bg(b, "Common", in4)
+	bg(b, "TrimRight-x10", sort(mul(in1, 10)))
+	bg(b, "NoFilter-x10", mul(in2, 10))
+	bg(b, "FilterAll-x10", mul(in3, 10))
+	bg(b, "Common-x10", mul(in4, 10))
+	bg(b, "TrimRight-x100", sort(mul(in1, 100)))
+	bg(b, "NoFilter-x100", mul(in2, 100))
+	bg(b, "FilterAll-x100", mul(in3, 100))
+	bg(b, "Common-x100", mul(in4, 100))
 }
 
 func TestContains(t *testing.T) {
@@ -205,4 +220,62 @@ func TestDistinct(t *testing.T) {
 
 		require.ElementsMatchf(t, tc.Out, ekaarr.Distinct(tc.In), F, tc.In)
 	}
+}
+
+var tdMinMax = []int{
+	31, 25, -86, 9, -72, -78, 61, -58, 60, 36, 84, -46, 95, 86, 100, 18,
+	63, 52, -13, -89, -71, -27, 91, 81, -9, -59, 80, 14, 99, 94, 12, -60,
+	72, 4, -80, -84, -61, -51, 43, -53, 8, 62, -22, -94, -79, 28, 67, -3,
+	-68, 73, -87, 65, 66, 0, -8, -69, 32, -97, -2, 90, -38, 96, -32, 59,
+	40, -7, -98, -24, 58, -55, -74, 39, 87, 37, 74, -82, 2, -50, -21, -90,
+	-100, 57, -77, 30, 42, 71, 27, 33, 3, -10, -20, -92, -25, 23, -43, -75,
+	50, 13, 22, -49,
+}
+
+func TestMinMax(t *testing.T) {
+
+	t.Run("Min", func(t *testing.T) {
+		require.EqualValues(t, -100, ekaarr.Min(tdMinMax))
+	})
+	t.Run("Max", func(t *testing.T) {
+		require.EqualValues(t, 100, ekaarr.Max(tdMinMax))
+	})
+
+	t.Run("MinElems", func(t *testing.T) {
+		require.EqualValues(t, -100, ekaarr.MinElems(tdMinMax...))
+	})
+	t.Run("MaxElems", func(t *testing.T) {
+		require.EqualValues(t, 100, ekaarr.MaxElems(tdMinMax...))
+	})
+}
+
+func BenchmarkMinMax(b *testing.B) {
+
+	b.Run("Min", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			_ = ekaarr.Min(tdMinMax)
+		}
+	})
+
+	b.Run("Max", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			_ = ekaarr.Max(tdMinMax)
+		}
+	})
+
+	b.Run("MinElems", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			_ = ekaarr.MinElems(tdMinMax...)
+		}
+	})
+
+	b.Run("MaxElems", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			_ = ekaarr.MaxElems(tdMinMax...)
+		}
+	})
 }

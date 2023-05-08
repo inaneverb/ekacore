@@ -7,6 +7,8 @@ package ekaarr
 
 import (
 	"sort"
+
+	"github.com/inaneverb/ekacore/ekaext/v4"
 )
 
 func Sort[T any](in []T, cb func(a, b T) bool) []T {
@@ -22,6 +24,30 @@ func Reduce[T any, R any](
 	}
 
 	return out
+}
+
+// Min returns the lowest elem from the provided slice.
+// Returns default value of T, if nil or empty slice is provided.
+func Min[T ekaext.Ordered](in []T) (out T) {
+	return minMax(in, true)
+}
+
+// Max returns the highest elem from the provided slice.
+// Returns default value of T, if nil or empty slice is provided.
+func Max[T ekaext.Ordered](in []T) T {
+	return minMax(in, false)
+}
+
+// MinElems is the same as Min(), but it allows to pass elements as is,
+// without passing a slice directly.
+func MinElems[T ekaext.Ordered](v ...T) T {
+	return Min(v)
+}
+
+// MaxElems is the same as Nax(), but it allows to pass elements as is,
+// without passing a slice directly.
+func MaxElems[T ekaext.Ordered](v ...T) T {
+	return Max(v)
 }
 
 func Filter[T any](in []T, cb func(T) bool) []T {
@@ -136,4 +162,26 @@ func unique[T comparable](in []T, includeOnce bool) []T {
 	}
 
 	return in[:n]
+}
+
+func minMax[T ekaext.Ordered](in []T, lt bool) (out T) {
+
+	if len(in) >= 1 {
+		out = in[0]
+
+		if lt {
+			for i, n := 1, len(in); i < n; i++ {
+				if in[i] < out {
+					out = in[i]
+				}
+			}
+		} else {
+			for i, n := 1, len(in); i < n; i++ {
+				if in[i] > out {
+					out = in[i]
+				}
+			}
+		}
+	}
+	return out
 }
