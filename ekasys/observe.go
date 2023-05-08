@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"github.com/qioalice/ekago/v4/ekadeath"
+	"github.com/inaneverb/ekacore/ekadeath/v4"
 )
 
 type ObserveController struct {

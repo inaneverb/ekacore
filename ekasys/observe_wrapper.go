@@ -6,7 +6,7 @@
 package ekasys
 
 import (
-	"github.com/qioalice/ekago/v4/ekatime"
+	"github.com/inaneverb/ekacore/ekatime/v4"
 )
 
 type (
@@ -32,7 +32,7 @@ type (
 // It's useful to use this wrapper inside Observe()'s callback.
 
 // TODO: Comment
-func WrapOnceInWithContextWaitGroup(oc *ObserveController, cb OnceInForObserveCallback) ekatime.OnceInCallback {
+func WrapOnceInWithContextWaitGroup(oc *ObserveController, cb OnceInForObserveCallback) OnceInCallback {
 	return func(ts ekatime.Timestamp) {
 		cb(oc, ts)
 	}

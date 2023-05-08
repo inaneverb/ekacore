@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/qioalice/ekago/v4/ekasys"
+	"github.com/inaneverb/ekacore/ekasys/v4"
 )
 
 // Test GetStackTrace with 'skip' == 0, 'depth' == 1,
