@@ -75,7 +75,7 @@ func genEncFunc(t reflect.Type) _Encoder {
 		case skipZero && isZero:
 			return to
 
-		case bh&TOSTR_BH_HIGH_ON == 0:
+		case bh&BH_HIGH_ON == 0:
 			return to
 
 		case !skipZero && isZero:
@@ -126,7 +126,7 @@ func genEncPointer(t reflect.Type) _Encoder {
 			return to
 		}
 
-		if k == reflect.Pointer && bh&TOSTR_BH_GO_PTR != 0 {
+		if k == reflect.Pointer && bh&BH_GO_PTR != 0 {
 			var rtype = ekaunsafe.RTypeOfReflectType(t)
 
 			for i := 0; i < GO_PTR_DEEP && k == reflect.Pointer && v != nil; i++ {
@@ -252,10 +252,10 @@ func genEncSlice(t reflect.Type) _Encoder {
 		case v == nil:
 			return append(to, "<nil>"...)
 
-		case bh&TOSTR_BH_LOW_JSON != 0:
+		case bh&BH_LOW_JSON != 0:
 			return encJson(to, t, v)
 
-		case bh&TOSTR_BH_LOW_ON == 0:
+		case bh&BH_LOW_ON == 0:
 			return to
 		}
 
@@ -312,10 +312,10 @@ func genEncMap(t reflect.Type) _Encoder {
 		case v == nil:
 			return append(to, "<nil>"...)
 
-		case bh&TOSTR_BH_LOW_JSON != 0:
+		case bh&BH_LOW_JSON != 0:
 			return encJson(to, t, v)
 
-		case bh&TOSTR_BH_LOW_ON == 0:
+		case bh&BH_LOW_ON == 0:
 			return to
 		}
 
@@ -429,10 +429,10 @@ func genEncStruct(t reflect.Type) _Encoder {
 		case v == nil:
 			return append(to, "<nil>"...)
 
-		case bh&TOSTR_BH_LOW_JSON != 0:
+		case bh&BH_LOW_JSON != 0:
 			return encJson(to, t, v)
 
-		case bh&TOSTR_BH_LOW_ON == 0:
+		case bh&BH_LOW_ON == 0:
 			return to
 
 		case len(fiEnc) == 0:

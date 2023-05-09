@@ -30,7 +30,7 @@ var (
 )
 
 func isSkipZero(bh uint8) bool {
-	return bh&TOSTR_BH_SKIP_ZERO != 0
+	return bh&BH_SKIP_ZERO != 0
 }
 
 // getEnc tries to find an _Encoder for given 'rtype', and return it.

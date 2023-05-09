@@ -55,7 +55,7 @@ func TestToStr(t *testing.T) {
 func BenchmarkToStr(b *testing.B) {
 
 	//goland:noinspection GoSnakeCaseUsage
-	const BH_OFF = ekatostr.TOSTR_BH_LOW_JSON | ekatostr.TOSTR_BH_SKIP_ZERO
+	const BH_OFF = ekatostr.BH_LOW_JSON | ekatostr.BH_SKIP_ZERO
 
 	var g = func(v any, bufSize int) (string, func(b *testing.B)) {
 		var name = reflect.TypeOf(v).String() + "/" + strconv.Itoa(bufSize)
